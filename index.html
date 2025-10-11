@@ -16,12 +16,17 @@
       box-sizing: border-box;
     }
 
+    html,
+    body {
+      height: 100%;
+    }
+
     body {
       margin: 0;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       background: #16161b;
+      overflow: hidden;
     }
 
     header {
@@ -42,17 +47,19 @@
       display: flex;
       gap: 1rem;
       padding: 1rem;
+      overflow: hidden;
       min-height: 0;
     }
 
     .control-panel {
-      width: 320px;
+      width: 340px;
       max-width: 38vw;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
       overflow-y: auto;
       padding-right: 0.25rem;
+      height: 100%;
     }
 
     .control-section {
@@ -95,10 +102,6 @@
       gap: 0.4rem;
     }
 
-    .control-row input[type="range"] {
-      flex: 1 1 140px;
-    }
-
     input,
     select,
     button,
@@ -117,6 +120,11 @@
       transition: background 0.15s ease;
     }
 
+    button.active {
+      background: #3c3c4c;
+      color: #9ff2c9;
+    }
+
     button:hover,
     button:focus-visible {
       background: #363644;
@@ -131,12 +139,35 @@
       accent-color: #7dd39d;
     }
 
+    .inline-value {
+      display: inline-block;
+      min-width: 3.6rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .numeric-pair {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      flex: 1 1 160px;
+    }
+
+    .numeric-pair input[type="range"] {
+      flex: 1 1 auto;
+    }
+
+    .numeric-pair input[type="number"] {
+      width: 4.5rem;
+    }
+
     .canvas-column {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
       min-width: 0;
+      overflow: hidden;
     }
 
     .viewport {
@@ -260,17 +291,6 @@
       gap: 0.4rem;
     }
 
-    .numeric-pair {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-      width: 100%;
-    }
-
-    .numeric-pair input[type="number"] {
-      width: 4.5rem;
-    }
-
     .toolbar-note {
       font-size: 0.75rem;
       color: #9d9db0;
@@ -301,7 +321,7 @@
 <body>
   <header>
     <h1>Seeded Circle Mosaic Studio</h1>
-    <p class="toolbar-note">Space: Render Once · R: Randomize · P: Preview · E: Edit Mode · S: Save PNG</p>
+    <p class="toolbar-note">Space: Render Once · R: Randomize · P: Preview · E: Edit Mode · S: Save PNG · C: Chaos Mode</p>
   </header>
   <main>
     <aside class="control-panel" id="controlPanel">
@@ -319,11 +339,12 @@
         </div>
         <div class="control-row">
           <label class="toggle-label"><input type="checkbox" id="previewToggle" checked />Preview On</label>
-          <label class="toggle-label"><input type="checkbox" id="livePreviewCheckbox" checked />Live Preview (~20 FPS)</label>
+          <label class="toggle-label"><input type="checkbox" id="livePreviewCheckbox" checked />Live Preview (~30 FPS)</label>
         </div>
         <div class="control-row">
           <button id="renderOnceBtn">Render Once</button>
           <button id="randomizeBtn">Randomize</button>
+          <button id="hyperRandomBtn" type="button">Chaos 60 FPS</button>
         </div>
         <div class="control-row">
           <label class="toggle-label"><input type="checkbox" id="editModeToggle" />Edit Mode</label>
@@ -343,11 +364,17 @@
         </div>
         <div class="control-row" id="uniformResolutionRow">
           <label for="resSlider">Grid Resolution <span id="resValue" class="inline-value">40×40</span></label>
-          <input type="range" id="resSlider" min="1" max="200" value="40" />
+          <div class="numeric-pair">
+            <input type="range" id="resSlider" min="1" max="200" value="40" />
+            <input type="number" id="resNumber" min="1" max="200" step="1" value="40" />
+          </div>
         </div>
         <div class="control-row hidden" id="randomResolutionRow">
           <label for="countSlider">Target Circles <span id="countValue" class="inline-value">1500</span></label>
-          <input type="range" id="countSlider" min="10" max="10000" value="1500" />
+          <div class="numeric-pair">
+            <input type="range" id="countSlider" min="10" max="10000" step="10" value="1500" />
+            <input type="number" id="countNumber" min="10" max="10000" step="10" value="1500" />
+          </div>
         </div>
         <div class="control-row">
           <div class="numeric-pair">
@@ -374,7 +401,10 @@
         </div>
         <div class="control-row">
           <label for="gammaSlider">Gamma <span id="gammaValue" class="inline-value">1.00</span></label>
-          <input type="range" id="gammaSlider" min="0.5" max="2" step="0.01" value="1" />
+          <div class="numeric-pair">
+            <input type="range" id="gammaSlider" min="0.5" max="2" step="0.01" value="1" />
+            <input type="number" id="gammaNumber" min="0.5" max="2" step="0.01" value="1" />
+          </div>
         </div>
         <div class="control-row" id="palettePresetRow">
           <label for="palettePresetSelect">Palette Preset</label>
@@ -401,11 +431,24 @@
         </div>
         <div class="control-row">
           <label for="jitterStrength">Strength <span id="jitterValue" class="inline-value">0.50</span></label>
-          <input type="range" id="jitterStrength" min="0" max="1" step="0.01" value="0.5" />
+          <div class="numeric-pair">
+            <input type="range" id="jitterStrength" min="0" max="1" step="0.01" value="0.5" />
+            <input type="number" id="jitterNumber" min="0" max="1" step="0.01" value="0.5" />
+          </div>
         </div>
         <div class="control-row">
           <label class="toggle-label"><input type="checkbox" id="outlineCheckbox" />Outline Circles</label>
           <label class="toggle-label"><input type="checkbox" id="paletteDitherCheckbox" checked />Palette Dither</label>
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="staticMotionCheckbox" checked />Static Image Motion</label>
+        </div>
+        <div class="control-row">
+          <label for="staticMotionSlider">Motion Depth <span id="staticMotionValue" class="inline-value">0.35</span></label>
+          <div class="numeric-pair">
+            <input type="range" id="staticMotionSlider" min="0" max="1" step="0.01" value="0.35" />
+            <input type="number" id="staticMotionNumber" min="0" max="1" step="0.01" value="0.35" />
+          </div>
         </div>
       </section>
 
@@ -421,6 +464,21 @@
         <h2 id="utilityHeading">Utility</h2>
         <div class="control-row">
           <span id="statusMessage" aria-live="polite"></span>
+        </div>
+        <div class="control-row">
+          <label for="sampleDetailSlider">Sample Detail <span id="sampleDetailValue" class="inline-value">0.85</span></label>
+          <div class="numeric-pair">
+            <input type="range" id="sampleDetailSlider" min="0.3" max="1" step="0.01" value="0.85" />
+            <input type="number" id="sampleDetailNumber" min="0.3" max="1" step="0.01" value="0.85" />
+          </div>
+        </div>
+        <div class="control-row">
+          <span>Circle Count</span>
+          <span id="circleCountDisplay" class="inline-value">0</span>
+        </div>
+        <div class="control-row">
+          <span>Preview FPS</span>
+          <span id="fpsDisplay" class="inline-value">--</span>
         </div>
       </section>
     </aside>
@@ -471,11 +529,19 @@
       paletteDither: true,
       livePreview: true,
       previewOn: true,
+      previewBaseFps: 30,
+      previewFps: 30,
+      hyperRandom: false,
+      hyperRandomBase: 0,
+      hyperRandomCounter: 0,
       editMode: false,
       editSnap: true,
+      staticImageMotion: true,
+      staticMotionDepth: 0.35,
       palette: [...defaultPalettes.Warm],
       circles: [],
       sampleScale: 1,
+      sampleDetail: 0.85,
       lastRenderSource: null,
       lastBounds: { offsetX: 0, offsetY: 0, width: 0, height: 0 },
       loadedImage: null
@@ -503,6 +569,8 @@
       selectedIndex: -1,
       dragOffset: { x: 0, y: 0 }
     };
+    const animationState = { frame: 0, time: performance.now() };
+    const fpsTracker = { last: 0, avg: 0 };
 
     document.addEventListener("DOMContentLoaded", () => {
       cacheUI();
@@ -537,6 +605,7 @@
       ui.livePreviewCheckbox = document.getElementById("livePreviewCheckbox");
       ui.renderOnceBtn = document.getElementById("renderOnceBtn");
       ui.randomizeBtn = document.getElementById("randomizeBtn");
+      ui.hyperRandomBtn = document.getElementById("hyperRandomBtn");
       ui.editModeToggle = document.getElementById("editModeToggle");
       ui.recordBtn = document.getElementById("recordBtn");
       ui.recordStatus = document.getElementById("recordStatus");
@@ -544,6 +613,8 @@
       ui.modeRadios = Array.from(document.querySelectorAll("input[name='mode']"));
       ui.resSlider = document.getElementById("resSlider");
       ui.countSlider = document.getElementById("countSlider");
+      ui.resNumber = document.getElementById("resNumber");
+      ui.countNumber = document.getElementById("countNumber");
       ui.uniformResolutionRow = document.getElementById("uniformResolutionRow");
       ui.randomResolutionRow = document.getElementById("randomResolutionRow");
       ui.resValue = document.getElementById("resValue");
@@ -554,6 +625,7 @@
       ui.seedInput = document.getElementById("seedInput");
       ui.colorModeSelect = document.getElementById("colorModeSelect");
       ui.gammaSlider = document.getElementById("gammaSlider");
+      ui.gammaNumber = document.getElementById("gammaNumber");
       ui.gammaValue = document.getElementById("gammaValue");
       ui.paletteGrid = document.getElementById("paletteGrid");
       ui.addColorBtn = document.getElementById("addColorBtn");
@@ -563,12 +635,22 @@
       ui.paletteActions = document.getElementById("paletteActions");
       ui.jitterModeSelect = document.getElementById("jitterModeSelect");
       ui.jitterStrength = document.getElementById("jitterStrength");
+      ui.jitterNumber = document.getElementById("jitterNumber");
       ui.jitterValue = document.getElementById("jitterValue");
       ui.outlineCheckbox = document.getElementById("outlineCheckbox");
       ui.paletteDitherCheckbox = document.getElementById("paletteDitherCheckbox");
+      ui.staticMotionCheckbox = document.getElementById("staticMotionCheckbox");
+      ui.staticMotionSlider = document.getElementById("staticMotionSlider");
+      ui.staticMotionNumber = document.getElementById("staticMotionNumber");
+      ui.staticMotionValue = document.getElementById("staticMotionValue");
       ui.editOverlay = document.getElementById("editOverlay");
       ui.editSnapCheckbox = document.getElementById("editSnapCheckbox");
       ui.paletteCellTemplate = document.getElementById("paletteCellTemplate");
+      ui.sampleDetailSlider = document.getElementById("sampleDetailSlider");
+      ui.sampleDetailNumber = document.getElementById("sampleDetailNumber");
+      ui.sampleDetailValue = document.getElementById("sampleDetailValue");
+      ui.circleCountDisplay = document.getElementById("circleCountDisplay");
+      ui.fpsDisplay = document.getElementById("fpsDisplay");
     }
 
     function initUI() {
@@ -580,11 +662,14 @@
       });
       ui.previewToggle.addEventListener("change", () => {
         state.previewOn = ui.previewToggle.checked;
+        if (!state.previewOn && state.hyperRandom) {
+          stopHyperRandom();
+        }
         if (state.previewOn) {
           if (state.livePreview) {
             schedulePreview(true);
           } else {
-            render();
+            render(performance.now());
           }
         } else {
           cancelPreview();
@@ -592,30 +677,42 @@
       });
       ui.livePreviewCheckbox.addEventListener("change", () => {
         state.livePreview = ui.livePreviewCheckbox.checked;
+        if (!state.livePreview) {
+          cancelPreview();
+          resetFps();
+        }
         if (state.previewOn && state.livePreview) {
           schedulePreview(true);
-        } else if (!state.livePreview) {
-          cancelPreview();
         }
       });
       ui.imageInput.addEventListener("change", (evt) => {
+        if (state.hyperRandom) stopHyperRandom();
         const file = evt.target.files?.[0];
         if (file) {
           setSourceToImage(file);
         }
       });
       ui.renderOnceBtn.addEventListener("click", () => {
+        if (state.hyperRandom) stopHyperRandom();
         cancelPreview();
         state.previewOn = false;
         ui.previewToggle.checked = false;
-        render();
+        render(performance.now());
         updateStatus("Frame rendered. Enable Edit Mode to tweak circles.");
       });
       ui.randomizeBtn.addEventListener("click", () => {
+        if (state.hyperRandom) stopHyperRandom();
         state.seed = (Date.now() + Math.random()).toString();
         ui.seedInput.value = state.seed;
         requestRender();
         updateStatus("Seed randomized. Render updated.");
+      });
+      ui.hyperRandomBtn.addEventListener("click", () => {
+        if (state.hyperRandom) {
+          stopHyperRandom();
+        } else {
+          startHyperRandom();
+        }
       });
       ui.editModeToggle.addEventListener("change", () => {
         state.editMode = ui.editModeToggle.checked;
@@ -639,16 +736,34 @@
         });
       });
 
-      ui.resSlider.addEventListener("input", () => {
-        state.resolution = Number(ui.resSlider.value);
-        ui.resValue.textContent = `${state.resolution}×${state.resolution}`;
-        requestRender();
-      });
-      ui.countSlider.addEventListener("input", () => {
-        state.targetCount = Number(ui.countSlider.value);
-        ui.countValue.textContent = `${state.targetCount}`;
-        requestRender();
-      });
+      const syncResolution = (value) => {
+        if (value === "") return;
+        const min = Number(ui.resSlider.min);
+        const max = Number(ui.resSlider.max);
+        const val = clamp(Math.round(Number(value)), min, max);
+        ui.resSlider.value = val;
+        ui.resNumber.value = val;
+        ui.resValue.textContent = `${val}×${val}`;
+        if (state.resolution !== val) {
+          state.resolution = val;
+          requestRender();
+        }
+      };
+
+      const syncCount = (value) => {
+        if (value === "") return;
+        const min = Number(ui.countSlider.min);
+        const max = Number(ui.countSlider.max);
+        const raw = Number(value);
+        const val = clamp(Math.round(raw / 10) * 10, min, max);
+        ui.countSlider.value = val;
+        ui.countNumber.value = val;
+        ui.countValue.textContent = `${val}`;
+        if (state.targetCount !== val) {
+          state.targetCount = val;
+          requestRender();
+        }
+      };
 
       const syncSize = (value, fromSlider = false) => {
         if (state.mode === "uniform") {
@@ -673,6 +788,70 @@
         requestRender();
       };
 
+      const syncGamma = (value) => {
+        if (value === "") return;
+        const min = Number(ui.gammaSlider.min);
+        const max = Number(ui.gammaSlider.max);
+        const val = clamp(Number(value), min, max);
+        ui.gammaSlider.value = val;
+        ui.gammaNumber.value = val.toFixed(2);
+        state.gamma = val;
+        ui.gammaValue.textContent = val.toFixed(2);
+        requestRender();
+      };
+
+      const syncJitter = (value) => {
+        if (value === "") return;
+        const min = Number(ui.jitterStrength.min);
+        const max = Number(ui.jitterStrength.max);
+        const val = clamp(Number(value), min, max);
+        ui.jitterStrength.value = val;
+        ui.jitterNumber.value = val.toFixed(2);
+        state.jitterStrength = val;
+        ui.jitterValue.textContent = val.toFixed(2);
+        requestRender();
+      };
+
+      const syncStaticMotion = (value) => {
+        if (value === "") return;
+        const min = Number(ui.staticMotionSlider.min);
+        const max = Number(ui.staticMotionSlider.max);
+        const val = clamp(Number(value), min, max);
+        ui.staticMotionSlider.value = val;
+        ui.staticMotionNumber.value = val.toFixed(2);
+        state.staticMotionDepth = val;
+        ui.staticMotionValue.textContent = val.toFixed(2);
+        if (!state.previewOn) {
+          render(performance.now());
+        }
+      };
+
+      const syncSampleDetail = (value) => {
+        if (value === "") return;
+        const min = Number(ui.sampleDetailSlider.min);
+        const max = Number(ui.sampleDetailSlider.max);
+        const val = clamp(Number(value), min, max);
+        ui.sampleDetailSlider.value = val;
+        ui.sampleDetailNumber.value = val.toFixed(2);
+        state.sampleDetail = val;
+        ui.sampleDetailValue.textContent = val.toFixed(2);
+        refreshSampleBuffer();
+        requestRender();
+      };
+
+      ui.resSlider.addEventListener("input", (e) => {
+        syncResolution(e.target.value);
+      });
+      ui.resNumber.addEventListener("input", (e) => {
+        syncResolution(e.target.value);
+      });
+      ui.countSlider.addEventListener("input", (e) => {
+        syncCount(e.target.value);
+      });
+      ui.countNumber.addEventListener("input", (e) => {
+        syncCount(e.target.value);
+      });
+
       ui.sizeSlider.addEventListener("input", (e) => {
         syncSize(e.target.value, true);
       });
@@ -681,6 +860,7 @@
       });
 
       ui.seedInput.addEventListener("change", () => {
+        if (state.hyperRandom) stopHyperRandom();
         state.seed = ui.seedInput.value || "0";
         requestRender();
       });
@@ -693,10 +873,11 @@
         requestRender();
       });
 
-      ui.gammaSlider.addEventListener("input", () => {
-        state.gamma = Number(ui.gammaSlider.value);
-        ui.gammaValue.textContent = state.gamma.toFixed(2);
-        requestRender();
+      ui.gammaSlider.addEventListener("input", (e) => {
+        syncGamma(e.target.value);
+      });
+      ui.gammaNumber.addEventListener("input", (e) => {
+        syncGamma(e.target.value);
       });
 
       Object.keys(defaultPalettes).forEach((name) => {
@@ -731,10 +912,11 @@
         state.jitterMode = ui.jitterModeSelect.value;
         requestRender();
       });
-      ui.jitterStrength.addEventListener("input", () => {
-        state.jitterStrength = Number(ui.jitterStrength.value);
-        ui.jitterValue.textContent = state.jitterStrength.toFixed(2);
-        requestRender();
+      ui.jitterStrength.addEventListener("input", (e) => {
+        syncJitter(e.target.value);
+      });
+      ui.jitterNumber.addEventListener("input", (e) => {
+        syncJitter(e.target.value);
       });
 
       ui.outlineCheckbox.addEventListener("change", () => {
@@ -749,9 +931,51 @@
         state.paletteDither = ui.paletteDitherCheckbox.checked;
         requestRender();
       });
+      ui.staticMotionCheckbox.addEventListener("change", () => {
+        state.staticImageMotion = ui.staticMotionCheckbox.checked;
+        if (state.staticImageMotion && state.loadedImage) {
+          state.previewOn = true;
+          ui.previewToggle.checked = true;
+          if (!state.livePreview) {
+            state.livePreview = true;
+            ui.livePreviewCheckbox.checked = true;
+          }
+          schedulePreview(true);
+        } else if (!state.staticImageMotion && !mediaStream) {
+          cancelPreview();
+          state.previewOn = false;
+          ui.previewToggle.checked = false;
+          render(performance.now());
+        }
+      });
+      ui.staticMotionSlider.addEventListener("input", (e) => {
+        syncStaticMotion(e.target.value);
+      });
+      ui.staticMotionNumber.addEventListener("input", (e) => {
+        syncStaticMotion(e.target.value);
+      });
       ui.editSnapCheckbox.addEventListener("change", () => {
         state.editSnap = ui.editSnapCheckbox.checked;
       });
+
+      ui.sampleDetailSlider.addEventListener("input", (e) => {
+        syncSampleDetail(e.target.value);
+      });
+      ui.sampleDetailNumber.addEventListener("input", (e) => {
+        syncSampleDetail(e.target.value);
+      });
+
+      ui.staticMotionCheckbox.checked = state.staticImageMotion;
+      ui.staticMotionSlider.value = state.staticMotionDepth;
+      ui.staticMotionNumber.value = state.staticMotionDepth.toFixed(2);
+      ui.staticMotionValue.textContent = state.staticMotionDepth.toFixed(2);
+      ui.jitterNumber.value = state.jitterStrength.toFixed(2);
+      ui.gammaNumber.value = state.gamma.toFixed(2);
+      ui.sampleDetailSlider.value = state.sampleDetail;
+      ui.sampleDetailNumber.value = state.sampleDetail.toFixed(2);
+      ui.sampleDetailValue.textContent = state.sampleDetail.toFixed(2);
+      ui.resNumber.value = state.resolution;
+      ui.countNumber.value = state.targetCount;
 
       ui.displayCanvas.addEventListener("pointerdown", handlePointerDown);
       ui.displayCanvas.addEventListener("pointermove", handlePointerMove);
@@ -823,6 +1047,7 @@
 
     async function startCamera() {
       try {
+        if (state.hyperRandom) stopHyperRandom();
         mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
         ui.video.srcObject = mediaStream;
         state.loadedImage = null;
@@ -845,15 +1070,25 @@
     function setSourceToImage(file) {
       const img = new Image();
       img.onload = () => {
-        cancelPreview();
-        state.previewOn = false;
-        ui.previewToggle.checked = false;
         stopCamera();
         state.loadedImage = img;
         drawToSample(img);
         state.lastRenderSource = "image";
         updateStatus(`Loaded image ${file.name}`);
-        render();
+        if (state.staticImageMotion) {
+          state.previewOn = true;
+          ui.previewToggle.checked = true;
+          if (!state.livePreview) {
+            state.livePreview = true;
+            ui.livePreviewCheckbox.checked = true;
+          }
+          schedulePreview(true);
+        } else {
+          cancelPreview();
+          state.previewOn = false;
+          ui.previewToggle.checked = false;
+          render(performance.now());
+        }
         URL.revokeObjectURL(img.src);
       };
       img.onerror = () => updateStatus("Failed to load image.");
@@ -865,7 +1100,9 @@
       const maxDim = 640;
       const sourceWidth = source.videoWidth || source.naturalWidth || ui.displayCanvas.width;
       const sourceHeight = source.videoHeight || source.naturalHeight || ui.displayCanvas.height;
-      const scale = Math.min(maxDim / sourceWidth, maxDim / sourceHeight, 1);
+      const baseScale = Math.min(maxDim / sourceWidth, maxDim / sourceHeight, 1);
+      const detail = clamp(state.sampleDetail || 1, 0.3, 1);
+      const scale = Math.min(baseScale * detail, 1);
       ui.sampleCanvas.width = Math.max(1, Math.round(sourceWidth * scale));
       ui.sampleCanvas.height = Math.max(1, Math.round(sourceHeight * scale));
       state.sampleScale = sourceWidth / ui.sampleCanvas.width;
@@ -878,22 +1115,40 @@
       ui.sampleCtx.restore();
     }
 
+    function refreshSampleBuffer() {
+      if (mediaStream) {
+        if (ui.video.readyState >= 2) {
+          drawToSample(ui.video);
+        }
+      } else if (state.loadedImage) {
+        drawToSample(state.loadedImage);
+      }
+    }
+
     function schedulePreview(force) {
       if (!state.previewOn || !state.livePreview) return;
       cancelPreview();
-      const interval = 1000 / 20;
+      const fps = state.hyperRandom ? 60 : state.previewFps;
+      const interval = 1000 / Math.max(1, fps);
       let last = performance.now();
       const loop = (time) => {
         if (!state.previewOn || !state.livePreview) return;
         const delta = time - last;
-        if (delta >= interval - 5) {
+        if (delta >= interval - 2) {
           last = time;
-          render();
+          if (state.hyperRandom) advanceHyperSeed();
+          render(time);
+          trackPreviewFrame(time);
         }
         previewHandle = requestAnimationFrame(loop);
       };
       previewHandle = requestAnimationFrame(loop);
-      if (force) render();
+      if (force) {
+        const now = performance.now();
+        if (state.hyperRandom) advanceHyperSeed();
+        render(now);
+        trackPreviewFrame(now);
+      }
     }
 
     function cancelPreview() {
@@ -901,13 +1156,71 @@
         cancelAnimationFrame(previewHandle);
         previewHandle = null;
       }
+      resetFps();
     }
 
     function requestRender() {
       if (state.previewOn && state.livePreview) {
         schedulePreview(true);
       } else {
-        render();
+        render(performance.now());
+      }
+    }
+
+    function startHyperRandom() {
+      if (state.hyperRandom) return;
+      state.hyperRandom = true;
+      state.hyperRandomBase = seedFromString(state.seed);
+      state.hyperRandomCounter = 0;
+      ui.hyperRandomBtn.classList.add("active");
+      ui.hyperRandomBtn.textContent = "Chaos On";
+      state.previewOn = true;
+      ui.previewToggle.checked = true;
+      if (!state.livePreview) {
+        state.livePreview = true;
+        ui.livePreviewCheckbox.checked = true;
+      }
+      schedulePreview(true);
+    }
+
+    function stopHyperRandom() {
+      if (!state.hyperRandom) return;
+      state.hyperRandom = false;
+      ui.hyperRandomBtn.classList.remove("active");
+      ui.hyperRandomBtn.textContent = "Chaos 60 FPS";
+      state.previewFps = state.previewBaseFps;
+      if (state.previewOn && state.livePreview) {
+        schedulePreview(true);
+      }
+    }
+
+    function advanceHyperSeed() {
+      state.hyperRandomCounter = (state.hyperRandomCounter + 1) >>> 0;
+      const next = ((state.hyperRandomBase + state.hyperRandomCounter) >>> 0).toString(36);
+      state.seed = next;
+      if (document.activeElement !== ui.seedInput) {
+        ui.seedInput.value = next;
+      }
+    }
+
+    function trackPreviewFrame(time) {
+      if (!ui.fpsDisplay) return;
+      if (fpsTracker.last) {
+        const delta = time - fpsTracker.last;
+        if (delta > 0) {
+          const fps = 1000 / delta;
+          fpsTracker.avg = fpsTracker.avg ? fpsTracker.avg * 0.8 + fps * 0.2 : fps;
+          ui.fpsDisplay.textContent = fpsTracker.avg.toFixed(1);
+        }
+      }
+      fpsTracker.last = time;
+    }
+
+    function resetFps() {
+      fpsTracker.last = 0;
+      fpsTracker.avg = 0;
+      if (ui.fpsDisplay) {
+        ui.fpsDisplay.textContent = state.previewOn && state.livePreview ? "…" : "--";
       }
     }
 
@@ -924,7 +1237,9 @@
       }
     }
 
-    function render() {
+    function render(time = performance.now()) {
+      animationState.time = time;
+      animationState.frame += 1;
       const source = mediaStream ? ui.video : ui.sampleCanvas;
       if (mediaStream) {
         if (ui.video.readyState >= 2) {
@@ -963,7 +1278,9 @@
         circleSize: state.circleSize,
         randomRadius: state.randomRadius,
         resolution: state.resolution,
-        targetCount: state.targetCount
+        targetCount: state.targetCount,
+        motionPhase: animationState.time * 0.001,
+        motionFrame: animationState.frame
       };
 
       const bounds = computeRenderBounds(params.width, params.height, params.sampleWidth, params.sampleHeight);
@@ -990,6 +1307,9 @@
       ui.displayCtx.clearRect(0, 0, ui.displayCanvas.width, ui.displayCanvas.height);
       paintCircles(ui.displayCtx, state.circles);
       if (state.editMode) drawSelection();
+      if (ui.circleCountDisplay) {
+        ui.circleCountDisplay.textContent = state.circles.length.toLocaleString();
+      }
     }
 
     // Deterministic N×N mosaic with optional jitter per circle.
@@ -1012,7 +1332,8 @@
           const sampleX = (col + 0.5) * sampleCellWidth;
           const sampleY = (row + 0.5) * sampleCellHeight;
           const color = processColor(sampleFn(sampleX, sampleY));
-          const jitter = computeJitter(color, jitterStrength, radiusBase, { x, y });
+          const index = row * cols + col;
+          const jitter = computeJitter(color, jitterStrength, radiusBase, { x, y }, index, params);
           const radius = clamp(radiusBase + jitter.radiusDelta, 1, radiusBase * 1.6);
           const pos = applyPositionJitter({ x, y }, jitter.positionDelta, radius, radius, bounds);
           toDraw.push({ x: pos.x, y: pos.y, r: radius, fill: jitter.fillColor || colorToStyle(color) });
@@ -1111,7 +1432,7 @@
         const sx = clamp((basePos.x - offsetX) * sampleScaleX, 0, params.sampleWidth - 1);
         const sy = clamp((basePos.y - offsetY) * sampleScaleY, 0, params.sampleHeight - 1);
         const color = processColor(sampleFn(sx, sy));
-        const jitter = computeJitter(color, jitterStrength, baseRadius, basePos);
+        const jitter = computeJitter(color, jitterStrength, baseRadius, basePos, i, params);
         let newRadius = clamp(baseRadius + jitter.radiusDelta, minRadius, radiusBase * 2.2);
         let newPos = applyPositionJitter(basePos, jitter.positionDelta, newRadius, newRadius, bounds);
         let gx = Math.floor((newPos.x - offsetX) / cellSize);
@@ -1178,12 +1499,20 @@
     }
 
     // Multi-mode jitter (brightness, hue, saturation, position) for stylization.
-    function computeJitter(color, strength, baseRadius, point) {
+    function computeJitter(color, strength, baseRadius, point, index = 0, params = {}) {
       const result = {
         radiusDelta: 0,
         positionDelta: { x: 0, y: 0 },
         fillColor: null
       };
+      const motionActive = state.staticImageMotion && !mediaStream && state.loadedImage && state.staticMotionDepth > 0;
+      if (motionActive) {
+        const phase = (params.motionPhase || 0) + index * 0.37;
+        const depth = state.staticMotionDepth;
+        result.radiusDelta += Math.sin(phase * 1.2) * baseRadius * depth * 0.35;
+        result.positionDelta.x += Math.cos(phase * 1.6) * baseRadius * depth * 0.22;
+        result.positionDelta.y += Math.sin(phase * 1.3) * baseRadius * depth * 0.22;
+      }
       if (state.jitterMode === "none" || strength <= 0) {
         return result;
       }
@@ -1249,6 +1578,9 @@
       ui.displayCtx.clearRect(0, 0, ui.displayCanvas.width, ui.displayCanvas.height);
       paintCircles(ui.displayCtx, state.circles);
       if (state.editMode) drawSelection();
+      if (ui.circleCountDisplay) {
+        ui.circleCountDisplay.textContent = circles.length.toLocaleString();
+      }
     }
 
     function paintCircles(ctx, circles) {
@@ -1468,6 +1800,9 @@
       } else if (event.key === "r" || event.key === "R") {
         event.preventDefault();
         ui.randomizeBtn.click();
+      } else if (event.key === "c" || event.key === "C") {
+        event.preventDefault();
+        ui.hyperRandomBtn.click();
       } else if (event.key === "p" || event.key === "P") {
         event.preventDefault();
         ui.previewToggle.checked = !ui.previewToggle.checked;
