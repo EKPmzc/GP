@@ -172,6 +172,7 @@
 
     .viewport {
       flex: 1;
+      width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -339,7 +340,26 @@
         </div>
         <div class="control-row">
           <label class="toggle-label"><input type="checkbox" id="previewToggle" checked />Preview On</label>
-          <label class="toggle-label"><input type="checkbox" id="livePreviewCheckbox" checked />Live Preview (~30 FPS)</label>
+          <label class="toggle-label"><input type="checkbox" id="livePreviewCheckbox" checked />Live Preview (up to 60 FPS)</label>
+        </div>
+        <div class="control-row">
+          <label for="cameraQualitySelect">Camera Quality</label>
+          <select id="cameraQualitySelect">
+            <option value="720p">HD 720p 60</option>
+            <option value="1080p" selected>Full HD 1080p 60</option>
+            <option value="1440p">Quad HD 1440p 30</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label for="aspectSelect">Aspect Ratio</label>
+          <select id="aspectSelect">
+            <option value="auto" selected>Auto (Source)</option>
+            <option value="16:9">16:9</option>
+            <option value="9:16">9:16</option>
+            <option value="1:1">1:1</option>
+            <option value="4:5">4:5</option>
+            <option value="21:9">21:9</option>
+          </select>
         </div>
         <div class="control-row">
           <button id="renderOnceBtn">Render Once</button>
@@ -353,6 +373,7 @@
         <div class="control-row">
           <button id="recordBtn">Start Recording</button>
           <button id="downloadBtn">Download PNG</button>
+          <button id="previewKillBtn" type="button">Stop Preview</button>
         </div>
       </section>
 
@@ -386,6 +407,41 @@
         <div class="control-row">
           <label for="seedInput">Seed</label>
           <input type="text" id="seedInput" />
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="chaosHeading">
+        <h2 id="chaosHeading">Chaos Lab</h2>
+        <div class="control-row">
+          <label for="chaosModeSelect">Mode</label>
+          <select id="chaosModeSelect">
+            <option value="seed">Seed Storm</option>
+            <option value="palette">Palette Flux</option>
+            <option value="kinetic">Kinetic Drift</option>
+            <option value="cinematic">Cinematic Pulse</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label for="chaosRateSlider">Chaos Rate <span id="chaosRateValue" class="inline-value">60</span></label>
+          <div class="numeric-pair">
+            <input type="range" id="chaosRateSlider" min="5" max="120" step="1" value="60" />
+            <input type="number" id="chaosRateNumber" min="5" max="120" step="1" value="60" />
+          </div>
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="chaosSeedCheckbox" checked />Seed Cycling</label>
+          <label class="toggle-label"><input type="checkbox" id="chaosPaletteCheckbox" checked />Palette Swaps</label>
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="chaosGammaCheckbox" />Gamma Waves</label>
+          <label class="toggle-label"><input type="checkbox" id="chaosJitterCheckbox" />Jitter Bursts</label>
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="chaosSizeCheckbox" />Size Variance</label>
+          <label class="toggle-label"><input type="checkbox" id="chaosColorCheckbox" />Color Mode Shuffle</label>
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="chaosMotionCheckbox" />Motion Morph</label>
         </div>
       </section>
 
@@ -442,19 +498,32 @@
         </div>
         <div class="control-row">
           <label class="toggle-label"><input type="checkbox" id="staticMotionCheckbox" checked />Static Image Motion</label>
+          <select id="staticMotionMode">
+            <option value="wave">Wave</option>
+            <option value="pulse">Pulse</option>
+            <option value="orbit">Orbit</option>
+            <option value="ripple">Ripple</option>
+          </select>
         </div>
         <div class="control-row">
           <label for="staticMotionSlider">Motion Depth <span id="staticMotionValue" class="inline-value">0.35</span></label>
           <div class="numeric-pair">
-            <input type="range" id="staticMotionSlider" min="0" max="1" step="0.01" value="0.35" />
-            <input type="number" id="staticMotionNumber" min="0" max="1" step="0.01" value="0.35" />
+            <input type="range" id="staticMotionSlider" min="0" max="5" step="0.05" value="0.35" />
+            <input type="number" id="staticMotionNumber" min="0" max="5" step="0.05" value="0.35" />
+          </div>
+        </div>
+        <div class="control-row">
+          <label for="staticMotionSpeed">Motion Speed <span id="staticMotionSpeedValue" class="inline-value">1.00</span></label>
+          <div class="numeric-pair">
+            <input type="range" id="staticMotionSpeed" min="0.1" max="6" step="0.1" value="1" />
+            <input type="number" id="staticMotionSpeedNumber" min="0.1" max="6" step="0.1" value="1" />
           </div>
         </div>
       </section>
 
       <section class="control-section" aria-labelledby="editHeading">
         <h2 id="editHeading">Editing</h2>
-        <p class="edit-hint">Enable Edit Mode to select circles. Drag to move, scroll to resize, D to duplicate, Delete/Backspace to remove. Random mode keeps circles non-overlapping.</p>
+        <p class="edit-hint">Enable Edit Mode to select circles (Shift/⌘+click to multi-select). Drag to move groups, scroll to resize, use arrow keys to nudge, press D to duplicate, and Delete/Backspace to remove. Random mode keeps circles non-overlapping.</p>
         <div class="control-row">
           <label for="editSnapCheckbox" class="toggle-label"><input type="checkbox" id="editSnapCheckbox" checked />Snap to grid in Uniform</label>
         </div>
@@ -510,7 +579,12 @@
       Pastel: ["#ffd5e5", "#ffeda3", "#d7f9f1", "#c7ceea", "#f3b0c3", "#b5ead7", "#cddafd", "#fbf8cc"],
       Neon: ["#ff6ec7", "#ff99cc", "#17bebb", "#2a9d8f", "#ffd23f", "#ff3864", "#00bbf9", "#8338ec"],
       Muted: ["#3a3f44", "#5d5f71", "#8c7a6b", "#a0a08b", "#c4c1a1", "#4f5d75", "#a1a8b5", "#736b60"],
-      "High-Contrast": ["#0f0f0f", "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2"]
+      "High-Contrast": ["#0f0f0f", "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2"],
+      Cinematic: ["#120c1c", "#2c1b2f", "#513b56", "#6e485a", "#a26769", "#c4a381", "#edd9a3", "#fff2d5"],
+      Vaporwave: ["#ff71ce", "#b967ff", "#01cdfe", "#05ffa1", "#fffb96", "#f75c9f", "#845ec2", "#2c73d2"],
+      Forest: ["#0b3d20", "#14532d", "#1f7a3f", "#2f9c4b", "#63c132", "#a4de02", "#f7f7f7", "#4f772d"],
+      Sunrise: ["#120321", "#35063e", "#6e2142", "#d1603d", "#f3a712", "#f7d488", "#fff4e6", "#f95738"],
+      Aurora: ["#040926", "#0c1445", "#1b3b6f", "#2a7f62", "#4bb4de", "#9ef8ee", "#b8f2e6", "#f5e6cc"]
     };
 
     const state = {
@@ -529,8 +603,8 @@
       paletteDither: true,
       livePreview: true,
       previewOn: true,
-      previewBaseFps: 30,
-      previewFps: 30,
+      previewBaseFps: 60,
+      previewFps: 60,
       hyperRandom: false,
       hyperRandomBase: 0,
       hyperRandomCounter: 0,
@@ -538,13 +612,28 @@
       editSnap: true,
       staticImageMotion: true,
       staticMotionDepth: 0.35,
+      staticMotionMode: "wave",
+      staticMotionSpeed: 1,
       palette: [...defaultPalettes.Warm],
       circles: [],
       sampleScale: 1,
       sampleDetail: 0.85,
       lastRenderSource: null,
       lastBounds: { offsetX: 0, offsetY: 0, width: 0, height: 0 },
-      loadedImage: null
+      loadedImage: null,
+      aspectRatio: "auto",
+      cameraQuality: "1080p",
+      chaos: {
+        mode: "seed",
+        rate: 60,
+        seed: true,
+        palette: true,
+        gamma: false,
+        jitter: false,
+        size: false,
+        color: false,
+        motion: false
+      }
     };
 
     const ui = {};
@@ -567,7 +656,10 @@
     let editState = {
       active: false,
       selectedIndex: -1,
-      dragOffset: { x: 0, y: 0 }
+      selectedIndices: new Set(),
+      dragOffset: { x: 0, y: 0 },
+      dragSnapshot: [],
+      dragStart: { x: 0, y: 0 }
     };
     const animationState = { frame: 0, time: performance.now() };
     const fpsTracker = { last: 0, avg: 0 };
@@ -576,6 +668,7 @@
       cacheUI();
       initUI();
       syncPaletteUI();
+      applyAspectRatio();
       resizeCanvas();
       state.seed = Date.now().toString();
       ui.seedInput.value = state.seed;
@@ -584,6 +677,7 @@
     });
 
     window.addEventListener("resize", () => {
+      applyAspectRatio();
       resizeCanvas();
       if (!state.previewOn) {
         drawCircles();
@@ -603,6 +697,8 @@
       ui.imageInput = document.getElementById("imageInput");
       ui.previewToggle = document.getElementById("previewToggle");
       ui.livePreviewCheckbox = document.getElementById("livePreviewCheckbox");
+      ui.cameraQualitySelect = document.getElementById("cameraQualitySelect");
+      ui.aspectSelect = document.getElementById("aspectSelect");
       ui.renderOnceBtn = document.getElementById("renderOnceBtn");
       ui.randomizeBtn = document.getElementById("randomizeBtn");
       ui.hyperRandomBtn = document.getElementById("hyperRandomBtn");
@@ -610,6 +706,7 @@
       ui.recordBtn = document.getElementById("recordBtn");
       ui.recordStatus = document.getElementById("recordStatus");
       ui.downloadBtn = document.getElementById("downloadBtn");
+      ui.previewKillBtn = document.getElementById("previewKillBtn");
       ui.modeRadios = Array.from(document.querySelectorAll("input[name='mode']"));
       ui.resSlider = document.getElementById("resSlider");
       ui.countSlider = document.getElementById("countSlider");
@@ -640,9 +737,13 @@
       ui.outlineCheckbox = document.getElementById("outlineCheckbox");
       ui.paletteDitherCheckbox = document.getElementById("paletteDitherCheckbox");
       ui.staticMotionCheckbox = document.getElementById("staticMotionCheckbox");
+      ui.staticMotionMode = document.getElementById("staticMotionMode");
       ui.staticMotionSlider = document.getElementById("staticMotionSlider");
       ui.staticMotionNumber = document.getElementById("staticMotionNumber");
       ui.staticMotionValue = document.getElementById("staticMotionValue");
+      ui.staticMotionSpeed = document.getElementById("staticMotionSpeed");
+      ui.staticMotionSpeedNumber = document.getElementById("staticMotionSpeedNumber");
+      ui.staticMotionSpeedValue = document.getElementById("staticMotionSpeedValue");
       ui.editOverlay = document.getElementById("editOverlay");
       ui.editSnapCheckbox = document.getElementById("editSnapCheckbox");
       ui.paletteCellTemplate = document.getElementById("paletteCellTemplate");
@@ -651,6 +752,17 @@
       ui.sampleDetailValue = document.getElementById("sampleDetailValue");
       ui.circleCountDisplay = document.getElementById("circleCountDisplay");
       ui.fpsDisplay = document.getElementById("fpsDisplay");
+      ui.chaosModeSelect = document.getElementById("chaosModeSelect");
+      ui.chaosRateSlider = document.getElementById("chaosRateSlider");
+      ui.chaosRateNumber = document.getElementById("chaosRateNumber");
+      ui.chaosRateValue = document.getElementById("chaosRateValue");
+      ui.chaosSeedCheckbox = document.getElementById("chaosSeedCheckbox");
+      ui.chaosPaletteCheckbox = document.getElementById("chaosPaletteCheckbox");
+      ui.chaosGammaCheckbox = document.getElementById("chaosGammaCheckbox");
+      ui.chaosJitterCheckbox = document.getElementById("chaosJitterCheckbox");
+      ui.chaosSizeCheckbox = document.getElementById("chaosSizeCheckbox");
+      ui.chaosColorCheckbox = document.getElementById("chaosColorCheckbox");
+      ui.chaosMotionCheckbox = document.getElementById("chaosMotionCheckbox");
     }
 
     function initUI() {
@@ -684,6 +796,17 @@
         if (state.previewOn && state.livePreview) {
           schedulePreview(true);
         }
+      });
+      ui.cameraQualitySelect?.addEventListener("change", () => {
+        state.cameraQuality = ui.cameraQualitySelect.value;
+        if (mediaStream) {
+          startCamera();
+        }
+      });
+      ui.aspectSelect?.addEventListener("change", () => {
+        state.aspectRatio = ui.aspectSelect.value;
+        applyAspectRatio();
+        resizeCanvas();
       });
       ui.imageInput.addEventListener("change", (evt) => {
         if (state.hyperRandom) stopHyperRandom();
@@ -726,6 +849,12 @@
       });
       ui.recordBtn.addEventListener("click", toggleRecording);
       ui.downloadBtn.addEventListener("click", downloadPNG);
+      ui.previewKillBtn?.addEventListener("click", () => {
+        state.previewOn = false;
+        ui.previewToggle.checked = false;
+        cancelPreview();
+        updateStatus("Preview paused to save CPU.");
+      });
 
       ui.modeRadios.forEach((radio) => {
         radio.addEventListener("change", () => {
@@ -826,6 +955,20 @@
         }
       };
 
+      const syncStaticMotionSpeed = (value) => {
+        if (!ui.staticMotionSpeed || value === "") return;
+        const min = Number(ui.staticMotionSpeed.min);
+        const max = Number(ui.staticMotionSpeed.max);
+        const val = clamp(Number(value), min, max);
+        ui.staticMotionSpeed.value = val;
+        ui.staticMotionSpeedNumber.value = val.toFixed(2);
+        state.staticMotionSpeed = val;
+        ui.staticMotionSpeedValue.textContent = val.toFixed(2);
+        if (!state.previewOn) {
+          render(performance.now());
+        }
+      };
+
       const syncSampleDetail = (value) => {
         if (value === "") return;
         const min = Number(ui.sampleDetailSlider.min);
@@ -837,6 +980,22 @@
         ui.sampleDetailValue.textContent = val.toFixed(2);
         refreshSampleBuffer();
         requestRender();
+      };
+
+      const syncChaosRate = (value) => {
+        if (!ui.chaosRateSlider || value === "") return;
+        const min = Number(ui.chaosRateSlider.min);
+        const max = Number(ui.chaosRateSlider.max);
+        const val = clamp(Math.round(Number(value)), min, max);
+        ui.chaosRateSlider.value = val;
+        ui.chaosRateNumber.value = val;
+        ui.chaosRateValue.textContent = val;
+        state.chaos.rate = val;
+        if (state.hyperRandom) {
+          state.previewFps = val;
+          schedulePreview(true);
+          ui.hyperRandomBtn.textContent = `Chaos Engine (${val} FPS)`;
+        }
       };
 
       ui.resSlider.addEventListener("input", (e) => {
@@ -948,11 +1107,21 @@
           render(performance.now());
         }
       });
+      ui.staticMotionMode?.addEventListener("change", () => {
+        state.staticMotionMode = ui.staticMotionMode.value;
+        requestRender();
+      });
       ui.staticMotionSlider.addEventListener("input", (e) => {
         syncStaticMotion(e.target.value);
       });
       ui.staticMotionNumber.addEventListener("input", (e) => {
         syncStaticMotion(e.target.value);
+      });
+      ui.staticMotionSpeed?.addEventListener("input", (e) => {
+        syncStaticMotionSpeed(e.target.value);
+      });
+      ui.staticMotionSpeedNumber?.addEventListener("input", (e) => {
+        syncStaticMotionSpeed(e.target.value);
       });
       ui.editSnapCheckbox.addEventListener("change", () => {
         state.editSnap = ui.editSnapCheckbox.checked;
@@ -965,10 +1134,42 @@
         syncSampleDetail(e.target.value);
       });
 
+      if (ui.chaosModeSelect) {
+        ui.chaosModeSelect.addEventListener("change", () => {
+          state.chaos.mode = ui.chaosModeSelect.value;
+          applyChaosPreset();
+        });
+        ui.chaosRateSlider.addEventListener("input", (e) => {
+          syncChaosRate(e.target.value);
+        });
+        ui.chaosRateNumber.addEventListener("input", (e) => {
+          syncChaosRate(e.target.value);
+        });
+        [
+          [ui.chaosSeedCheckbox, "seed"],
+          [ui.chaosPaletteCheckbox, "palette"],
+          [ui.chaosGammaCheckbox, "gamma"],
+          [ui.chaosJitterCheckbox, "jitter"],
+          [ui.chaosSizeCheckbox, "size"],
+          [ui.chaosColorCheckbox, "color"],
+          [ui.chaosMotionCheckbox, "motion"]
+        ].forEach(([node, key]) => {
+          node.addEventListener("change", () => {
+            state.chaos[key] = node.checked;
+          });
+        });
+      }
+
       ui.staticMotionCheckbox.checked = state.staticImageMotion;
+      if (ui.staticMotionMode) ui.staticMotionMode.value = state.staticMotionMode;
       ui.staticMotionSlider.value = state.staticMotionDepth;
       ui.staticMotionNumber.value = state.staticMotionDepth.toFixed(2);
       ui.staticMotionValue.textContent = state.staticMotionDepth.toFixed(2);
+      if (ui.staticMotionSpeed) {
+        ui.staticMotionSpeed.value = state.staticMotionSpeed;
+        ui.staticMotionSpeedNumber.value = state.staticMotionSpeed.toFixed(2);
+        ui.staticMotionSpeedValue.textContent = state.staticMotionSpeed.toFixed(2);
+      }
       ui.jitterNumber.value = state.jitterStrength.toFixed(2);
       ui.gammaNumber.value = state.gamma.toFixed(2);
       ui.sampleDetailSlider.value = state.sampleDetail;
@@ -976,6 +1177,17 @@
       ui.sampleDetailValue.textContent = state.sampleDetail.toFixed(2);
       ui.resNumber.value = state.resolution;
       ui.countNumber.value = state.targetCount;
+      if (ui.aspectSelect) ui.aspectSelect.value = state.aspectRatio;
+      if (ui.cameraQualitySelect) ui.cameraQualitySelect.value = state.cameraQuality;
+      if (ui.chaosModeSelect) {
+        ui.chaosModeSelect.value = state.chaos.mode;
+        ui.chaosRateSlider.value = state.chaos.rate;
+        ui.chaosRateNumber.value = state.chaos.rate;
+        ui.chaosRateValue.textContent = state.chaos.rate;
+        applyChaosPreset();
+      }
+
+      state.previewFps = state.previewBaseFps;
 
       ui.displayCanvas.addEventListener("pointerdown", handlePointerDown);
       ui.displayCanvas.addEventListener("pointermove", handlePointerMove);
@@ -985,6 +1197,142 @@
 
       handleModeChange();
       ui.colorModeSelect.dispatchEvent(new Event("change"));
+    }
+
+    function applyChaosPreset() {
+      const presets = {
+        seed: { seed: true, palette: false, gamma: false, jitter: false, size: false, color: false, motion: false },
+        palette: { seed: true, palette: true, gamma: true, jitter: false, size: false, color: true, motion: false },
+        kinetic: { seed: true, palette: true, gamma: false, jitter: true, size: true, color: false, motion: true },
+        cinematic: { seed: true, palette: true, gamma: true, jitter: true, size: true, color: true, motion: true }
+      };
+      const preset = presets[state.chaos.mode] || presets.seed;
+      Object.assign(state.chaos, preset, { mode: state.chaos.mode });
+      if (ui.chaosSeedCheckbox) {
+        ui.chaosSeedCheckbox.checked = state.chaos.seed;
+        ui.chaosPaletteCheckbox.checked = state.chaos.palette;
+        ui.chaosGammaCheckbox.checked = state.chaos.gamma;
+        ui.chaosJitterCheckbox.checked = state.chaos.jitter;
+        ui.chaosSizeCheckbox.checked = state.chaos.size;
+        ui.chaosColorCheckbox.checked = state.chaos.color;
+        ui.chaosMotionCheckbox.checked = state.chaos.motion;
+      }
+      if (state.hyperRandom && ui.hyperRandomBtn) {
+        ui.hyperRandomBtn.textContent = `Chaos Engine (${state.chaos.rate} FPS)`;
+      }
+    }
+
+    function parseAspectRatio(value) {
+      if (!value || value === "auto") return null;
+      const [w, h] = value.split(":").map(Number);
+      if (!w || !h) return null;
+      return w / h;
+    }
+
+    function applyAspectRatio() {
+      const viewport = ui.displayCanvas?.parentElement;
+      if (!viewport) return;
+      const ratio = parseAspectRatio(state.aspectRatio);
+      if (ratio) {
+        const ratioString = state.aspectRatio.replace(":", " / ");
+        viewport.style.aspectRatio = ratioString;
+        ui.displayCanvas.style.aspectRatio = ratioString;
+      } else {
+        viewport.style.removeProperty("aspect-ratio");
+        ui.displayCanvas.style.removeProperty("aspect-ratio");
+      }
+    }
+
+    function runChaosFrame() {
+      if (!state.hyperRandom) return;
+      const chaosSeed = (state.hyperRandomBase + state.hyperRandomCounter * 17) >>> 0;
+      const chaosRng = mulberry32(chaosSeed || 1);
+      const shouldUpdateUi = (state.hyperRandomCounter & 3) === 0;
+
+      if (state.chaos.palette) {
+        const names = Object.keys(defaultPalettes);
+        const pick = names[Math.floor(chaosRng() * names.length)] || names[0];
+        state.palette = [...defaultPalettes[pick]];
+        if (ui.palettePresetSelect && shouldUpdateUi) {
+          ui.palettePresetSelect.value = pick;
+        }
+        if (shouldUpdateUi && state.colorMode === "palette") {
+          syncPaletteUI();
+        }
+      }
+
+      if (state.chaos.color) {
+        const modes = ["source", "grayscale", "palette"];
+        state.colorMode = modes[Math.floor(chaosRng() * modes.length)];
+        if (ui.colorModeSelect && shouldUpdateUi) {
+          ui.colorModeSelect.value = state.colorMode;
+          ui.paletteGrid.classList.toggle("disabled", state.colorMode !== "palette");
+          ui.paletteActions.classList.toggle("disabled", state.colorMode !== "palette");
+          ui.palettePresetRow.classList.toggle("hidden", state.colorMode !== "palette");
+        }
+      }
+
+      if (state.chaos.gamma) {
+        state.gamma = clamp(0.6 + chaosRng() * 1.2, 0.5, 2);
+        if (shouldUpdateUi) {
+          ui.gammaSlider.value = state.gamma;
+          ui.gammaNumber.value = state.gamma.toFixed(2);
+          ui.gammaValue.textContent = state.gamma.toFixed(2);
+        }
+      }
+
+      if (state.chaos.jitter) {
+        const modes = ["brightness", "hue", "saturation", "position"];
+        state.jitterMode = modes[Math.floor(chaosRng() * modes.length)];
+        state.jitterStrength = clamp(chaosRng(), 0, 1);
+        if (shouldUpdateUi) {
+          ui.jitterModeSelect.value = state.jitterMode;
+          ui.jitterStrength.value = state.jitterStrength;
+          ui.jitterNumber.value = state.jitterStrength.toFixed(2);
+          ui.jitterValue.textContent = state.jitterStrength.toFixed(2);
+        }
+      }
+
+      if (state.chaos.size) {
+        if (state.mode === "uniform") {
+          state.circleSize = clamp(0.3 + chaosRng() * 0.6, 0.2, 0.9);
+          if (shouldUpdateUi) {
+            ui.sizeSlider.value = state.circleSize;
+            ui.sizeNumber.value = state.circleSize.toFixed(2);
+          }
+        } else {
+          state.randomRadius = clamp(4 + chaosRng() * 30, 2, 40);
+          if (shouldUpdateUi) {
+            ui.sizeSlider.value = state.randomRadius;
+            ui.sizeNumber.value = state.randomRadius.toFixed(1);
+          }
+        }
+      }
+
+      if (state.chaos.motion) {
+        const modes = ["wave", "pulse", "orbit", "ripple"];
+        state.staticImageMotion = true;
+        state.staticMotionMode = modes[Math.floor(chaosRng() * modes.length)];
+        state.staticMotionDepth = clamp(chaosRng() * 5, 0, 5);
+        state.staticMotionSpeed = clamp(0.3 + chaosRng() * 4, 0.1, 6);
+        if (shouldUpdateUi) {
+          if (ui.staticMotionCheckbox) ui.staticMotionCheckbox.checked = true;
+          if (ui.staticMotionMode) ui.staticMotionMode.value = state.staticMotionMode;
+          if (ui.staticMotionSlider) ui.staticMotionSlider.value = state.staticMotionDepth;
+          if (ui.staticMotionNumber) ui.staticMotionNumber.value = state.staticMotionDepth.toFixed(2);
+          if (ui.staticMotionValue) ui.staticMotionValue.textContent = state.staticMotionDepth.toFixed(2);
+          if (ui.staticMotionSpeed) ui.staticMotionSpeed.value = state.staticMotionSpeed;
+          if (ui.staticMotionSpeedNumber) ui.staticMotionSpeedNumber.value = state.staticMotionSpeed.toFixed(2);
+          if (ui.staticMotionSpeedValue) ui.staticMotionSpeedValue.textContent = state.staticMotionSpeed.toFixed(2);
+        }
+      }
+
+      if (state.chaos.palette && state.colorMode !== "palette" && state.chaos.color) {
+        state.colorMode = "palette";
+        if (ui.colorModeSelect && shouldUpdateUi) {
+          ui.colorModeSelect.value = "palette";
+        }
+      }
     }
 
     function handleModeChange() {
@@ -1013,10 +1361,39 @@
       ui.sizeLabel.textContent = uniform ? "Circle Size (× cell)" : "Base Radius (px)";
     }
 
+    function clearSelection() {
+      editState.selectedIndices.clear();
+      editState.selectedIndex = -1;
+      editState.dragSnapshot = [];
+    }
+
+    function setSelection(index, additive) {
+      if (index === -1) {
+        if (!additive) {
+          clearSelection();
+        }
+        return;
+      }
+      if (!additive) {
+        clearSelection();
+      }
+      if (editState.selectedIndices.has(index) && additive) {
+        editState.selectedIndices.delete(index);
+        editState.selectedIndex = editState.selectedIndices.size ? Array.from(editState.selectedIndices).slice(-1)[0] : -1;
+      } else {
+        editState.selectedIndices.add(index);
+        editState.selectedIndex = index;
+      }
+    }
+
+    function selectedList() {
+      return Array.from(editState.selectedIndices);
+    }
+
     function toggleEditOverlay() {
       ui.editOverlay.classList.toggle("active", state.editMode);
       editState.active = state.editMode;
-      editState.selectedIndex = -1;
+      clearSelection();
       if (!state.editMode) {
         ui.displayCanvas.style.cursor = "default";
       }
@@ -1045,13 +1422,40 @@
       });
     }
 
+    function cameraConstraintsFromSetting() {
+      switch (state.cameraQuality) {
+        case "720p":
+          return { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 60, max: 60 } };
+        case "1440p":
+          return { width: { ideal: 2560 }, height: { ideal: 1440 }, frameRate: { ideal: 30, max: 30 } };
+        case "1080p":
+        default:
+          return { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60, max: 60 } };
+      }
+    }
+
     async function startCamera() {
       try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("getUserMedia not supported");
+        }
         if (state.hyperRandom) stopHyperRandom();
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+        }
+        const constraints = { video: cameraConstraintsFromSetting(), audio: false };
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         ui.video.srcObject = mediaStream;
+        await ui.video.play?.();
         state.loadedImage = null;
-        updateStatus("Camera started.");
+        state.lastRenderSource = "camera";
+        state.previewOn = true;
+        ui.previewToggle.checked = true;
+        if (!state.livePreview) {
+          state.livePreview = true;
+          ui.livePreviewCheckbox.checked = true;
+        }
+        updateStatus("Camera started at " + state.cameraQuality + ".");
         if (state.previewOn) schedulePreview(true);
       } catch (err) {
         updateStatus("Camera unavailable: " + err.message);
@@ -1097,12 +1501,13 @@
 
     // Draw the active frame to a downscaled sampling canvas for speed.
     function drawToSample(source) {
-      const maxDim = 640;
+      const highQuality = !state.previewOn || !state.livePreview;
+      const maxDim = highQuality ? 1280 : 720;
       const sourceWidth = source.videoWidth || source.naturalWidth || ui.displayCanvas.width;
       const sourceHeight = source.videoHeight || source.naturalHeight || ui.displayCanvas.height;
       const baseScale = Math.min(maxDim / sourceWidth, maxDim / sourceHeight, 1);
       const detail = clamp(state.sampleDetail || 1, 0.3, 1);
-      const scale = Math.min(baseScale * detail, 1);
+      const scale = Math.min(baseScale * detail * (highQuality ? 1.1 : 1), 1);
       ui.sampleCanvas.width = Math.max(1, Math.round(sourceWidth * scale));
       ui.sampleCanvas.height = Math.max(1, Math.round(sourceHeight * scale));
       state.sampleScale = sourceWidth / ui.sampleCanvas.width;
@@ -1128,7 +1533,7 @@
     function schedulePreview(force) {
       if (!state.previewOn || !state.livePreview) return;
       cancelPreview();
-      const fps = state.hyperRandom ? 60 : state.previewFps;
+      const fps = state.hyperRandom ? state.chaos.rate : state.previewFps;
       const interval = 1000 / Math.max(1, fps);
       let last = performance.now();
       const loop = (time) => {
@@ -1173,13 +1578,14 @@
       state.hyperRandomBase = seedFromString(state.seed);
       state.hyperRandomCounter = 0;
       ui.hyperRandomBtn.classList.add("active");
-      ui.hyperRandomBtn.textContent = "Chaos On";
+      ui.hyperRandomBtn.textContent = `Chaos Engine (${state.chaos.rate} FPS)`;
       state.previewOn = true;
       ui.previewToggle.checked = true;
       if (!state.livePreview) {
         state.livePreview = true;
         ui.livePreviewCheckbox.checked = true;
       }
+      state.previewFps = state.chaos.rate;
       schedulePreview(true);
     }
 
@@ -1196,11 +1602,14 @@
 
     function advanceHyperSeed() {
       state.hyperRandomCounter = (state.hyperRandomCounter + 1) >>> 0;
-      const next = ((state.hyperRandomBase + state.hyperRandomCounter) >>> 0).toString(36);
-      state.seed = next;
-      if (document.activeElement !== ui.seedInput) {
-        ui.seedInput.value = next;
+      const nextSeedValue = ((state.hyperRandomBase + state.hyperRandomCounter) >>> 0).toString(36);
+      if (state.chaos.seed) {
+        state.seed = nextSeedValue;
+        if (document.activeElement !== ui.seedInput) {
+          ui.seedInput.value = nextSeedValue;
+        }
       }
+      runChaosFrame();
     }
 
     function trackPreviewFrame(time) {
@@ -1226,8 +1635,9 @@
 
     function resizeCanvas() {
       const viewport = ui.displayCanvas.parentElement;
-      const width = viewport.clientWidth;
-      const height = viewport.clientHeight;
+      const rect = viewport.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
       ui.displayCanvas.width = width;
       ui.displayCanvas.height = height;
       if (state.previewOn && state.livePreview) {
@@ -1289,7 +1699,7 @@
 
       const sampleFn = (x, y) => sampleColorAt(x, y);
       state.circles = [];
-      editState.selectedIndex = -1;
+      clearSelection();
 
       ui.displayCtx.clearRect(0, 0, params.width, params.height);
       if (state.mode === "uniform") {
@@ -1505,13 +1915,41 @@
         positionDelta: { x: 0, y: 0 },
         fillColor: null
       };
-      const motionActive = state.staticImageMotion && !mediaStream && state.loadedImage && state.staticMotionDepth > 0;
+      const motionActive = state.staticImageMotion && state.staticMotionDepth > 0 && state.loadedImage;
       if (motionActive) {
-        const phase = (params.motionPhase || 0) + index * 0.37;
+        const basePhase = (params.motionPhase || 0) * state.staticMotionSpeed;
         const depth = state.staticMotionDepth;
-        result.radiusDelta += Math.sin(phase * 1.2) * baseRadius * depth * 0.35;
-        result.positionDelta.x += Math.cos(phase * 1.6) * baseRadius * depth * 0.22;
-        result.positionDelta.y += Math.sin(phase * 1.3) * baseRadius * depth * 0.22;
+        const localPhase = basePhase + index * 0.37;
+        const px = point?.x || 0;
+        const py = point?.y || 0;
+        switch (state.staticMotionMode) {
+          case "pulse": {
+            const pulse = Math.sin(localPhase * 2) * depth * 0.4;
+            result.radiusDelta += pulse * baseRadius;
+            break;
+          }
+          case "orbit": {
+            const angle = localPhase * 1.2;
+            const radius = depth * baseRadius * 0.6;
+            result.positionDelta.x += Math.cos(angle) * radius;
+            result.positionDelta.y += Math.sin(angle) * radius;
+            result.radiusDelta += Math.cos(localPhase * 0.8) * baseRadius * depth * 0.2;
+            break;
+          }
+          case "ripple": {
+            const freq = 0.005 * depth;
+            const ripple = Math.sin(px * freq + basePhase * 2) * Math.cos(py * freq + basePhase);
+            result.positionDelta.x += ripple * depth * baseRadius * 0.8;
+            result.positionDelta.y += Math.cos(localPhase) * depth * baseRadius * 0.5;
+            break;
+          }
+          default: {
+            const wave = Math.sin(localPhase * 1.2) * depth;
+            result.positionDelta.x += Math.sin(basePhase * 1.1 + py * 0.01) * baseRadius * depth * 0.6;
+            result.positionDelta.y += Math.cos(basePhase * 1.3 + px * 0.01) * baseRadius * depth * 0.6;
+            result.radiusDelta += wave * baseRadius * 0.25;
+          }
+        }
       }
       if (state.jitterMode === "none" || strength <= 0) {
         return result;
@@ -1687,8 +2125,12 @@
         return;
       }
       try {
-        const stream = ui.displayCanvas.captureStream(30);
-        recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+        const fps = Math.min(60, state.hyperRandom ? state.chaos.rate : state.previewFps || 60);
+        const stream = ui.displayCanvas.captureStream(fps);
+        recorder = new MediaRecorder(stream, {
+          mimeType: "video/webm;codecs=vp9",
+          videoBitsPerSecond: 8_000_000
+        });
         recordedChunks = [];
         recorder.ondataavailable = (evt) => {
           if (evt.data.size > 0) recordedChunks.push(evt.data);
@@ -1731,43 +2173,53 @@
           closest = idx;
         }
       });
-      editState.selectedIndex = closest;
-      if (closest !== -1) {
-        const circle = state.circles[closest];
-        editState.dragOffset.x = circle.x - x;
-        editState.dragOffset.y = circle.y - y;
+      const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+      setSelection(closest, additive);
+      if (closest !== -1 && editState.selectedIndices.size) {
+        editState.dragStart = { x, y };
+        editState.dragSnapshot = selectedList().map((index) => {
+          const circle = state.circles[index];
+          return { index, x: circle.x, y: circle.y, r: circle.r };
+        });
         ui.displayCanvas.setPointerCapture(event.pointerId);
         ui.displayCanvas.style.cursor = "grabbing";
+      } else if (!additive) {
+        clearSelection();
       }
       drawCircles();
     }
 
     function handlePointerMove(event) {
-      if (!state.editMode || editState.selectedIndex === -1 || event.buttons === 0) return;
+      if (!state.editMode || !editState.dragSnapshot.length || event.buttons === 0) return;
       const rect = ui.displayCanvas.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * ui.displayCanvas.width;
       const y = ((event.clientY - rect.top) / rect.height) * ui.displayCanvas.height;
-      const circle = state.circles[editState.selectedIndex];
-      let newX = x + editState.dragOffset.x;
-      let newY = y + editState.dragOffset.y;
-      if (state.mode === "uniform" && state.editSnap) {
-        const cols = state.resolution;
-        const rows = Math.round(cols * (ui.displayCanvas.height / ui.displayCanvas.width));
-        const cellWidth = ui.displayCanvas.width / cols;
-        const cellHeight = ui.displayCanvas.height / rows;
-        newX = Math.round(newX / cellWidth) * cellWidth;
-        newY = Math.round(newY / cellHeight) * cellHeight;
-      }
+      const dx = x - editState.dragStart.x;
+      const dy = y - editState.dragStart.y;
+      const snapping = state.mode === "uniform" && state.editSnap;
+      const cols = state.resolution;
+      const rows = Math.max(1, Math.round(cols * (ui.displayCanvas.height / ui.displayCanvas.width)));
+      const cellWidth = ui.displayCanvas.width / cols;
+      const cellHeight = ui.displayCanvas.height / rows;
       const bounds = state.lastBounds || {
         offsetX: 0,
         offsetY: 0,
         width: ui.displayCanvas.width,
         height: ui.displayCanvas.height
       };
-      circle.x = clamp(newX, bounds.offsetX + circle.r, bounds.offsetX + bounds.width - circle.r);
-      circle.y = clamp(newY, bounds.offsetY + circle.r, bounds.offsetY + bounds.height - circle.r);
+      editState.dragSnapshot.forEach((snapshot) => {
+        const circle = state.circles[snapshot.index];
+        let newX = snapshot.x + dx;
+        let newY = snapshot.y + dy;
+        if (snapping) {
+          newX = Math.round(newX / cellWidth) * cellWidth;
+          newY = Math.round(newY / cellHeight) * cellHeight;
+        }
+        circle.x = clamp(newX, bounds.offsetX + circle.r, bounds.offsetX + bounds.width - circle.r);
+        circle.y = clamp(newY, bounds.offsetY + circle.r, bounds.offsetY + bounds.height - circle.r);
+      });
       if (state.mode === "random") {
-        enforceNonOverlap(editState.selectedIndex);
+        editState.dragSnapshot.forEach((snapshot) => enforceNonOverlap(snapshot.index));
       }
       drawCircles();
     }
@@ -1778,17 +2230,21 @@
         ui.displayCanvas.releasePointerCapture(event.pointerId);
       }
       ui.displayCanvas.style.cursor = "default";
+      editState.dragSnapshot = [];
     }
 
     function handleWheel(event) {
-      if (!state.editMode || editState.selectedIndex === -1) return;
+      if (!state.editMode || !editState.selectedIndices.size) return;
       event.preventDefault();
-      const circle = state.circles[editState.selectedIndex];
+      const indices = selectedList();
       const delta = Math.sign(event.deltaY) * -1;
-      circle.r = clamp(circle.r + delta, 2, Math.min(ui.displayCanvas.width, ui.displayCanvas.height) / 2);
-      if (state.mode === "random") {
-        enforceNonOverlap(editState.selectedIndex);
-      }
+      indices.forEach((idx) => {
+        const circle = state.circles[idx];
+        circle.r = clamp(circle.r + delta, 2, Math.min(ui.displayCanvas.width, ui.displayCanvas.height) / 2);
+        if (state.mode === "random") {
+          enforceNonOverlap(idx);
+        }
+      });
       drawCircles();
     }
 
@@ -1814,21 +2270,70 @@
       } else if (event.key === "s" || event.key === "S") {
         event.preventDefault();
         downloadPNG();
-      } else if (state.editMode && editState.selectedIndex !== -1) {
-        const circle = state.circles[editState.selectedIndex];
-        if (event.key === "Delete" || event.key === "Backspace") {
-          state.circles.splice(editState.selectedIndex, 1);
-          editState.selectedIndex = -1;
-          drawCircles();
+      } else if (state.editMode && editState.selectedIndices.size) {
+        const indices = selectedList();
+        const bounds = state.lastBounds || {
+          offsetX: 0,
+          offsetY: 0,
+          width: ui.displayCanvas.width,
+          height: ui.displayCanvas.height
+        };
+        const moveStep = event.shiftKey ? 10 : 2;
+        let handled = false;
+        if (event.key === "ArrowUp") {
+          handled = true;
+          indices.forEach((idx) => {
+            const circle = state.circles[idx];
+            circle.y = clamp(circle.y - moveStep, bounds.offsetY + circle.r, bounds.offsetY + bounds.height - circle.r);
+          });
+        } else if (event.key === "ArrowDown") {
+          handled = true;
+          indices.forEach((idx) => {
+            const circle = state.circles[idx];
+            circle.y = clamp(circle.y + moveStep, bounds.offsetY + circle.r, bounds.offsetY + bounds.height - circle.r);
+          });
+        } else if (event.key === "ArrowLeft") {
+          handled = true;
+          indices.forEach((idx) => {
+            const circle = state.circles[idx];
+            circle.x = clamp(circle.x - moveStep, bounds.offsetX + circle.r, bounds.offsetX + bounds.width - circle.r);
+          });
+        } else if (event.key === "ArrowRight") {
+          handled = true;
+          indices.forEach((idx) => {
+            const circle = state.circles[idx];
+            circle.x = clamp(circle.x + moveStep, bounds.offsetX + circle.r, bounds.offsetX + bounds.width - circle.r);
+          });
+        } else if (event.key === "Delete" || event.key === "Backspace") {
+          handled = true;
+          indices
+            .slice()
+            .sort((a, b) => b - a)
+            .forEach((idx) => state.circles.splice(idx, 1));
+          clearSelection();
         } else if (event.key === "d" || event.key === "D") {
-          const clone = { ...circle };
-          clone.x += clone.r * 0.5;
-          clone.y += clone.r * 0.5;
-          state.circles.push(clone);
-          editState.selectedIndex = state.circles.length - 1;
-          if (state.mode === "random") {
-            enforceNonOverlap(editState.selectedIndex);
+          handled = true;
+          const clones = indices.map((idx) => {
+            const src = state.circles[idx];
+            return { ...src, x: src.x + src.r * 0.5, y: src.y + src.r * 0.5 };
+          });
+          const startIndex = state.circles.length;
+          state.circles.push(...clones);
+          clearSelection();
+          clones.forEach((_, i) => {
+            const newIndex = startIndex + i;
+            editState.selectedIndices.add(newIndex);
+            editState.selectedIndex = newIndex;
+            if (state.mode === "random") {
+              enforceNonOverlap(newIndex);
+            }
+          });
+        }
+        if (handled) {
+          if (state.mode === "random" && event.key.startsWith("Arrow")) {
+            indices.forEach((idx) => enforceNonOverlap(idx));
           }
+          event.preventDefault();
           drawCircles();
         }
       }
@@ -1862,16 +2367,19 @@
     }
 
     function drawSelection() {
-      if (editState.selectedIndex === -1) return;
+      const indices = selectedList();
+      if (!indices.length) return;
       const ctx = ui.displayCtx;
-      const circle = state.circles[editState.selectedIndex];
       ctx.save();
-      ctx.strokeStyle = "rgba(125, 211, 157, 0.8)";
       ctx.lineWidth = 2;
       ctx.setLineDash([6, 4]);
-      ctx.beginPath();
-      ctx.arc(circle.x, circle.y, circle.r + 3, 0, Math.PI * 2);
-      ctx.stroke();
+      indices.forEach((idx) => {
+        const circle = state.circles[idx];
+        ctx.strokeStyle = idx === editState.selectedIndex ? "rgba(125, 211, 157, 0.9)" : "rgba(125, 211, 157, 0.45)";
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.r + 3, 0, Math.PI * 2);
+        ctx.stroke();
+      });
       ctx.restore();
     }
 
