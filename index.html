@@ -131,6 +131,68 @@
       justify-content: center;
     }
 
+    .palette-editor {
+      background: #23232a;
+      border: 1px solid #333;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .palette-editor h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .palette-editor p {
+      margin: 0;
+      color: #c1c1d1;
+      font-size: 0.9rem;
+    }
+
+    .palette-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .palette-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      background: #1f1f25;
+      border: 1px solid #34343e;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .palette-row label {
+      font-size: 0.85rem;
+      color: #e0e0ec;
+    }
+
+    .palette-row input[type="color"] {
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      border: none;
+      background: none;
+    }
+
+    .palette-hex-input {
+      width: 6rem;
+      text-transform: uppercase;
+    }
+
+    .palette-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
     @media (max-width: 720px) {
       fieldset {
         width: 100%;
@@ -188,6 +250,7 @@
 
       <div class="spacer"></div>
       <button id="renderBtn">Render Once</button>
+      <button id="recordBtn">Start Recording</button>
       <button id="downloadBtn">Download PNG</button>
     </div>
   </header>
@@ -196,6 +259,15 @@
     <div class="canvas-wrapper">
       <canvas id="displayCanvas" width="800" height="600"></canvas>
     </div>
+    <section class="palette-editor" id="paletteEditorSection">
+      <h2>Palette Editor</h2>
+      <p>Edit the swatches used when Color Mode is set to Palette.</p>
+      <div id="paletteList" class="palette-list"></div>
+      <div class="palette-actions">
+        <button id="addPaletteColorBtn" type="button">Add Color</button>
+        <button id="resetPaletteBtn" type="button">Reset Palette</button>
+      </div>
+    </section>
   </main>
 
   <video id="sourceVideo" class="hidden" playsinline muted></video>
@@ -224,7 +296,13 @@
       imageElement: null,
       cameraStream: null,
       pendingAnimation: null,
-      lastLiveRender: 0
+      lastAnimationRender: 0,
+      palette: defaultPalette.map(color => color.slice()),
+      recorder: null,
+      recordedChunks: [],
+      recordingStream: null,
+      recordingActive: false,
+      recordingCount: 1
     };
 
     const elements = {};
@@ -232,6 +310,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       cacheElements();
       initUI();
+      initPaletteEditor();
       updateSeed(state.seed);
       updateStatus('Load an image or start the camera, then click "Render Once".');
     });
@@ -260,12 +339,16 @@
       elements.outlineCheckbox = document.getElementById('outlineCheckbox');
       elements.livePreviewCheckbox = document.getElementById('livePreviewCheckbox');
       elements.renderBtn = document.getElementById('renderBtn');
+      elements.recordBtn = document.getElementById('recordBtn');
       elements.downloadBtn = document.getElementById('downloadBtn');
       elements.resLabel = document.getElementById('resLabel');
       elements.resLabelText = document.getElementById('resLabelText');
       elements.sizeLabel = document.getElementById('sizeLabel');
       elements.sizeLabelText = document.getElementById('sizeLabelText');
       elements.statusMessage = document.getElementById('statusMessage');
+      elements.paletteList = document.getElementById('paletteList');
+      elements.addPaletteColorBtn = document.getElementById('addPaletteColorBtn');
+      elements.resetPaletteBtn = document.getElementById('resetPaletteBtn');
     }
 
     function initUI() {
@@ -321,15 +404,13 @@
 
       elements.livePreviewCheckbox.addEventListener('change', () => {
         state.livePreview = elements.livePreviewCheckbox.checked;
-        if (state.livePreview) {
-          scheduleLivePreview();
-        } else if (state.pendingAnimation) {
-          cancelAnimationFrame(state.pendingAnimation);
-          state.pendingAnimation = null;
-        }
+        state.lastAnimationRender = 0;
+        render();
+        ensureAnimationLoop();
       });
 
       elements.renderBtn.addEventListener('click', () => render());
+      elements.recordBtn.addEventListener('click', () => toggleRecording());
       elements.downloadBtn.addEventListener('click', () => downloadPNG());
 
       elements.cameraToggleBtn.addEventListener('click', async () => {
@@ -355,6 +436,247 @@
       updateSizeLabel();
       elements.gammaValue.textContent = Number(elements.gammaSlider.value).toFixed(2);
       elements.jitterValue.textContent = Number(elements.jitterSlider.value).toFixed(2);
+    }
+
+    function initPaletteEditor() {
+      renderPaletteEditor();
+      elements.addPaletteColorBtn.addEventListener('click', () => {
+        addPaletteColor('#ffffff');
+      });
+      elements.resetPaletteBtn.addEventListener('click', () => {
+        state.palette = defaultPalette.map(color => color.slice());
+        renderPaletteEditor();
+        if (elements.colorMode.value === 'palette') {
+          render();
+        }
+      });
+    }
+
+    function renderPaletteEditor() {
+      if (!elements.paletteList) return;
+      elements.paletteList.innerHTML = '';
+      state.palette.forEach((color, index) => {
+        const row = document.createElement('div');
+        row.className = 'palette-row';
+
+        const label = document.createElement('label');
+        label.textContent = `Color ${index + 1}`;
+        label.setAttribute('for', `paletteColor${index}`);
+        row.appendChild(label);
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.id = `paletteColor${index}`;
+        const hexValue = rgbArrayToHex(color);
+        colorInput.value = hexValue;
+
+        const hexInput = document.createElement('input');
+        hexInput.type = 'text';
+        hexInput.className = 'palette-hex-input';
+        hexInput.value = hexValue.toUpperCase();
+        hexInput.maxLength = 7;
+        hexInput.setAttribute('aria-label', `Hex value for color ${index + 1}`);
+
+        colorInput.addEventListener('input', event => {
+          const value = event.target.value;
+          state.palette[index] = hexToRgbArray(value);
+          hexInput.value = value.toUpperCase();
+          if (elements.colorMode.value === 'palette') {
+            render();
+          }
+        });
+
+        hexInput.addEventListener('change', () => {
+          const normalized = normalizeHex(hexInput.value);
+          if (!normalized) {
+            hexInput.value = rgbArrayToHex(state.palette[index]).toUpperCase();
+            return;
+          }
+          state.palette[index] = hexToRgbArray(normalized);
+          colorInput.value = normalized;
+          hexInput.value = normalized.toUpperCase();
+          if (elements.colorMode.value === 'palette') {
+            render();
+          }
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'Remove';
+        removeBtn.disabled = state.palette.length <= 1;
+        removeBtn.addEventListener('click', () => {
+          if (state.palette.length <= 1) {
+            return;
+          }
+          state.palette.splice(index, 1);
+          renderPaletteEditor();
+          if (elements.colorMode.value === 'palette') {
+            render();
+          }
+        });
+
+        row.appendChild(colorInput);
+        row.appendChild(hexInput);
+        row.appendChild(removeBtn);
+        elements.paletteList.appendChild(row);
+      });
+    }
+
+    function addPaletteColor(hex) {
+      state.palette.push(hexToRgbArray(hex));
+      renderPaletteEditor();
+      if (elements.colorMode.value === 'palette') {
+        render();
+      }
+    }
+
+    function toggleRecording() {
+      if (state.recordingActive) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+
+    function startRecording() {
+      if (state.recordingActive) {
+        return;
+      }
+      if (typeof MediaRecorder === 'undefined') {
+        updateStatus('MediaRecorder API is not supported in this browser.');
+        return;
+      }
+      if (!elements.canvas.captureStream) {
+        updateStatus('Canvas captureStream is unavailable in this browser.');
+        return;
+      }
+      let stream;
+      try {
+        stream = elements.canvas.captureStream(30);
+      } catch (error) {
+        console.error(error);
+        updateStatus('Unable to access the canvas stream for recording.');
+        return;
+      }
+
+      const mimeCandidates = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+      let recorder = null;
+      for (const mimeType of mimeCandidates) {
+        if (MediaRecorder.isTypeSupported && !MediaRecorder.isTypeSupported(mimeType)) {
+          continue;
+        }
+        try {
+          recorder = new MediaRecorder(stream, { mimeType });
+          break;
+        } catch (error) {
+          recorder = null;
+        }
+      }
+      if (!recorder) {
+        try {
+          recorder = new MediaRecorder(stream);
+        } catch (error) {
+          console.error(error);
+          stream.getTracks().forEach(track => track.stop());
+          updateStatus('Unable to start recording with this browser configuration.');
+          return;
+        }
+      }
+
+      state.recordedChunks = [];
+      state.recordingStream = stream;
+      state.recorder = recorder;
+      state.recordingActive = true;
+      elements.recordBtn.textContent = 'Stop Recording';
+      state.lastAnimationRender = 0;
+
+      recorder.addEventListener('dataavailable', event => {
+        if (event.data && event.data.size > 0) {
+          state.recordedChunks.push(event.data);
+        }
+      });
+      recorder.addEventListener('stop', handleRecorderStop);
+      recorder.addEventListener('error', handleRecorderError);
+
+      try {
+        recorder.start();
+      } catch (error) {
+        console.error(error);
+        updateStatus('Failed to start recording.');
+        state.recordingActive = false;
+        elements.recordBtn.textContent = 'Start Recording';
+        cleanupRecordingStream();
+        return;
+      }
+
+      render();
+      ensureAnimationLoop();
+      updateStatus('Recording started. Press "Stop Recording" to finish.');
+    }
+
+    function stopRecording() {
+      if (!state.recordingActive) {
+        return;
+      }
+      state.recordingActive = false;
+      elements.recordBtn.textContent = 'Start Recording';
+      if (state.recorder && state.recorder.state !== 'inactive') {
+        try {
+          state.recorder.stop();
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        cleanupRecordingStream();
+      }
+      ensureAnimationLoop();
+      updateStatus('Finalizing recording...');
+    }
+
+    function handleRecorderStop() {
+      const recorder = state.recorder;
+      const mimeType = recorder && recorder.mimeType ? recorder.mimeType : 'video/webm';
+      state.recordingActive = false;
+      elements.recordBtn.textContent = 'Start Recording';
+      if (state.recordedChunks.length) {
+        const blob = new Blob(state.recordedChunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const index = state.recordingCount++;
+        const filename = `mosaic-recording-${String(index).padStart(2, '0')}.webm`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        updateStatus(`Recording saved as ${filename}.`);
+      } else {
+        updateStatus('Recording stopped, but no frames were captured.');
+      }
+      ensureAnimationLoop();
+      cleanupRecordingStream();
+    }
+
+    function handleRecorderError(event) {
+      const error = event.error || event;
+      console.error(error);
+      updateStatus('Recording error: unable to continue.');
+      state.recordingActive = false;
+      elements.recordBtn.textContent = 'Start Recording';
+      cleanupRecordingStream();
+      ensureAnimationLoop();
+    }
+
+    function cleanupRecordingStream() {
+      if (state.recorder) {
+        state.recorder.removeEventListener('stop', handleRecorderStop);
+        state.recorder.removeEventListener('error', handleRecorderError);
+      }
+      if (state.recordingStream) {
+        state.recordingStream.getTracks().forEach(track => track.stop());
+      }
+      state.recorder = null;
+      state.recordingStream = null;
+      state.recordedChunks = [];
     }
 
     function handleKeyShortcuts(event) {
@@ -497,14 +819,33 @@
       updateSeed(randomSeed);
     }
 
-    function scheduleLivePreview() {
-      if (!state.livePreview) return;
-      const now = performance.now();
-      if (now - state.lastLiveRender >= 100) {
-        render();
-        state.lastLiveRender = now;
+    function wantsAnimation() {
+      return state.livePreview || state.recordingActive;
+    }
+
+    function ensureAnimationLoop() {
+      if (wantsAnimation()) {
+        if (!state.pendingAnimation) {
+          state.pendingAnimation = requestAnimationFrame(stepAnimation);
+        }
+      } else if (state.pendingAnimation) {
+        cancelAnimationFrame(state.pendingAnimation);
+        state.pendingAnimation = null;
       }
-      state.pendingAnimation = requestAnimationFrame(scheduleLivePreview);
+    }
+
+    function stepAnimation(timestamp) {
+      state.pendingAnimation = null;
+      if (!wantsAnimation()) {
+        return;
+      }
+      if (!state.lastAnimationRender || timestamp - state.lastAnimationRender >= 100) {
+        render();
+        state.lastAnimationRender = timestamp;
+      }
+      if (wantsAnimation()) {
+        state.pendingAnimation = requestAnimationFrame(stepAnimation);
+      }
     }
 
     function render() {
@@ -544,12 +885,6 @@
         renderRandomPoisson(ctx, params, sampleFn);
       }
 
-      if (state.livePreview && !state.pendingAnimation) {
-        state.pendingAnimation = requestAnimationFrame(scheduleLivePreview);
-      } else if (!state.livePreview && state.pendingAnimation) {
-        cancelAnimationFrame(state.pendingAnimation);
-        state.pendingAnimation = null;
-      }
     }
 
     function collectRenderParams() {
@@ -565,7 +900,7 @@
         jitterStrength: Number(elements.jitterSlider.value),
         outline: elements.outlineCheckbox.checked,
         rng: mulberry32(baseSeed),
-        palette: defaultPalette
+        palette: state.palette && state.palette.length ? state.palette : defaultPalette
       };
     }
 
@@ -779,6 +1114,40 @@
         }
       }
       return best;
+    }
+
+    function normalizeHex(value) {
+      if (!value) {
+        return null;
+      }
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return null;
+      }
+      const prefixed = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+      if (/^#([0-9a-fA-F]{6})$/.test(prefixed)) {
+        return prefixed.toUpperCase();
+      }
+      return null;
+    }
+
+    function hexToRgbArray(hex) {
+      const normalized = normalizeHex(hex);
+      if (!normalized) {
+        return [0, 0, 0];
+      }
+      return [
+        parseInt(normalized.slice(1, 3), 16),
+        parseInt(normalized.slice(3, 5), 16),
+        parseInt(normalized.slice(5, 7), 16)
+      ];
+    }
+
+    function rgbArrayToHex(color) {
+      return `#${color
+        .map(component => Math.max(0, Math.min(255, component)).toString(16).padStart(2, '0'))
+        .join('')}`
+        .toUpperCase();
     }
 
     function downloadPNG() {
