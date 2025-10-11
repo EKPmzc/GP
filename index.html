@@ -8,193 +8,292 @@
     :root {
       color-scheme: dark;
       font-family: "Segoe UI", Tahoma, sans-serif;
-      background-color: #1b1b1f;
-      color: #f1f1f5;
+      background-color: #16161b;
+      color: #f5f5fb;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
       margin: 0;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      background: #16161b;
     }
 
     header {
-      background: #23232a;
-      border-bottom: 1px solid #333;
-      padding: 0.75rem 1rem;
+      padding: 0.6rem 1rem 0.4rem;
+      background: #20202a;
+      border-bottom: 1px solid #2e2e3a;
     }
 
-    h1 {
-      margin: 0 0 0.5rem;
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
-
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem 1rem;
-      align-items: center;
-      font-size: 0.95rem;
-    }
-
-    .toolbar label,
-    .toolbar fieldset {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
+    header h1 {
       margin: 0;
-    }
-
-    fieldset {
-      border: 1px solid #3c3c46;
-      border-radius: 0.5rem;
-      padding: 0.4rem 0.8rem;
-    }
-
-    fieldset legend {
-      padding: 0 0.3rem;
-      font-size: 0.85rem;
-      color: #c1c1d1;
-    }
-
-    input[type="range"] {
-      accent-color: #6c9;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    input[type="file"],
-    button,
-    select {
-      background-color: #2f2f36;
-      color: inherit;
-      border: 1px solid #41414c;
-      border-radius: 0.35rem;
-      padding: 0.3rem 0.6rem;
-      font-size: 0.9rem;
-    }
-
-    button:hover {
-      background-color: #3c3c46;
-      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     main {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      padding: 1rem;
       gap: 1rem;
+      padding: 1rem;
+      min-height: 0;
     }
 
-    .canvas-wrapper {
+    .control-panel {
+      width: 320px;
+      max-width: 38vw;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .control-section {
+      background: #1f1f27;
+      border: 1px solid #2d2d37;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .control-section.disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .control-section h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #d5d5e6;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+
+    .control-row label {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .control-row input[type="range"] {
+      flex: 1 1 140px;
+    }
+
+    input,
+    select,
+    button,
+    textarea {
+      background: #2a2a34;
+      color: inherit;
+      border: 1px solid #3a3a46;
+      border-radius: 0.45rem;
+      padding: 0.35rem 0.55rem;
+      font: inherit;
+      font-size: 0.9rem;
+    }
+
+    button {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    button:hover,
+    button:focus-visible {
+      background: #363644;
+    }
+
+    input[type="range"] {
+      accent-color: #7dd39d;
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      accent-color: #7dd39d;
+    }
+
+    .canvas-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+
+    .viewport {
       flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #151519;
-      border: 1px solid #2c2c34;
-      border-radius: 0.75rem;
-      padding: 1rem;
-      min-height: 60vh;
+      background: #111116;
+      border: 1px solid #2b2b35;
+      border-radius: 0.9rem;
+      padding: 0.75rem;
       position: relative;
+      overflow: hidden;
+      min-height: 0;
     }
 
-    canvas {
+    canvas#displayCanvas {
       max-width: 100%;
       max-height: 100%;
-      background: #0f0f14;
-      border: 1px solid #2d2d33;
-      border-radius: 0.5rem;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #09090d;
+      border-radius: 0.6rem;
+      border: 1px solid #22222c;
     }
 
     #statusMessage {
-      color: #f4c38b;
-      font-size: 0.9rem;
       min-height: 1.2rem;
+      font-size: 0.9rem;
+      color: #f4c38b;
+      flex: 1;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+      gap: 0.4rem;
+    }
+
+    .palette-grid.disabled,
+    #paletteActions.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .palette-cell {
+      position: relative;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border: 1px solid #3d3d4a;
+    }
+
+    .palette-cell input[type="color"] {
+      width: 100%;
+      height: 38px;
+      border: none;
+      padding: 0;
+      background: none;
+    }
+
+    .palette-cell button {
+      position: absolute;
+      inset: auto 0.1rem 0.1rem auto;
+      background: rgba(22, 22, 30, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 0 0.25rem;
+      font-size: 0.7rem;
+    }
+
+    .section-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .edit-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 2px dashed rgba(125, 211, 157, 0.3);
+      border-radius: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .edit-overlay.active {
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    .edit-hint {
+      font-size: 0.8rem;
+      color: #b6b6c7;
+      line-height: 1.4;
+    }
+
+    .inline-value {
+      font-variant-numeric: tabular-nums;
+      min-width: 3ch;
+      display: inline-flex;
+      justify-content: flex-end;
+    }
+
+    .recording-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #c84b4b;
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .numeric-pair {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .numeric-pair input[type="number"] {
+      width: 4.5rem;
+    }
+
+    .toolbar-note {
+      font-size: 0.75rem;
+      color: #9d9db0;
     }
 
     .hidden {
       display: none !important;
     }
 
-    .spacer {
-      flex-grow: 1;
-    }
-
-    .palette-panel {
-      background: #202028;
-      border: 1px solid #2f2f39;
-      border-radius: 0.75rem;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .palette-panel h2 {
-      margin: 0;
-      font-size: 1.05rem;
-    }
-
-    .palette-panel p {
-      margin: 0;
-      font-size: 0.85rem;
-      color: #c1c1d1;
-    }
-
-    .palette-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .palette-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .palette-row label {
-      min-width: 4.5rem;
-      color: #d6d6e0;
-    }
-
-    .palette-row input[type="color"] {
-      width: 3rem;
-      height: 2rem;
-      padding: 0;
-      border: none;
-      background: none;
-    }
-
-    .palette-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .palette-panel.disabled {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    .value-tag {
-      font-variant-numeric: tabular-nums;
-      min-width: 3ch;
-      display: inline-flex;
-      justify-content: center;
-    }
-
-    @media (max-width: 720px) {
-      fieldset {
-        width: 100%;
-      }
-      .toolbar {
+    @media (max-width: 960px) {
+      main {
         flex-direction: column;
-        align-items: flex-start;
+      }
+
+      .control-panel {
+        width: 100%;
+        max-width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .control-section {
+        flex: 1 1 280px;
       }
     }
   </style>
@@ -202,720 +301,995 @@
 <body>
   <header>
     <h1>Seeded Circle Mosaic Studio</h1>
-    <div class="toolbar" id="toolbar">
-      <fieldset>
-        <legend>Source</legend>
-        <button id="cameraToggleBtn">Start Camera</button>
-        <input type="file" id="imageInput" accept="image/*" />
-      </fieldset>
-
-      <fieldset>
-        <legend>Mode</legend>
-        <label><input type="radio" name="mode" value="uniform" checked /> Uniform</label>
-        <label><input type="radio" name="mode" value="random" /> Random</label>
-      </fieldset>
-
-      <label for="resSlider" id="resLabel"><span id="resLabelText">Resolution</span> <span class="value-tag" id="resValue">40×40</span></label>
-      <input type="range" id="resSlider" min="1" max="200" value="40" />
-
-      <label for="sizeSlider" id="sizeLabel"><span id="sizeLabelText">Circle Size</span> <span class="value-tag" id="sizeValue">0.90</span></label>
-      <input type="range" id="sizeSlider" min="0.2" max="0.9" step="0.01" value="0.9" />
-
-      <label for="seedInput">Seed</label>
-      <input type="text" id="seedInput" />
-      <button id="randomizeBtn">Randomize</button>
-
-      <label for="gammaSlider">Gamma <span class="value-tag" id="gammaValue">1.00</span></label>
-      <input type="range" id="gammaSlider" min="0.5" max="2" step="0.01" value="1" />
-
-      <label for="colorMode">Color Mode</label>
-      <select id="colorMode">
-        <option value="source">Source Colors</option>
-        <option value="grayscale">Grayscale</option>
-        <option value="palette">Palette</option>
-      </select>
-
-      <label><input type="checkbox" id="mirrorCheckbox" checked /> Mirror Webcam</label>
-      <label><input type="checkbox" id="jitterCheckbox" /> Jitter Size by Brightness</label>
-      <label for="jitterSlider">Strength <span class="value-tag" id="jitterValue">0.50</span></label>
-      <input type="range" id="jitterSlider" min="0" max="1" step="0.01" value="0.5" disabled />
-
-      <label><input type="checkbox" id="outlineCheckbox" /> Outline Circles</label>
-      <label><input type="checkbox" id="livePreviewCheckbox" /> Live Preview</label>
-
-      <div class="spacer"></div>
-      <button id="renderBtn">Render Once</button>
-      <button id="recordBtn">Start Recording</button>
-      <button id="downloadBtn">Download PNG</button>
-    </div>
+    <p class="toolbar-note">Space: Render Once · R: Randomize · P: Preview · E: Edit Mode · S: Save PNG</p>
   </header>
   <main>
-    <div id="statusMessage"></div>
-    <section class="palette-panel" id="palettePanel">
-      <h2>Palette Editor</h2>
-      <p>Active when Color Mode is set to Palette. Adjust the swatches or add/remove colors.</p>
-      <div class="palette-list" id="paletteList"></div>
-      <div class="palette-actions">
-        <button id="addPaletteColorBtn" type="button">Add Color</button>
-        <button id="resetPaletteBtn" type="button">Reset Palette</button>
+    <aside class="control-panel" id="controlPanel">
+      <section class="control-section" aria-labelledby="sourceHeading">
+        <h2 id="sourceHeading">Source</h2>
+        <div class="control-row">
+          <button id="startCameraBtn">Start Camera</button>
+          <button id="stopCameraBtn">Stop Camera</button>
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="mirrorCheckbox" checked />Mirror Webcam</label>
+        </div>
+        <div class="control-row">
+          <input type="file" id="imageInput" accept="image/*" />
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="previewToggle" checked />Preview On</label>
+          <label class="toggle-label"><input type="checkbox" id="livePreviewCheckbox" checked />Live Preview (~20 FPS)</label>
+        </div>
+        <div class="control-row">
+          <button id="renderOnceBtn">Render Once</button>
+          <button id="randomizeBtn">Randomize</button>
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="editModeToggle" />Edit Mode</label>
+          <span id="recordStatus" class="hidden"><span class="recording-indicator"></span> Recording</span>
+        </div>
+        <div class="control-row">
+          <button id="recordBtn">Start Recording</button>
+          <button id="downloadBtn">Download PNG</button>
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="modeHeading">
+        <h2 id="modeHeading">Mode &amp; Resolution</h2>
+        <div class="control-row">
+          <label><input type="radio" name="mode" value="uniform" checked /> Uniform Grid</label>
+          <label><input type="radio" name="mode" value="random" /> Random Poisson</label>
+        </div>
+        <div class="control-row" id="uniformResolutionRow">
+          <label for="resSlider">Grid Resolution <span id="resValue" class="inline-value">40×40</span></label>
+          <input type="range" id="resSlider" min="1" max="200" value="40" />
+        </div>
+        <div class="control-row hidden" id="randomResolutionRow">
+          <label for="countSlider">Target Circles <span id="countValue" class="inline-value">1500</span></label>
+          <input type="range" id="countSlider" min="10" max="10000" value="1500" />
+        </div>
+        <div class="control-row">
+          <div class="numeric-pair">
+            <label for="sizeSlider" id="sizeLabel">Circle Size</label>
+            <input type="range" id="sizeSlider" min="0.2" max="0.9" step="0.01" value="0.9" />
+            <input type="number" id="sizeNumber" min="0.2" max="0.9" step="0.01" value="0.9" />
+          </div>
+        </div>
+        <div class="control-row">
+          <label for="seedInput">Seed</label>
+          <input type="text" id="seedInput" />
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="colorHeading">
+        <h2 id="colorHeading">Color &amp; Palette</h2>
+        <div class="control-row">
+          <label for="colorModeSelect">Color Mode</label>
+          <select id="colorModeSelect">
+            <option value="source">Source Colors</option>
+            <option value="grayscale">Grayscale</option>
+            <option value="palette">Palette</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label for="gammaSlider">Gamma <span id="gammaValue" class="inline-value">1.00</span></label>
+          <input type="range" id="gammaSlider" min="0.5" max="2" step="0.01" value="1" />
+        </div>
+        <div class="control-row" id="palettePresetRow">
+          <label for="palettePresetSelect">Palette Preset</label>
+          <select id="palettePresetSelect"></select>
+        </div>
+        <div class="palette-grid" id="paletteGrid" aria-live="polite"></div>
+        <div class="section-actions" id="paletteActions">
+          <button id="addColorBtn">Add Color</button>
+          <button id="resetPaletteBtn">Reset Palette</button>
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="jitterHeading">
+        <h2 id="jitterHeading">Jitter</h2>
+        <div class="control-row">
+          <label for="jitterModeSelect">Mode</label>
+          <select id="jitterModeSelect">
+            <option value="none">None</option>
+            <option value="brightness">By Brightness</option>
+            <option value="hue">By Hue</option>
+            <option value="saturation">By Saturation</option>
+            <option value="position">By Position</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label for="jitterStrength">Strength <span id="jitterValue" class="inline-value">0.50</span></label>
+          <input type="range" id="jitterStrength" min="0" max="1" step="0.01" value="0.5" />
+        </div>
+        <div class="control-row">
+          <label class="toggle-label"><input type="checkbox" id="outlineCheckbox" />Outline Circles</label>
+          <label class="toggle-label"><input type="checkbox" id="paletteDitherCheckbox" checked />Palette Dither</label>
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="editHeading">
+        <h2 id="editHeading">Editing</h2>
+        <p class="edit-hint">Enable Edit Mode to select circles. Drag to move, scroll to resize, D to duplicate, Delete/Backspace to remove. Random mode keeps circles non-overlapping.</p>
+        <div class="control-row">
+          <label for="editSnapCheckbox" class="toggle-label"><input type="checkbox" id="editSnapCheckbox" checked />Snap to grid in Uniform</label>
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="utilityHeading">
+        <h2 id="utilityHeading">Utility</h2>
+        <div class="control-row">
+          <span id="statusMessage" aria-live="polite"></span>
+        </div>
+      </section>
+    </aside>
+
+    <section class="canvas-column">
+      <div class="viewport">
+        <canvas id="displayCanvas" width="960" height="540" aria-label="Mosaic output"></canvas>
+        <div class="edit-overlay" id="editOverlay"></div>
       </div>
+      <video id="video" class="hidden" autoplay playsinline></video>
+      <canvas id="sampleCanvas" class="hidden"></canvas>
     </section>
-    <div class="canvas-wrapper">
-      <canvas id="displayCanvas" width="800" height="600"></canvas>
-    </div>
   </main>
 
-  <video id="sourceVideo" class="hidden" playsinline muted></video>
-  <canvas id="sourceCanvas" class="hidden"></canvas>
+  <template id="paletteCellTemplate">
+    <div class="palette-cell">
+      <input type="color" />
+      <button type="button" aria-label="Remove color">×</button>
+    </div>
+  </template>
 
   <script>
-    const defaultPalette = [
-      [239, 71, 111],
-      [255, 209, 102],
-      [6, 214, 160],
-      [17, 138, 178],
-      [7, 59, 76],
-      [255, 125, 0],
-      [111, 45, 189],
-      [237, 242, 244],
-      [33, 33, 40],
-      [58, 12, 163]
-    ];
-
-    const state = {
-      mode: 'uniform',
-      seed: Date.now().toString(),
-      livePreview: false,
-      sourceType: 'none',
-      sourceReady: false,
-      imageElement: null,
-      cameraStream: null,
-      pendingAnimation: null,
-      lastLiveRender: 0,
-      palette: defaultPalette.map(color => [...color]),
-      mediaRecorder: null,
-      recordingChunks: [],
-      recordingStream: null
+    // Predefined creative palette presets for quick swapping.
+    const defaultPalettes = {
+      Warm: ["#f6d365", "#fda085", "#f97362", "#d7504b", "#9c1f3c", "#632b30", "#f2ad94", "#f6be7a"],
+      Cool: ["#1b2a4b", "#27496d", "#00909e", "#2dc7ff", "#d7f2ff", "#92bcea", "#1f4e79", "#051937"],
+      Exposed: ["#1b1b1b", "#454545", "#7e7e7e", "#bdbdbd", "#f2f2f2", "#e67e22", "#2980b9", "#c0392b"],
+      "Heat-Signature": ["#04052e", "#140152", "#5d0e41", "#f77f00", "#ffc300", "#ffea00", "#f7b801", "#f18701"],
+      Pastel: ["#ffd5e5", "#ffeda3", "#d7f9f1", "#c7ceea", "#f3b0c3", "#b5ead7", "#cddafd", "#fbf8cc"],
+      Neon: ["#ff6ec7", "#ff99cc", "#17bebb", "#2a9d8f", "#ffd23f", "#ff3864", "#00bbf9", "#8338ec"],
+      Muted: ["#3a3f44", "#5d5f71", "#8c7a6b", "#a0a08b", "#c4c1a1", "#4f5d75", "#a1a8b5", "#736b60"],
+      "High-Contrast": ["#0f0f0f", "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2"]
     };
 
-    const elements = {};
+    const state = {
+      mode: "uniform",
+      resolution: 40,
+      targetCount: 1500,
+      circleSize: 0.9,
+      randomRadius: 8,
+      seed: Date.now().toString(),
+      colorMode: "source",
+      gamma: 1,
+      jitterMode: "none",
+      jitterStrength: 0.5,
+      mirror: true,
+      outline: false,
+      paletteDither: true,
+      livePreview: true,
+      previewOn: true,
+      editMode: false,
+      editSnap: true,
+      palette: [...defaultPalettes.Warm],
+      circles: [],
+      sampleScale: 1,
+      lastRenderSource: null,
+      lastBounds: { offsetX: 0, offsetY: 0, width: 0, height: 0 },
+      loadedImage: null
+    };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      cacheElements();
+    const ui = {};
+    let mediaStream = null;
+    let recorder = null;
+    let recordedChunks = [];
+    let previewHandle = null;
+    let rng = mulberry32(1);
+    let poissTmp = {
+      queue: [],
+      grid: [],
+      active: [],
+      cellSize: 0,
+      cols: 0,
+      rows: 0
+    };
+    let currentSampleData = null;
+    let currentSampleWidth = 0;
+    let currentSampleHeight = 0;
+    let editState = {
+      active: false,
+      selectedIndex: -1,
+      dragOffset: { x: 0, y: 0 }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      cacheUI();
       initUI();
-      updateSeed(state.seed);
-      updateStatus('Load an image or start the camera, then click "Render Once".');
+      syncPaletteUI();
+      resizeCanvas();
+      state.seed = Date.now().toString();
+      ui.seedInput.value = state.seed;
+      schedulePreview();
+      updateStatus("Ready. Load an image or start the camera.");
     });
 
-    function cacheElements() {
-      elements.canvas = document.getElementById('displayCanvas');
-      elements.ctx = elements.canvas.getContext('2d');
-      elements.sourceCanvas = document.getElementById('sourceCanvas');
-      elements.sourceCtx = elements.sourceCanvas.getContext('2d');
-      elements.video = document.getElementById('sourceVideo');
-      elements.cameraToggleBtn = document.getElementById('cameraToggleBtn');
-      elements.imageInput = document.getElementById('imageInput');
-      elements.resSlider = document.getElementById('resSlider');
-      elements.resValue = document.getElementById('resValue');
-      elements.sizeSlider = document.getElementById('sizeSlider');
-      elements.sizeValue = document.getElementById('sizeValue');
-      elements.gammaSlider = document.getElementById('gammaSlider');
-      elements.gammaValue = document.getElementById('gammaValue');
-      elements.seedInput = document.getElementById('seedInput');
-      elements.randomizeBtn = document.getElementById('randomizeBtn');
-      elements.colorMode = document.getElementById('colorMode');
-      elements.mirrorCheckbox = document.getElementById('mirrorCheckbox');
-      elements.jitterCheckbox = document.getElementById('jitterCheckbox');
-      elements.jitterSlider = document.getElementById('jitterSlider');
-      elements.jitterValue = document.getElementById('jitterValue');
-      elements.outlineCheckbox = document.getElementById('outlineCheckbox');
-      elements.livePreviewCheckbox = document.getElementById('livePreviewCheckbox');
-      elements.renderBtn = document.getElementById('renderBtn');
-      elements.recordBtn = document.getElementById('recordBtn');
-      elements.downloadBtn = document.getElementById('downloadBtn');
-      elements.resLabel = document.getElementById('resLabel');
-      elements.resLabelText = document.getElementById('resLabelText');
-      elements.sizeLabel = document.getElementById('sizeLabel');
-      elements.sizeLabelText = document.getElementById('sizeLabelText');
-      elements.statusMessage = document.getElementById('statusMessage');
-      elements.paletteList = document.getElementById('paletteList');
-      elements.addPaletteColorBtn = document.getElementById('addPaletteColorBtn');
-      elements.resetPaletteBtn = document.getElementById('resetPaletteBtn');
-      elements.palettePanel = document.getElementById('palettePanel');
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      if (!state.previewOn) {
+        drawCircles();
+      }
+    });
+
+    function cacheUI() {
+      ui.displayCanvas = document.getElementById("displayCanvas");
+      ui.displayCtx = ui.displayCanvas.getContext("2d");
+      ui.sampleCanvas = document.getElementById("sampleCanvas");
+      ui.sampleCtx = ui.sampleCanvas.getContext("2d");
+      ui.video = document.getElementById("video");
+      ui.statusMessage = document.getElementById("statusMessage");
+      ui.startCameraBtn = document.getElementById("startCameraBtn");
+      ui.stopCameraBtn = document.getElementById("stopCameraBtn");
+      ui.mirrorCheckbox = document.getElementById("mirrorCheckbox");
+      ui.imageInput = document.getElementById("imageInput");
+      ui.previewToggle = document.getElementById("previewToggle");
+      ui.livePreviewCheckbox = document.getElementById("livePreviewCheckbox");
+      ui.renderOnceBtn = document.getElementById("renderOnceBtn");
+      ui.randomizeBtn = document.getElementById("randomizeBtn");
+      ui.editModeToggle = document.getElementById("editModeToggle");
+      ui.recordBtn = document.getElementById("recordBtn");
+      ui.recordStatus = document.getElementById("recordStatus");
+      ui.downloadBtn = document.getElementById("downloadBtn");
+      ui.modeRadios = Array.from(document.querySelectorAll("input[name='mode']"));
+      ui.resSlider = document.getElementById("resSlider");
+      ui.countSlider = document.getElementById("countSlider");
+      ui.uniformResolutionRow = document.getElementById("uniformResolutionRow");
+      ui.randomResolutionRow = document.getElementById("randomResolutionRow");
+      ui.resValue = document.getElementById("resValue");
+      ui.countValue = document.getElementById("countValue");
+      ui.sizeSlider = document.getElementById("sizeSlider");
+      ui.sizeNumber = document.getElementById("sizeNumber");
+      ui.sizeLabel = document.getElementById("sizeLabel");
+      ui.seedInput = document.getElementById("seedInput");
+      ui.colorModeSelect = document.getElementById("colorModeSelect");
+      ui.gammaSlider = document.getElementById("gammaSlider");
+      ui.gammaValue = document.getElementById("gammaValue");
+      ui.paletteGrid = document.getElementById("paletteGrid");
+      ui.addColorBtn = document.getElementById("addColorBtn");
+      ui.resetPaletteBtn = document.getElementById("resetPaletteBtn");
+      ui.palettePresetSelect = document.getElementById("palettePresetSelect");
+      ui.palettePresetRow = document.getElementById("palettePresetRow");
+      ui.paletteActions = document.getElementById("paletteActions");
+      ui.jitterModeSelect = document.getElementById("jitterModeSelect");
+      ui.jitterStrength = document.getElementById("jitterStrength");
+      ui.jitterValue = document.getElementById("jitterValue");
+      ui.outlineCheckbox = document.getElementById("outlineCheckbox");
+      ui.paletteDitherCheckbox = document.getElementById("paletteDitherCheckbox");
+      ui.editOverlay = document.getElementById("editOverlay");
+      ui.editSnapCheckbox = document.getElementById("editSnapCheckbox");
+      ui.paletteCellTemplate = document.getElementById("paletteCellTemplate");
     }
 
     function initUI() {
-      document.querySelectorAll('input[name="mode"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-          if (radio.checked) {
-            state.mode = radio.value;
-            adjustControlsForMode();
+      ui.startCameraBtn.addEventListener("click", startCamera);
+      ui.stopCameraBtn.addEventListener("click", stopCamera);
+      ui.mirrorCheckbox.addEventListener("change", () => {
+        state.mirror = ui.mirrorCheckbox.checked;
+        requestRender();
+      });
+      ui.previewToggle.addEventListener("change", () => {
+        state.previewOn = ui.previewToggle.checked;
+        if (state.previewOn) {
+          if (state.livePreview) {
+            schedulePreview(true);
+          } else {
             render();
           }
-        });
-      });
-
-      elements.resSlider.addEventListener('input', () => {
-        updateResolutionLabel();
-        render();
-      });
-
-      elements.sizeSlider.addEventListener('input', () => {
-        updateSizeLabel();
-        render();
-      });
-
-      elements.gammaSlider.addEventListener('input', () => {
-        elements.gammaValue.textContent = Number(elements.gammaSlider.value).toFixed(2);
-        render();
-      });
-
-      elements.seedInput.addEventListener('change', () => {
-        updateSeed(elements.seedInput.value.trim());
-        render();
-      });
-
-      elements.randomizeBtn.addEventListener('click', () => {
-        randomizeSeed();
-        render();
-      });
-
-      elements.colorMode.addEventListener('change', () => {
-        updatePalettePanelState();
-        render();
-      });
-      elements.mirrorCheckbox.addEventListener('change', () => render());
-
-      elements.jitterCheckbox.addEventListener('change', () => {
-        elements.jitterSlider.disabled = !elements.jitterCheckbox.checked;
-        render();
-      });
-
-      elements.jitterSlider.addEventListener('input', () => {
-        elements.jitterValue.textContent = Number(elements.jitterSlider.value).toFixed(2);
-        render();
-      });
-
-      elements.outlineCheckbox.addEventListener('change', () => render());
-
-      elements.livePreviewCheckbox.addEventListener('change', () => {
-        state.livePreview = elements.livePreviewCheckbox.checked;
-        if (state.livePreview) {
-          scheduleLivePreview();
-        } else if (state.pendingAnimation) {
-          cancelAnimationFrame(state.pendingAnimation);
-          state.pendingAnimation = null;
-        }
-      });
-
-      elements.renderBtn.addEventListener('click', () => render());
-      elements.recordBtn.addEventListener('click', () => toggleRecording());
-      elements.downloadBtn.addEventListener('click', () => downloadPNG());
-
-      elements.cameraToggleBtn.addEventListener('click', async () => {
-        if (state.sourceType === 'video') {
-          stopCamera();
         } else {
-          await startCamera();
+          cancelPreview();
         }
       });
-
-      elements.imageInput.addEventListener('change', event => {
-        const file = event.target.files && event.target.files[0];
+      ui.livePreviewCheckbox.addEventListener("change", () => {
+        state.livePreview = ui.livePreviewCheckbox.checked;
+        if (state.previewOn && state.livePreview) {
+          schedulePreview(true);
+        } else if (!state.livePreview) {
+          cancelPreview();
+        }
+      });
+      ui.imageInput.addEventListener("change", (evt) => {
+        const file = evt.target.files?.[0];
         if (file) {
           setSourceToImage(file);
         }
       });
+      ui.renderOnceBtn.addEventListener("click", () => {
+        cancelPreview();
+        state.previewOn = false;
+        ui.previewToggle.checked = false;
+        render();
+        updateStatus("Frame rendered. Enable Edit Mode to tweak circles.");
+      });
+      ui.randomizeBtn.addEventListener("click", () => {
+        state.seed = (Date.now() + Math.random()).toString();
+        ui.seedInput.value = state.seed;
+        requestRender();
+        updateStatus("Seed randomized. Render updated.");
+      });
+      ui.editModeToggle.addEventListener("change", () => {
+        state.editMode = ui.editModeToggle.checked;
+        if (state.editMode && state.previewOn) {
+          state.previewOn = false;
+          ui.previewToggle.checked = false;
+          cancelPreview();
+          updateStatus("Edit mode active. Preview paused.");
+        }
+        toggleEditOverlay();
+      });
+      ui.recordBtn.addEventListener("click", toggleRecording);
+      ui.downloadBtn.addEventListener("click", downloadPNG);
 
-      elements.addPaletteColorBtn.addEventListener('click', () => {
-        addPaletteColor();
-        renderIfPaletteMode();
+      ui.modeRadios.forEach((radio) => {
+        radio.addEventListener("change", () => {
+          if (!radio.checked) return;
+          state.mode = radio.value;
+          handleModeChange();
+          requestRender();
+        });
       });
 
-      elements.resetPaletteBtn.addEventListener('click', () => {
-        resetPalette();
-        renderIfPaletteMode();
+      ui.resSlider.addEventListener("input", () => {
+        state.resolution = Number(ui.resSlider.value);
+        ui.resValue.textContent = `${state.resolution}×${state.resolution}`;
+        requestRender();
+      });
+      ui.countSlider.addEventListener("input", () => {
+        state.targetCount = Number(ui.countSlider.value);
+        ui.countValue.textContent = `${state.targetCount}`;
+        requestRender();
       });
 
-      window.addEventListener('resize', () => render());
-      window.addEventListener('keydown', handleKeyShortcuts);
+      const syncSize = (value, fromSlider = false) => {
+        if (state.mode === "uniform") {
+          state.circleSize = clamp(Number(value), 0.2, 0.9);
+          ui.sizeLabel.textContent = `Circle Size (× cell)`;
+        } else {
+          state.randomRadius = clamp(Number(value), 2, 40);
+          ui.sizeLabel.textContent = "Base Radius (px)";
+        }
+        const finalValue = state.mode === "uniform" ? state.circleSize : state.randomRadius;
+        const formatted = state.mode === "uniform" ? state.circleSize.toFixed(2) : state.randomRadius.toFixed(1);
+        if (!fromSlider) ui.sizeSlider.value = finalValue;
+        ui.sizeNumber.min = state.mode === "uniform" ? 0.2 : 2;
+        ui.sizeNumber.max = state.mode === "uniform" ? 0.9 : 40;
+        ui.sizeNumber.step = state.mode === "uniform" ? 0.01 : 0.1;
+        ui.sizeSlider.min = ui.sizeNumber.min;
+        ui.sizeSlider.max = ui.sizeNumber.max;
+        ui.sizeSlider.step = ui.sizeNumber.step;
+        ui.sizeSlider.value = finalValue;
+        ui.sizeNumber.value = finalValue;
+        ui.sizeNumber.setAttribute("aria-label", `Circle size ${formatted}`);
+        requestRender();
+      };
 
-      adjustControlsForMode();
-      updateResolutionLabel();
-      updateSizeLabel();
-      elements.gammaValue.textContent = Number(elements.gammaSlider.value).toFixed(2);
-      elements.jitterValue.textContent = Number(elements.jitterSlider.value).toFixed(2);
-      updatePaletteEditor();
-      updatePalettePanelState();
+      ui.sizeSlider.addEventListener("input", (e) => {
+        syncSize(e.target.value, true);
+      });
+      ui.sizeNumber.addEventListener("input", (e) => {
+        syncSize(e.target.value);
+      });
+
+      ui.seedInput.addEventListener("change", () => {
+        state.seed = ui.seedInput.value || "0";
+        requestRender();
+      });
+
+      ui.colorModeSelect.addEventListener("change", () => {
+        state.colorMode = ui.colorModeSelect.value;
+        ui.paletteGrid.classList.toggle("disabled", state.colorMode !== "palette");
+        ui.paletteActions.classList.toggle("disabled", state.colorMode !== "palette");
+        ui.palettePresetRow.classList.toggle("hidden", state.colorMode !== "palette");
+        requestRender();
+      });
+
+      ui.gammaSlider.addEventListener("input", () => {
+        state.gamma = Number(ui.gammaSlider.value);
+        ui.gammaValue.textContent = state.gamma.toFixed(2);
+        requestRender();
+      });
+
+      Object.keys(defaultPalettes).forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        ui.palettePresetSelect.append(option);
+      });
+      ui.palettePresetSelect.value = "Warm";
+      ui.palettePresetSelect.addEventListener("change", () => {
+        const preset = ui.palettePresetSelect.value;
+        if (defaultPalettes[preset]) {
+          state.palette = [...defaultPalettes[preset]];
+          syncPaletteUI();
+          requestRender();
+        }
+      });
+
+      ui.addColorBtn.addEventListener("click", () => {
+        state.palette.push("#ffffff");
+        syncPaletteUI();
+        requestRender();
+      });
+      ui.resetPaletteBtn.addEventListener("click", () => {
+        const preset = ui.palettePresetSelect.value || "Warm";
+        state.palette = [...defaultPalettes[preset] || defaultPalettes.Warm];
+        syncPaletteUI();
+        requestRender();
+      });
+
+      ui.jitterModeSelect.addEventListener("change", () => {
+        state.jitterMode = ui.jitterModeSelect.value;
+        requestRender();
+      });
+      ui.jitterStrength.addEventListener("input", () => {
+        state.jitterStrength = Number(ui.jitterStrength.value);
+        ui.jitterValue.textContent = state.jitterStrength.toFixed(2);
+        requestRender();
+      });
+
+      ui.outlineCheckbox.addEventListener("change", () => {
+        state.outline = ui.outlineCheckbox.checked;
+        if (state.previewOn && state.livePreview) {
+          requestRender();
+        } else {
+          drawCircles();
+        }
+      });
+      ui.paletteDitherCheckbox.addEventListener("change", () => {
+        state.paletteDither = ui.paletteDitherCheckbox.checked;
+        requestRender();
+      });
+      ui.editSnapCheckbox.addEventListener("change", () => {
+        state.editSnap = ui.editSnapCheckbox.checked;
+      });
+
+      ui.displayCanvas.addEventListener("pointerdown", handlePointerDown);
+      ui.displayCanvas.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", handlePointerUp);
+      ui.displayCanvas.addEventListener("wheel", handleWheel, { passive: false });
+      window.addEventListener("keydown", handleKeyDown);
+
+      handleModeChange();
+      ui.colorModeSelect.dispatchEvent(new Event("change"));
     }
 
-    function handleKeyShortcuts(event) {
-      if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) {
-        return;
-      }
-      if (event.code === 'Space') {
-        event.preventDefault();
-        render();
-      } else if (event.key === 'r' || event.key === 'R') {
-        randomizeSeed();
-        render();
-      } else if (event.key === 's' || event.key === 'S') {
-        downloadPNG();
-      }
-    }
-
-    function renderIfPaletteMode() {
-      if (elements.colorMode.value === 'palette') {
-        render();
-      }
-    }
-
-    function updatePalettePanelState() {
-      const isPaletteMode = elements.colorMode.value === 'palette';
-      elements.palettePanel.classList.toggle('disabled', !isPaletteMode);
-    }
-
-    function updateResolutionLabel() {
-      if (state.mode === 'uniform') {
-        const n = Number(elements.resSlider.value);
-        elements.resValue.textContent = `${n}×${n}`;
+    function handleModeChange() {
+      const uniform = state.mode === "uniform";
+      ui.uniformResolutionRow.classList.toggle("hidden", !uniform);
+      ui.randomResolutionRow.classList.toggle("hidden", uniform);
+      if (uniform) {
+        ui.sizeSlider.min = 0.2;
+        ui.sizeSlider.max = 0.9;
+        ui.sizeSlider.step = 0.01;
+        ui.sizeSlider.value = state.circleSize.toFixed(2);
+        ui.sizeNumber.min = 0.2;
+        ui.sizeNumber.max = 0.9;
+        ui.sizeNumber.step = 0.01;
+        ui.sizeNumber.value = state.circleSize.toFixed(2);
       } else {
-        const count = Number(elements.resSlider.value);
-        elements.resValue.textContent = `${count} circles`;
+        ui.sizeSlider.min = 2;
+        ui.sizeSlider.max = 40;
+        ui.sizeSlider.step = 0.1;
+        ui.sizeSlider.value = state.randomRadius.toFixed(1);
+        ui.sizeNumber.min = 2;
+        ui.sizeNumber.max = 40;
+        ui.sizeNumber.step = 0.1;
+        ui.sizeNumber.value = state.randomRadius.toFixed(1);
       }
+      ui.sizeLabel.textContent = uniform ? "Circle Size (× cell)" : "Base Radius (px)";
     }
 
-    function updateSizeLabel() {
-      if (state.mode === 'uniform') {
-        elements.sizeValue.textContent = Number(elements.sizeSlider.value).toFixed(2);
-      } else {
-        elements.sizeValue.textContent = `${Number(elements.sizeSlider.value).toFixed(1)}px`;
+    function toggleEditOverlay() {
+      ui.editOverlay.classList.toggle("active", state.editMode);
+      editState.active = state.editMode;
+      editState.selectedIndex = -1;
+      if (!state.editMode) {
+        ui.displayCanvas.style.cursor = "default";
       }
+      drawCircles();
     }
 
-    function adjustControlsForMode() {
-      if (state.mode === 'uniform') {
-        elements.resSlider.min = 1;
-        elements.resSlider.max = 200;
-        if (Number(elements.resSlider.value) > 200) {
-          elements.resSlider.value = 40;
-        }
-        elements.resLabelText.textContent = 'Resolution';
-        elements.sizeSlider.min = 0.2;
-        elements.sizeSlider.max = 0.9;
-        elements.sizeSlider.step = 0.01;
-        if (Number(elements.sizeSlider.value) > 1.5) {
-          elements.sizeSlider.value = 0.9;
-        }
-        elements.sizeLabelText.textContent = 'Circle Size';
-      } else {
-        elements.resSlider.min = 10;
-        elements.resSlider.max = 10000;
-        if (Number(elements.resSlider.value) < 10) {
-          elements.resSlider.value = 1500;
-        }
-        elements.resLabelText.textContent = 'Target Count';
-        elements.sizeSlider.min = 2;
-        elements.sizeSlider.max = 40;
-        elements.sizeSlider.step = 0.1;
-        if (Number(elements.sizeSlider.value) < 2) {
-          elements.sizeSlider.value = 8;
-        }
-        elements.sizeLabelText.textContent = 'Base Radius';
-      }
-      updateResolutionLabel();
-      updateSizeLabel();
-    }
-
-    function updatePaletteEditor() {
-      // Build the palette editor UI based on the current palette entries.
-      const container = elements.paletteList;
-      container.innerHTML = '';
+    function syncPaletteUI() {
+      ui.paletteGrid.innerHTML = "";
       state.palette.forEach((color, index) => {
-        const row = document.createElement('div');
-        row.className = 'palette-row';
-
-        const label = document.createElement('label');
-        label.textContent = `Color ${index + 1}`;
-        row.appendChild(label);
-
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = rgbToHex(color[0], color[1], color[2]);
-        colorInput.addEventListener('input', event => {
-          const rgb = hexToRgb(event.target.value);
-          state.palette[index] = rgb;
-          renderIfPaletteMode();
+        const node = ui.paletteCellTemplate.content.firstElementChild.cloneNode(true);
+        const colorInput = node.querySelector("input[type='color']");
+        const removeBtn = node.querySelector("button");
+        colorInput.value = color;
+        colorInput.addEventListener("input", (evt) => {
+          state.palette[index] = evt.target.value;
+          requestRender();
         });
-        row.appendChild(colorInput);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.textContent = 'Remove';
-        removeBtn.disabled = state.palette.length <= 2;
-        removeBtn.addEventListener('click', () => {
-          removePaletteColor(index);
+        removeBtn.addEventListener("click", () => {
+          if (state.palette.length > 1) {
+            state.palette.splice(index, 1);
+            syncPaletteUI();
+            requestRender();
+          }
         });
-        row.appendChild(removeBtn);
-
-        container.appendChild(row);
+        ui.paletteGrid.append(node);
       });
-    }
-
-    function addPaletteColor() {
-      const last = state.palette[state.palette.length - 1] || [255, 255, 255];
-      state.palette.push([...last]);
-      updatePaletteEditor();
-    }
-
-    function removePaletteColor(index) {
-      if (state.palette.length <= 1) return;
-      state.palette.splice(index, 1);
-      updatePaletteEditor();
-      renderIfPaletteMode();
-    }
-
-    function resetPalette() {
-      state.palette = defaultPalette.map(color => [...color]);
-      updatePaletteEditor();
-    }
-
-    function rgbToHex(r, g, b) {
-      return `#${[r, g, b]
-        .map(value => {
-          const hex = value.toString(16).padStart(2, '0');
-          return hex;
-        })
-        .join('')}`;
-    }
-
-    function hexToRgb(hex) {
-      const clean = hex.replace('#', '');
-      const bigint = parseInt(clean, 16);
-      return [
-        (bigint >> 16) & 255,
-        (bigint >> 8) & 255,
-        bigint & 255
-      ];
     }
 
     async function startCamera() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        updateStatus('getUserMedia is not supported in this browser.');
-        return;
-      }
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        elements.video.srcObject = stream;
-        await elements.video.play();
-        state.cameraStream = stream;
-        state.sourceType = 'video';
-        state.sourceReady = false;
-        elements.cameraToggleBtn.textContent = 'Stop Camera';
-        updateStatus('Camera streaming. Press "Render Once" to capture.');
-        if (elements.video.readyState >= 2) {
-          state.sourceReady = true;
-        } else {
-          elements.video.addEventListener('loadeddata', () => {
-            state.sourceReady = true;
-            render();
-          }, { once: true });
-        }
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        ui.video.srcObject = mediaStream;
+        state.loadedImage = null;
+        updateStatus("Camera started.");
+        if (state.previewOn) schedulePreview(true);
       } catch (err) {
-        console.error(err);
-        updateStatus('Unable to access the camera. Please allow permissions or use an image.');
+        updateStatus("Camera unavailable: " + err.message);
       }
     }
 
     function stopCamera() {
-      if (state.cameraStream) {
-        state.cameraStream.getTracks().forEach(track => track.stop());
-        state.cameraStream = null;
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        mediaStream = null;
+        ui.video.srcObject = null;
+        updateStatus("Camera stopped.");
       }
-      elements.video.pause();
-      elements.video.srcObject = null;
-      state.sourceType = 'none';
-      state.sourceReady = false;
-      elements.cameraToggleBtn.textContent = 'Start Camera';
-      updateStatus('Camera stopped.');
     }
 
     function setSourceToImage(file) {
-      stopCamera();
       const img = new Image();
-      const url = URL.createObjectURL(file);
       img.onload = () => {
-        state.imageElement = img;
-        state.sourceType = 'image';
-        state.sourceReady = true;
-        updateStatus('Image loaded. Press "Render Once".');
+        cancelPreview();
+        state.previewOn = false;
+        ui.previewToggle.checked = false;
+        stopCamera();
+        state.loadedImage = img;
+        drawToSample(img);
+        state.lastRenderSource = "image";
+        updateStatus(`Loaded image ${file.name}`);
         render();
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(img.src);
       };
-      img.onerror = () => {
-        updateStatus('Failed to load image file.');
-        URL.revokeObjectURL(url);
-      };
-      img.src = url;
+      img.onerror = () => updateStatus("Failed to load image.");
+      img.src = URL.createObjectURL(file);
     }
 
-    function updateSeed(str) {
-      if (!str) {
-        str = Date.now().toString();
+    // Draw the active frame to a downscaled sampling canvas for speed.
+    function drawToSample(source) {
+      const maxDim = 640;
+      const sourceWidth = source.videoWidth || source.naturalWidth || ui.displayCanvas.width;
+      const sourceHeight = source.videoHeight || source.naturalHeight || ui.displayCanvas.height;
+      const scale = Math.min(maxDim / sourceWidth, maxDim / sourceHeight, 1);
+      ui.sampleCanvas.width = Math.max(1, Math.round(sourceWidth * scale));
+      ui.sampleCanvas.height = Math.max(1, Math.round(sourceHeight * scale));
+      state.sampleScale = sourceWidth / ui.sampleCanvas.width;
+      ui.sampleCtx.save();
+      ui.sampleCtx.setTransform(1, 0, 0, 1, 0, 0);
+      ui.sampleCtx.clearRect(0, 0, ui.sampleCanvas.width, ui.sampleCanvas.height);
+      ui.sampleCtx.scale(state.mirror ? -1 : 1, 1);
+      const dx = state.mirror ? -ui.sampleCanvas.width : 0;
+      ui.sampleCtx.drawImage(source, dx, 0, ui.sampleCanvas.width, ui.sampleCanvas.height);
+      ui.sampleCtx.restore();
+    }
+
+    function schedulePreview(force) {
+      if (!state.previewOn || !state.livePreview) return;
+      cancelPreview();
+      const interval = 1000 / 20;
+      let last = performance.now();
+      const loop = (time) => {
+        if (!state.previewOn || !state.livePreview) return;
+        const delta = time - last;
+        if (delta >= interval - 5) {
+          last = time;
+          render();
+        }
+        previewHandle = requestAnimationFrame(loop);
+      };
+      previewHandle = requestAnimationFrame(loop);
+      if (force) render();
+    }
+
+    function cancelPreview() {
+      if (previewHandle) {
+        cancelAnimationFrame(previewHandle);
+        previewHandle = null;
       }
-      state.seed = str;
-      elements.seedInput.value = str;
     }
 
-    function randomizeSeed() {
-      const randomSeed = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-      updateSeed(randomSeed);
-    }
-
-    function scheduleLivePreview() {
-      if (!state.livePreview) return;
-      const now = performance.now();
-      if (now - state.lastLiveRender >= 100) {
+    function requestRender() {
+      if (state.previewOn && state.livePreview) {
+        schedulePreview(true);
+      } else {
         render();
-        state.lastLiveRender = now;
       }
-      state.pendingAnimation = requestAnimationFrame(scheduleLivePreview);
+    }
+
+    function resizeCanvas() {
+      const viewport = ui.displayCanvas.parentElement;
+      const width = viewport.clientWidth;
+      const height = viewport.clientHeight;
+      ui.displayCanvas.width = width;
+      ui.displayCanvas.height = height;
+      if (state.previewOn && state.livePreview) {
+        requestRender();
+      } else if (state.circles.length) {
+        drawCircles();
+      }
     }
 
     function render() {
-      prepareSourceFrame();
-      if (!state.sourceReady) {
-        elements.ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
-        updateStatus('No source available. Load an image or start the camera.');
-        return;
-      }
-      const { width: sourceWidth, height: sourceHeight } = getSourceDimensions();
-      if (!sourceWidth || !sourceHeight) {
-        updateStatus('Source not ready yet.');
-        return;
-      }
-      const container = elements.canvas.parentElement;
-      const containerWidth = container.clientWidth - 2;
-      const containerHeight = container.clientHeight - 2;
-      const aspect = sourceWidth / sourceHeight;
-      let targetWidth = containerWidth;
-      let targetHeight = targetWidth / aspect;
-      if (targetHeight > containerHeight) {
-        targetHeight = containerHeight;
-        targetWidth = targetHeight * aspect;
-      }
-      elements.canvas.width = Math.round(targetWidth);
-      elements.canvas.height = Math.round(targetHeight);
-
-      const ctx = elements.ctx;
-      ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
-
-      const params = collectRenderParams();
-      const sampleFn = (x, y) => sampleColorAt(x, y);
-
-      if (state.mode === 'uniform') {
-        renderUniformGrid(ctx, params, sampleFn);
-      } else {
-        renderRandomPoisson(ctx, params, sampleFn);
-      }
-
-      if (state.livePreview && !state.pendingAnimation) {
-        state.pendingAnimation = requestAnimationFrame(scheduleLivePreview);
-      } else if (!state.livePreview && state.pendingAnimation) {
-        cancelAnimationFrame(state.pendingAnimation);
-        state.pendingAnimation = null;
-      }
-    }
-
-    function collectRenderParams() {
-      const baseSeed = seedFromString(state.seed);
-      return {
-        mode: state.mode,
-        resolution: Number(elements.resSlider.value),
-        size: Number(elements.sizeSlider.value),
-        gamma: Number(elements.gammaSlider.value),
-        colorMode: elements.colorMode.value,
-        mirror: elements.mirrorCheckbox.checked,
-        jitter: elements.jitterCheckbox.checked,
-        jitterStrength: Number(elements.jitterSlider.value),
-        outline: elements.outlineCheckbox.checked,
-        rng: mulberry32(baseSeed),
-        palette: state.palette
-      };
-    }
-
-    function prepareSourceFrame() {
-      const offscreen = elements.sourceCanvas;
-      const offCtx = elements.sourceCtx;
-      if (state.sourceType === 'video') {
-        if (!elements.video.videoWidth || !elements.video.videoHeight) {
-          state.sourceReady = false;
+      const source = mediaStream ? ui.video : ui.sampleCanvas;
+      if (mediaStream) {
+        if (ui.video.readyState >= 2) {
+          drawToSample(ui.video);
+          state.lastRenderSource = "camera";
+        } else {
           return;
         }
-        offscreen.width = elements.video.videoWidth;
-        offscreen.height = elements.video.videoHeight;
-        offCtx.drawImage(elements.video, 0, 0, offscreen.width, offscreen.height);
-        state.sourceReady = true;
-      } else if (state.sourceType === 'image' && state.imageElement) {
-        offscreen.width = state.imageElement.naturalWidth;
-        offscreen.height = state.imageElement.naturalHeight;
-        offCtx.drawImage(state.imageElement, 0, 0);
-        state.sourceReady = true;
+      } else if (state.lastRenderSource === "image" && state.loadedImage) {
+        drawToSample(state.loadedImage);
+      } else if (state.lastRenderSource !== "image" && !ui.sampleCanvas.width) {
+        return;
+      }
+
+      const sampleCtx = ui.sampleCtx;
+      const { width, height } = ui.sampleCanvas;
+      if (!width || !height) return;
+      const imageData = sampleCtx.getImageData(0, 0, width, height);
+      currentSampleData = imageData.data;
+      currentSampleWidth = width;
+      currentSampleHeight = height;
+
+      rng = mulberry32(seedFromString(state.seed));
+      const params = {
+        width: ui.displayCanvas.width,
+        height: ui.displayCanvas.height,
+        sampleWidth: width,
+        sampleHeight: height,
+        gamma: state.gamma,
+        jitterMode: state.jitterMode,
+        jitterStrength: state.jitterStrength,
+        outline: state.outline,
+        palette: state.palette,
+        paletteDither: state.paletteDither,
+        colorMode: state.colorMode,
+        circleSize: state.circleSize,
+        randomRadius: state.randomRadius,
+        resolution: state.resolution,
+        targetCount: state.targetCount
+      };
+
+      const bounds = computeRenderBounds(params.width, params.height, params.sampleWidth, params.sampleHeight);
+      Object.assign(params, bounds);
+      state.lastBounds = bounds;
+
+      const sampleFn = (x, y) => sampleColorAt(x, y);
+      state.circles = [];
+      editState.selectedIndex = -1;
+
+      ui.displayCtx.clearRect(0, 0, params.width, params.height);
+      if (state.mode === "uniform") {
+        renderUniformGrid(ui.displayCtx, params, sampleFn);
+      } else {
+        renderRandomPoisson(ui.displayCtx, params, sampleFn);
+      }
+
+      if (state.editMode) {
+        drawSelection();
       }
     }
 
-    function getSourceDimensions() {
-      if (state.sourceType === 'video') {
-        return { width: elements.video.videoWidth, height: elements.video.videoHeight };
-      }
-      if (state.sourceType === 'image' && state.imageElement) {
-        return { width: state.imageElement.naturalWidth, height: state.imageElement.naturalHeight };
-      }
-      return { width: 0, height: 0 };
+    function drawCircles() {
+      ui.displayCtx.clearRect(0, 0, ui.displayCanvas.width, ui.displayCanvas.height);
+      paintCircles(ui.displayCtx, state.circles);
+      if (state.editMode) drawSelection();
     }
 
+    // Deterministic N×N mosaic with optional jitter per circle.
     function renderUniformGrid(ctx, params, sampleFn) {
-      const width = ctx.canvas.width;
-      const height = ctx.canvas.height;
-      const n = Math.max(1, Math.round(params.resolution));
-      const cellWidth = width / n;
-      const cellHeight = height / n;
-      const radiusBase = Math.min(cellWidth, cellHeight) / 2;
+      const cols = params.resolution;
+      const rows = params.resolution;
+      const cellWidth = params.drawWidth / cols;
+      const cellHeight = params.drawHeight / rows;
+      const radiusBase = Math.min(cellWidth, cellHeight) * 0.5 * state.circleSize;
+      const jitterStrength = state.jitterStrength;
+      const toDraw = [];
 
-      for (let row = 0; row < n; row++) {
-        for (let col = 0; col < n; col++) {
-          const cx = (col + 0.5) * cellWidth;
-          const cy = (row + 0.5) * cellHeight;
-          const sample = processSample(sampleFn(cx, cy), params.gamma, params.colorMode, params.palette);
-          let radius = radiusBase * params.size;
-          if (params.jitter) {
-            radius *= 1 + params.jitterStrength * (0.5 - sample.luminance);
-          }
-          drawCircle(ctx, cx, cy, radius, sample.color, params.outline);
+      const sampleCellWidth = params.sampleWidth / cols;
+      const sampleCellHeight = params.sampleHeight / rows;
+      const bounds = { offsetX: params.offsetX, offsetY: params.offsetY, width: params.drawWidth, height: params.drawHeight };
+      for (let row = 0; row < rows; row++) {
+        const y = params.offsetY + (row + 0.5) * cellHeight;
+        for (let col = 0; col < cols; col++) {
+          const x = params.offsetX + (col + 0.5) * cellWidth;
+          const sampleX = (col + 0.5) * sampleCellWidth;
+          const sampleY = (row + 0.5) * sampleCellHeight;
+          const color = processColor(sampleFn(sampleX, sampleY));
+          const jitter = computeJitter(color, jitterStrength, radiusBase, { x, y });
+          const radius = clamp(radiusBase + jitter.radiusDelta, 1, radiusBase * 1.6);
+          const pos = applyPositionJitter({ x, y }, jitter.positionDelta, radius, radius, bounds);
+          toDraw.push({ x: pos.x, y: pos.y, r: radius, fill: jitter.fillColor || colorToStyle(color) });
         }
       }
-      updateStatus(`Rendered uniform grid with ${n}×${n} circles.`);
+
+      commitCircles(toDraw);
     }
 
+    // Seeded Poisson-disc placement for non-overlapping random circles.
     function renderRandomPoisson(ctx, params, sampleFn) {
-      const width = ctx.canvas.width;
-      const height = ctx.canvas.height;
-      const targetCount = Math.round(params.resolution);
-      const baseRadius = Math.max(1, params.size);
-      const cellSize = baseRadius * 2;
-      const cols = Math.ceil(width / cellSize);
-      const rows = Math.ceil(height / cellSize);
-      // Spatial grid buckets accelerate the Poisson-style rejection sampling.
-      const grid = Array.from({ length: cols * rows }, () => []);
-      const circles = [];
-      const rng = params.rng;
-      const maxAttempts = targetCount * 30;
+      const radiusBase = params.randomRadius;
+      const jitterStrength = params.jitterStrength;
+      const toDraw = [];
+      const maxAttempts = 30;
+      const width = params.drawWidth;
+      const height = params.drawHeight;
+      const offsetX = params.offsetX;
+      const offsetY = params.offsetY;
+      const bounds = { offsetX, offsetY, width, height };
+      const minRadius = Math.max(1, radiusBase * 0.4);
 
-      for (let attempt = 0; attempt < maxAttempts && circles.length < targetCount; attempt++) {
-        const x = rng() * width;
-        const y = rng() * height;
-        const sample = processSample(sampleFn(x, y), params.gamma, params.colorMode, params.palette);
-        let radius = baseRadius;
-        if (params.jitter) {
-          // Darker luminance enlarges circles when jitter is enabled.
-          radius *= 1 + params.jitterStrength * (0.5 - sample.luminance);
-        }
-        radius = Math.max(1, radius);
-        const gx = Math.floor(x / cellSize);
-        const gy = Math.floor(y / cellSize);
-        let fits = true;
-        // Inspect neighbouring buckets to guarantee circles stay non-overlapping.
-        for (let ny = Math.max(0, gy - 2); ny <= Math.min(rows - 1, gy + 2) && fits; ny++) {
-          for (let nx = Math.max(0, gx - 2); nx <= Math.min(cols - 1, gx + 2) && fits; nx++) {
-            const bucket = grid[ny * cols + nx];
-            for (const other of bucket) {
-              const dx = other.x - x;
-              const dy = other.y - y;
-              const distSq = dx * dx + dy * dy;
-              const minDist = other.radius + radius;
-              if (distSq < minDist * minDist) {
+      const cellSize = radiusBase / Math.sqrt(2);
+      const cols = Math.max(1, Math.ceil(width / cellSize));
+      const rows = Math.max(1, Math.ceil(height / cellSize));
+      poissTmp.grid = new Array(cols * rows).fill(-1);
+      poissTmp.active = [];
+      const initial = {
+        x: offsetX + rng() * width,
+        y: offsetY + rng() * height,
+        r: radiusBase
+      };
+      poissTmp.active.push(initial);
+      toDraw.push(initial);
+      const gi = Math.floor((initial.x - offsetX) / cellSize);
+      const gj = Math.floor((initial.y - offsetY) / cellSize);
+      poissTmp.grid[gi + gj * cols] = 0;
+
+      const addCircle = (circle) => {
+        poissTmp.active.push(circle);
+        toDraw.push(circle);
+        const gx = Math.floor((circle.x - offsetX) / cellSize);
+        const gy = Math.floor((circle.y - offsetY) / cellSize);
+        poissTmp.grid[gx + gy * cols] = toDraw.length - 1;
+      };
+
+      while (poissTmp.active.length && toDraw.length < params.targetCount) {
+        const idx = Math.floor(rng() * poissTmp.active.length);
+        const point = poissTmp.active[idx];
+        let accepted = false;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const angle = rng() * Math.PI * 2;
+          const radius = radiusBase * (0.75 + rng() * 0.5);
+          const dist = (point.r + radius) * (1.2 + rng() * 0.3);
+          const candidate = {
+            x: point.x + Math.cos(angle) * dist,
+            y: point.y + Math.sin(angle) * dist,
+            r: radius
+          };
+          if (candidate.x < offsetX + radius || candidate.x > offsetX + width - radius || candidate.y < offsetY + radius || candidate.y > offsetY + height - radius) continue;
+          const gx = Math.floor((candidate.x - offsetX) / cellSize);
+          const gy = Math.floor((candidate.y - offsetY) / cellSize);
+          let fits = true;
+          for (let yIdx = Math.max(0, gy - 2); yIdx <= Math.min(rows - 1, gy + 2) && fits; yIdx++) {
+            for (let xIdx = Math.max(0, gx - 2); xIdx <= Math.min(cols - 1, gx + 2); xIdx++) {
+              const neighborIndex = poissTmp.grid[xIdx + yIdx * cols];
+              if (neighborIndex === -1) continue;
+              const neighbor = toDraw[neighborIndex];
+              const dx = neighbor.x - candidate.x;
+              const dy = neighbor.y - candidate.y;
+              const minDist = neighbor.r + candidate.r;
+              if (dx * dx + dy * dy < minDist * minDist) {
                 fits = false;
                 break;
               }
             }
           }
+          if (fits) {
+            addCircle(candidate);
+            accepted = true;
+            break;
+          }
         }
-        if (fits) {
-          const bucket = grid[gy * cols + gx];
-          const circle = { x, y, radius, color: sample.color };
-          bucket.push(circle);
-          circles.push(circle);
+        if (!accepted) {
+          poissTmp.active.splice(idx, 1);
         }
       }
 
-      circles.forEach(circle => {
-        drawCircle(ctx, circle.x, circle.y, circle.radius, circle.color, params.outline);
-      });
-      updateStatus(`Rendered ${circles.length} circles (target ${targetCount}).`);
-    }
-
-    function drawCircle(ctx, x, y, radius, color, outline) {
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
-      if (outline) {
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-        ctx.stroke();
+      const sampleScaleX = params.sampleWidth / width;
+      const sampleScaleY = params.sampleHeight / height;
+      const jitterGrid = Array.from({ length: cols * rows }, () => []);
+      for (let i = 0; i < toDraw.length; i++) {
+        const circle = toDraw[i];
+        const basePos = { x: circle.x, y: circle.y };
+        const baseRadius = circle.r;
+        const sx = clamp((basePos.x - offsetX) * sampleScaleX, 0, params.sampleWidth - 1);
+        const sy = clamp((basePos.y - offsetY) * sampleScaleY, 0, params.sampleHeight - 1);
+        const color = processColor(sampleFn(sx, sy));
+        const jitter = computeJitter(color, jitterStrength, baseRadius, basePos);
+        let newRadius = clamp(baseRadius + jitter.radiusDelta, minRadius, radiusBase * 2.2);
+        let newPos = applyPositionJitter(basePos, jitter.positionDelta, newRadius, newRadius, bounds);
+        let gx = Math.floor((newPos.x - offsetX) / cellSize);
+        let gy = Math.floor((newPos.y - offsetY) / cellSize);
+        gx = Math.max(0, Math.min(cols - 1, gx));
+        gy = Math.max(0, Math.min(rows - 1, gy));
+        let fits = true;
+        for (let yIdx = Math.max(0, gy - 2); yIdx <= Math.min(rows - 1, gy + 2) && fits; yIdx++) {
+          for (let xIdx = Math.max(0, gx - 2); xIdx <= Math.min(cols - 1, gx + 2); xIdx++) {
+            const cell = jitterGrid[xIdx + yIdx * cols];
+            for (let c = 0; c < cell.length; c++) {
+              const neighbor = toDraw[cell[c]];
+              const dx = neighbor.x - newPos.x;
+              const dy = neighbor.y - newPos.y;
+              const minDist = neighbor.r + newRadius;
+              if (dx * dx + dy * dy < minDist * minDist) {
+                fits = false;
+                break;
+              }
+            }
+            if (!fits) break;
+          }
+        }
+        if (!fits) {
+          newRadius = clamp(baseRadius, minRadius, radiusBase * 2.2);
+          newPos = basePos;
+          gx = Math.floor((newPos.x - offsetX) / cellSize);
+          gy = Math.floor((newPos.y - offsetY) / cellSize);
+          gx = Math.max(0, Math.min(cols - 1, gx));
+          gy = Math.max(0, Math.min(rows - 1, gy));
+        }
+        circle.x = newPos.x;
+        circle.y = newPos.y;
+        circle.r = newRadius;
+        circle.fill = jitter.fillColor || colorToStyle(color);
+        jitterGrid[gx + gy * cols].push(i);
       }
+
+      commitCircles(toDraw);
     }
 
-    function sampleColorAt(x, y) {
-      const { width: canvasWidth, height: canvasHeight } = elements.canvas;
-      const { width: sourceWidth, height: sourceHeight } = getSourceDimensions();
-      if (!sourceWidth || !sourceHeight) {
-        return { r: 0, g: 0, b: 0, a: 255 };
+    // Apply gamma, grayscale, or palette mapping to sampled colors.
+    function processColor(color) {
+      if (!color) return { r: 0, g: 0, b: 0, a: 255 };
+      const gammaCorrected = applyGamma(color, state.gamma);
+      if (state.colorMode === "grayscale") {
+        const g = toGrayscale(gammaCorrected);
+        return { r: g, g, b: g, a: color.a };
       }
-      const nx = x / canvasWidth;
-      const ny = y / canvasHeight;
-      const sx = elements.mirrorCheckbox.checked ? (1 - nx) * sourceWidth : nx * sourceWidth;
-      const sy = ny * sourceHeight;
-      const px = Math.min(sourceWidth - 1, Math.max(0, Math.round(sx)));
-      const py = Math.min(sourceHeight - 1, Math.max(0, Math.round(sy)));
-      // Sample a single pixel from the off-screen canvas backing the current frame.
-      const data = elements.sourceCtx.getImageData(px, py, 1, 1).data;
-      return { r: data[0], g: data[1], b: data[2], a: data[3] };
+      if (state.colorMode === "palette") {
+        let sample = gammaCorrected;
+        if (state.paletteDither) {
+          const noise = (rng() - 0.5) * 16;
+          sample = {
+            r: clamp(sample.r + noise, 0, 255),
+            g: clamp(sample.g + noise, 0, 255),
+            b: clamp(sample.b + noise, 0, 255),
+            a: sample.a
+          };
+        }
+        return nearestPaletteColor(sample, state.palette);
+      }
+      return gammaCorrected;
     }
 
-    function processSample(rgb, gamma, colorMode, palette) {
-      // Color pipeline: gamma correct then convert to grayscale/palette if requested.
-      const corrected = applyGamma(rgb, gamma);
-      const luminance = computeLuminance(corrected) / 255;
-      let color;
-      if (colorMode === 'grayscale') {
-        const gray = toGrayscale(corrected);
-        color = `rgb(${gray.r}, ${gray.g}, ${gray.b})`;
-      } else if (colorMode === 'palette') {
-        const nearest = nearestPaletteColor(corrected, palette);
-        color = `rgb(${nearest[0]}, ${nearest[1]}, ${nearest[2]})`;
+    // Multi-mode jitter (brightness, hue, saturation, position) for stylization.
+    function computeJitter(color, strength, baseRadius, point) {
+      const result = {
+        radiusDelta: 0,
+        positionDelta: { x: 0, y: 0 },
+        fillColor: null
+      };
+      if (state.jitterMode === "none" || strength <= 0) {
+        return result;
+      }
+      if (state.jitterMode === "brightness") {
+        const lum = (0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b) / 255;
+        result.radiusDelta = ((0.5 - lum) * strength) * baseRadius;
+      } else if (state.jitterMode === "hue" || state.jitterMode === "saturation") {
+        const { h, s } = rgbToHsl(color.r, color.g, color.b);
+        if (state.jitterMode === "hue") {
+          const angle = (h / 360) * Math.PI * 2;
+          result.positionDelta.x = Math.cos(angle) * strength * baseRadius * 0.5 * (rng() - 0.5);
+          result.positionDelta.y = Math.sin(angle) * strength * baseRadius * 0.5 * (rng() - 0.5);
+        } else {
+          result.radiusDelta = ((s - 0.5) * strength) * baseRadius;
+        }
+      } else if (state.jitterMode === "position") {
+        const theta = rng() * Math.PI * 2;
+        const dist = strength * baseRadius;
+        result.positionDelta.x = Math.cos(theta) * dist;
+        result.positionDelta.y = Math.sin(theta) * dist;
+      }
+      return result;
+    }
+
+    function applyPositionJitter(point, delta, limitX, limitY, bounds) {
+      let x = point.x + delta.x;
+      let y = point.y + delta.y;
+      if (bounds) {
+        x = clamp(x, bounds.offsetX + limitX, bounds.offsetX + bounds.width - limitX);
+        y = clamp(y, bounds.offsetY + limitY, bounds.offsetY + bounds.height - limitY);
       } else {
-        color = `rgb(${Math.round(corrected.r)}, ${Math.round(corrected.g)}, ${Math.round(corrected.b)})`;
+        x = clamp(x, limitX, ui.displayCanvas.width - limitX);
+        y = clamp(y, limitY, ui.displayCanvas.height - limitY);
       }
-      return { color, luminance };
+      return { x, y };
     }
 
-    function computeLuminance(rgb) {
-      return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+    // Letterbox output to preserve source aspect ratio inside the viewport.
+    function computeRenderBounds(canvasWidth, canvasHeight, sampleWidth, sampleHeight) {
+      if (!sampleWidth || !sampleHeight) {
+        return { drawWidth: canvasWidth, drawHeight: canvasHeight, offsetX: 0, offsetY: 0 };
+      }
+      const sampleAspect = sampleWidth / sampleHeight;
+      const canvasAspect = canvasWidth / canvasHeight;
+      let drawWidth = canvasWidth;
+      let drawHeight = canvasHeight;
+      let offsetX = 0;
+      let offsetY = 0;
+      if (canvasAspect > sampleAspect) {
+        drawHeight = canvasHeight;
+        drawWidth = drawHeight * sampleAspect;
+        offsetX = (canvasWidth - drawWidth) / 2;
+      } else {
+        drawWidth = canvasWidth;
+        drawHeight = drawWidth / sampleAspect;
+        offsetY = (canvasHeight - drawHeight) / 2;
+      }
+      return { drawWidth, drawHeight, offsetX, offsetY };
     }
 
+    function commitCircles(circles) {
+      state.circles = circles.map((c) => ({ ...c }));
+      ui.displayCtx.clearRect(0, 0, ui.displayCanvas.width, ui.displayCanvas.height);
+      paintCircles(ui.displayCtx, state.circles);
+      if (state.editMode) drawSelection();
+    }
+
+    function paintCircles(ctx, circles) {
+      circles.forEach((circle) => {
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
+        ctx.fillStyle = circle.fill;
+        ctx.fill();
+        if (state.outline) {
+          ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      });
+    }
+
+    // Fast sample lookup into the cached downscaled buffer.
+    function sampleColorAt(x, y) {
+      const ix = clamp(Math.floor(x), 0, currentSampleWidth - 1);
+      const iy = clamp(Math.floor(y), 0, currentSampleHeight - 1);
+      const idx = (iy * currentSampleWidth + ix) * 4;
+      return {
+        r: currentSampleData[idx],
+        g: currentSampleData[idx + 1],
+        b: currentSampleData[idx + 2],
+        a: currentSampleData[idx + 3]
+      };
+    }
+
+    // Mix string input into a deterministic 32-bit seed.
     function seedFromString(str) {
-      // Simple string hash (FNV-1a inspired) to convert arbitrary strings to 32-bit seeds.
-      let h = 2166136261 >>> 0;
+      let h = 1779033703 ^ str.length;
       for (let i = 0; i < str.length; i++) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 16777619);
+        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+        h = (h << 13) | (h >>> 19);
       }
-      return h >>> 0;
+      return (h ^ (h >>> 16)) >>> 0;
     }
 
+    // Lightweight deterministic PRNG (mulberry32).
     function mulberry32(a) {
-      // Tiny fast PRNG with good distribution for visual randomness.
       return function () {
         let t = (a += 0x6d2b79f5);
         t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -924,125 +1298,283 @@
       };
     }
 
+    // Gamma correction applied before further color processing.
     function applyGamma(rgb, gamma) {
-      // Apply gamma curve before color mapping; gamma < 1 lightens, > 1 darkens.
-      const factor = 1 / 255;
+      const inv = 1 / gamma;
+      const convert = (channel) => Math.pow(clamp(channel / 255, 0, 1), inv) * 255;
       return {
-        r: Math.pow(rgb.r * factor, gamma) * 255,
-        g: Math.pow(rgb.g * factor, gamma) * 255,
-        b: Math.pow(rgb.b * factor, gamma) * 255
+        r: convert(rgb.r),
+        g: convert(rgb.g),
+        b: convert(rgb.b),
+        a: rgb.a
       };
     }
 
     function toGrayscale(rgb) {
-      const y = computeLuminance(rgb);
-      return { r: Math.round(y), g: Math.round(y), b: Math.round(y) };
+      return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
     }
 
+    // Snap a sampled color to the closest entry in the active palette.
     function nearestPaletteColor(rgb, palette) {
-      // Exhaustive nearest-neighbour search is fine for the tiny fixed palette.
       let best = palette[0];
       let bestDist = Infinity;
-      for (const color of palette) {
-        const dr = rgb.r - color[0];
-        const dg = rgb.g - color[1];
-        const db = rgb.b - color[2];
+      for (let i = 0; i < palette.length; i++) {
+        const color = hexToRgb(palette[i]);
+        const dr = color.r - rgb.r;
+        const dg = color.g - rgb.g;
+        const db = color.b - rgb.b;
         const dist = dr * dr + dg * dg + db * db;
         if (dist < bestDist) {
           bestDist = dist;
-          best = color;
+          best = palette[i];
         }
       }
-      return best;
+      return { ...hexToRgb(best), a: rgb.a };
+    }
+
+    function colorToStyle(rgb) {
+      const alpha = (rgb.a ?? 255) / 255;
+      return `rgba(${Math.round(rgb.r)}, ${Math.round(rgb.g)}, ${Math.round(rgb.b)}, ${alpha})`;
     }
 
     function downloadPNG() {
-      const link = document.createElement('a');
-      link.download = 'circles.png';
-      link.href = elements.canvas.toDataURL('image/png');
+      const link = document.createElement("a");
+      link.download = "circles.png";
+      link.href = ui.displayCanvas.toDataURL("image/png");
       link.click();
-    }
-
-    function toggleRecording() {
-      if (state.mediaRecorder && state.mediaRecorder.state === 'recording') {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    }
-
-    function startRecording() {
-      if (!elements.canvas.captureStream) {
-        updateStatus('Canvas captureStream is not supported in this browser.');
-        return;
-      }
-      if (typeof MediaRecorder === 'undefined') {
-        updateStatus('MediaRecorder is not available in this browser.');
-        return;
-      }
-      try {
-        const stream = elements.canvas.captureStream(30);
-        const options = getRecordingOptions();
-        const mediaRecorder = new MediaRecorder(stream, options);
-        state.recordingChunks = [];
-        // Collect chunks emitted by the MediaRecorder until recording stops.
-        mediaRecorder.addEventListener('dataavailable', event => {
-          if (event.data && event.data.size > 0) {
-            state.recordingChunks.push(event.data);
-          }
-        });
-        mediaRecorder.addEventListener('stop', handleRecordingStop);
-        mediaRecorder.start();
-        state.mediaRecorder = mediaRecorder;
-        state.recordingStream = stream;
-        elements.recordBtn.textContent = 'Stop Recording';
-        updateStatus('Recording started. Toggle again to finish and save.');
-      } catch (error) {
-        console.error(error);
-        updateStatus('Unable to start recording on this browser.');
-      }
-    }
-
-    function getRecordingOptions() {
-      const mimeTypes = [
-        'video/webm;codecs=vp9',
-        'video/webm;codecs=vp8',
-        'video/webm'
-      ];
-      for (const type of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          return { mimeType: type };
-        }
-      }
-      return {};
-    }
-
-    function stopRecording() {
-      if (state.mediaRecorder && state.mediaRecorder.state === 'recording') {
-        state.mediaRecorder.stop();
-      }
-    }
-
-    function handleRecordingStop() {
-      const blob = new Blob(state.recordingChunks, { type: state.mediaRecorder.mimeType || 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'circles-recording.webm';
-      link.click();
-      URL.revokeObjectURL(url);
-      elements.recordBtn.textContent = 'Start Recording';
-      updateStatus('Recording saved as circles-recording.webm');
-      if (state.recordingStream) {
-        state.recordingStream.getTracks().forEach(track => track.stop());
-      }
-      state.mediaRecorder = null;
-      state.recordingStream = null;
-      state.recordingChunks = [];
     }
 
     function updateStatus(message) {
-      elements.statusMessage.textContent = message;
+      ui.statusMessage.textContent = message;
+    }
+
+    function toggleRecording() {
+      if (recorder && recorder.state === "recording") {
+        recorder.stop();
+        updateStatus("Recording stopped. Preparing download...");
+        return;
+      }
+      try {
+        const stream = ui.displayCanvas.captureStream(30);
+        recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+        recordedChunks = [];
+        recorder.ondataavailable = (evt) => {
+          if (evt.data.size > 0) recordedChunks.push(evt.data);
+        };
+        recorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "circles.webm";
+          a.click();
+          URL.revokeObjectURL(url);
+          ui.recordBtn.textContent = "Start Recording";
+          ui.recordStatus.classList.add("hidden");
+          updateStatus("Recording saved as circles.webm");
+        };
+        recorder.start();
+        ui.recordBtn.textContent = "Stop Recording";
+        ui.recordStatus.classList.remove("hidden");
+        updateStatus("Recording...");
+      } catch (error) {
+        console.error(error);
+        updateStatus("Recording unavailable in this browser.");
+      }
+    }
+
+    function handlePointerDown(event) {
+      if (!state.editMode) return;
+      const rect = ui.displayCanvas.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * ui.displayCanvas.width;
+      const y = ((event.clientY - rect.top) / rect.height) * ui.displayCanvas.height;
+      let closest = -1;
+      let minDist = Infinity;
+      state.circles.forEach((circle, idx) => {
+        const dx = circle.x - x;
+        const dy = circle.y - y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= circle.r && dist < minDist) {
+          minDist = dist;
+          closest = idx;
+        }
+      });
+      editState.selectedIndex = closest;
+      if (closest !== -1) {
+        const circle = state.circles[closest];
+        editState.dragOffset.x = circle.x - x;
+        editState.dragOffset.y = circle.y - y;
+        ui.displayCanvas.setPointerCapture(event.pointerId);
+        ui.displayCanvas.style.cursor = "grabbing";
+      }
+      drawCircles();
+    }
+
+    function handlePointerMove(event) {
+      if (!state.editMode || editState.selectedIndex === -1 || event.buttons === 0) return;
+      const rect = ui.displayCanvas.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * ui.displayCanvas.width;
+      const y = ((event.clientY - rect.top) / rect.height) * ui.displayCanvas.height;
+      const circle = state.circles[editState.selectedIndex];
+      let newX = x + editState.dragOffset.x;
+      let newY = y + editState.dragOffset.y;
+      if (state.mode === "uniform" && state.editSnap) {
+        const cols = state.resolution;
+        const rows = Math.round(cols * (ui.displayCanvas.height / ui.displayCanvas.width));
+        const cellWidth = ui.displayCanvas.width / cols;
+        const cellHeight = ui.displayCanvas.height / rows;
+        newX = Math.round(newX / cellWidth) * cellWidth;
+        newY = Math.round(newY / cellHeight) * cellHeight;
+      }
+      const bounds = state.lastBounds || {
+        offsetX: 0,
+        offsetY: 0,
+        width: ui.displayCanvas.width,
+        height: ui.displayCanvas.height
+      };
+      circle.x = clamp(newX, bounds.offsetX + circle.r, bounds.offsetX + bounds.width - circle.r);
+      circle.y = clamp(newY, bounds.offsetY + circle.r, bounds.offsetY + bounds.height - circle.r);
+      if (state.mode === "random") {
+        enforceNonOverlap(editState.selectedIndex);
+      }
+      drawCircles();
+    }
+
+    function handlePointerUp(event) {
+      if (!state.editMode) return;
+      if (ui.displayCanvas.hasPointerCapture(event.pointerId)) {
+        ui.displayCanvas.releasePointerCapture(event.pointerId);
+      }
+      ui.displayCanvas.style.cursor = "default";
+    }
+
+    function handleWheel(event) {
+      if (!state.editMode || editState.selectedIndex === -1) return;
+      event.preventDefault();
+      const circle = state.circles[editState.selectedIndex];
+      const delta = Math.sign(event.deltaY) * -1;
+      circle.r = clamp(circle.r + delta, 2, Math.min(ui.displayCanvas.width, ui.displayCanvas.height) / 2);
+      if (state.mode === "random") {
+        enforceNonOverlap(editState.selectedIndex);
+      }
+      drawCircles();
+    }
+
+    function handleKeyDown(event) {
+      if (event.target.matches("input, textarea")) return;
+      if (event.code === "Space") {
+        event.preventDefault();
+        ui.renderOnceBtn.click();
+      } else if (event.key === "r" || event.key === "R") {
+        event.preventDefault();
+        ui.randomizeBtn.click();
+      } else if (event.key === "p" || event.key === "P") {
+        event.preventDefault();
+        ui.previewToggle.checked = !ui.previewToggle.checked;
+        ui.previewToggle.dispatchEvent(new Event("change"));
+      } else if (event.key === "e" || event.key === "E") {
+        event.preventDefault();
+        ui.editModeToggle.checked = !ui.editModeToggle.checked;
+        ui.editModeToggle.dispatchEvent(new Event("change"));
+      } else if (event.key === "s" || event.key === "S") {
+        event.preventDefault();
+        downloadPNG();
+      } else if (state.editMode && editState.selectedIndex !== -1) {
+        const circle = state.circles[editState.selectedIndex];
+        if (event.key === "Delete" || event.key === "Backspace") {
+          state.circles.splice(editState.selectedIndex, 1);
+          editState.selectedIndex = -1;
+          drawCircles();
+        } else if (event.key === "d" || event.key === "D") {
+          const clone = { ...circle };
+          clone.x += clone.r * 0.5;
+          clone.y += clone.r * 0.5;
+          state.circles.push(clone);
+          editState.selectedIndex = state.circles.length - 1;
+          if (state.mode === "random") {
+            enforceNonOverlap(editState.selectedIndex);
+          }
+          drawCircles();
+        }
+      }
+    }
+
+    function enforceNonOverlap(index) {
+      const circle = state.circles[index];
+      const circles = state.circles;
+      const bounds = state.lastBounds || {
+        offsetX: 0,
+        offsetY: 0,
+        width: ui.displayCanvas.width,
+        height: ui.displayCanvas.height
+      };
+      for (let i = 0; i < circles.length; i++) {
+        if (i === index) continue;
+        const other = circles[i];
+        const dx = circle.x - other.x;
+        const dy = circle.y - other.y;
+        const distSq = dx * dx + dy * dy;
+        const minDist = circle.r + other.r;
+        if (distSq < minDist * minDist) {
+          const dist = Math.sqrt(distSq) || 0.001;
+          const overlap = minDist - dist;
+          circle.x += (dx / dist) * overlap;
+          circle.y += (dy / dist) * overlap;
+          circle.x = clamp(circle.x, bounds.offsetX + circle.r, bounds.offsetX + bounds.width - circle.r);
+          circle.y = clamp(circle.y, bounds.offsetY + circle.r, bounds.offsetY + bounds.height - circle.r);
+        }
+      }
+    }
+
+    function drawSelection() {
+      if (editState.selectedIndex === -1) return;
+      const ctx = ui.displayCtx;
+      const circle = state.circles[editState.selectedIndex];
+      ctx.save();
+      ctx.strokeStyle = "rgba(125, 211, 157, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, circle.r + 3, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h, s;
+      const l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r:
+            h = (g - b) / d + (g < b ? 6 : 0);
+            break;
+          case g:
+            h = (b - r) / d + 2;
+            break;
+          default:
+            h = (r - g) / d + 4;
+        }
+        h /= 6;
+      }
+      return { h: h * 360, s, l };
+    }
+
+    function hexToRgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
     }
   </script>
 </body>
