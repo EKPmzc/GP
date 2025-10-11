@@ -115,6 +115,32 @@
       font-size: 0.9rem;
     }
 
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.05rem;
+      height: 1.05rem;
+      margin-left: 0.35rem;
+      border-radius: 50%;
+      border: 1px solid #3b3b48;
+      font-size: 0.68rem;
+      line-height: 1;
+      font-weight: 600;
+      color: #9ff2c9;
+      background: #2d2d39;
+      cursor: help;
+      flex-shrink: 0;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .info-icon:hover,
+    .info-icon:focus-visible {
+      background: #3f3f52;
+      border-color: #6dd9a3;
+      color: #dfffe9;
+    }
+
     button {
       cursor: pointer;
       transition: background 0.15s ease;
@@ -146,6 +172,11 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .label-text {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
     .numeric-pair {
       display: flex;
       gap: 0.4rem;
@@ -159,6 +190,11 @@
 
     .numeric-pair input[type="number"] {
       width: 4.5rem;
+    }
+
+    .numeric-pair button {
+      flex: 0 0 auto;
+      white-space: nowrap;
     }
 
     .canvas-column {
@@ -425,8 +461,8 @@
         <div class="control-row hidden" id="randomResolutionRow">
           <label for="countSlider">Target Circles <span id="countValue" class="inline-value">1500</span></label>
           <div class="numeric-pair">
-            <input type="range" id="countSlider" min="10" max="10000" step="10" value="1500" />
-            <input type="number" id="countNumber" min="10" max="10000" step="10" value="1500" />
+            <input type="range" id="countSlider" min="10" max="20000" step="10" value="1500" />
+            <input type="number" id="countNumber" min="10" max="20000" step="10" value="1500" />
           </div>
         </div>
         <div class="control-row">
@@ -481,6 +517,24 @@
           <button id="addColorBtn">Add Color</button>
           <button id="resetPaletteBtn">Reset Palette</button>
         </div>
+        <div class="control-row">
+          <label for="paletteRangeColor">Range Center</label>
+          <input type="color" id="paletteRangeColor" value="#3a6ff2" />
+        </div>
+        <div class="control-row">
+          <label for="paletteRangeSlider">Hue Spread <span id="paletteRangeValue" class="inline-value">±90°</span></label>
+          <div class="numeric-pair">
+            <input type="range" id="paletteRangeSlider" min="0" max="1" step="0.01" value="0.5" />
+            <input type="number" id="paletteRangeNumber" min="0" max="1" step="0.01" value="0.5" />
+          </div>
+        </div>
+        <div class="control-row">
+          <label for="paletteRangeCount">Range Swatches</label>
+          <div class="numeric-pair">
+            <input type="number" id="paletteRangeCount" min="3" max="24" step="1" value="8" />
+            <button id="paletteRangeApplyBtn" type="button">Generate Range</button>
+          </div>
+        </div>
       </section>
 
       <section class="control-section" aria-labelledby="jitterHeading">
@@ -520,6 +574,8 @@
             <option value="cascade">Cascade</option>
             <option value="drift">Drift</option>
             <option value="spark">Spark</option>
+            <option value="aurora">Aurora</option>
+            <option value="starlight">Starlight</option>
           </select>
         </div>
         <div class="control-row">
@@ -671,7 +727,12 @@
       Cinematic: ["#1a1f2b", "#2f3b52", "#495874", "#6c7b95", "#8ea6b4", "#f4d35e", "#ee964b", "#f95738"],
       Sunrise: ["#371a45", "#5b2a86", "#8d3f8e", "#c774a5", "#f49fbc", "#f7c59f", "#f6e7cb", "#ffd54f"],
       Cyberpunk: ["#090446", "#140d6e", "#3f2186", "#ff2a6d", "#ff6f91", "#05d9e8", "#ffb400", "#f34213"],
-      Tropic: ["#042f2e", "#095256", "#087f8c", "#5aaa95", "#86a873", "#c4d6b0", "#f0f6f6", "#ff9f1c"]
+      Tropic: ["#042f2e", "#095256", "#087f8c", "#5aaa95", "#86a873", "#c4d6b0", "#f0f6f6", "#ff9f1c"],
+      Luminous: ["#0b132b", "#1c2541", "#3a506b", "#5bc0be", "#6fffe9", "#f4faff", "#fff6e0", "#ffd6ba"],
+      Velvet: ["#1a0f1f", "#391c3a", "#5b2957", "#7f3a76", "#a54c95", "#d36bb8", "#f29cda", "#ffe3ff"],
+      Polar: ["#0b1d26", "#103b57", "#126782", "#2596be", "#40c3ff", "#9ae5ff", "#f0fbff", "#ffffff"],
+      Glimmerveil: ["#08090f", "#121c2e", "#233a5d", "#3e5a82", "#6f8db4", "#a8c6e8", "#e0ecff", "#ffffff"],
+      Emberlight: ["#120907", "#3a1211", "#6d1d16", "#a3321a", "#d9541f", "#f77f2f", "#fcb15b", "#ffe8c2"]
     };
 
     const state = {
@@ -721,6 +782,9 @@
       staticMotionMode: "sway",
       palette: [...defaultPalettes.Warm],
       activePalette: [...defaultPalettes.Warm],
+      paletteRangeColor: "#3a6ff2",
+      paletteRangeSpread: 0.5,
+      paletteRangeCount: 8,
       circles: [],
       sampleScale: 1,
       sampleDetail: 0.85,
@@ -734,6 +798,7 @@
       aspectRatio: "source",
       recordFps: 60,
       recordBitrate: 10,
+      recordingActive: false,
       lastRenderSource: null,
       lastBounds: { offsetX: 0, offsetY: 0, width: 0, height: 0 },
       loadedImage: null
@@ -745,6 +810,12 @@
     let recordedChunks = [];
     let previewHandle = null;
     let rng = mulberry32(1);
+    let recordingContext = {
+      active: false,
+      prevPreviewOn: true,
+      prevLivePreview: true,
+      prevPreviewFps: 60
+    };
     let poissTmp = {
       queue: [],
       grid: [],
@@ -845,6 +916,12 @@
       ui.palettePresetSelect = document.getElementById("palettePresetSelect");
       ui.palettePresetRow = document.getElementById("palettePresetRow");
       ui.paletteActions = document.getElementById("paletteActions");
+      ui.paletteRangeColor = document.getElementById("paletteRangeColor");
+      ui.paletteRangeSlider = document.getElementById("paletteRangeSlider");
+      ui.paletteRangeNumber = document.getElementById("paletteRangeNumber");
+      ui.paletteRangeValue = document.getElementById("paletteRangeValue");
+      ui.paletteRangeCount = document.getElementById("paletteRangeCount");
+      ui.paletteRangeApplyBtn = document.getElementById("paletteRangeApplyBtn");
       ui.jitterModeSelect = document.getElementById("jitterModeSelect");
       ui.jitterStrength = document.getElementById("jitterStrength");
       ui.jitterNumber = document.getElementById("jitterNumber");
@@ -972,6 +1049,7 @@
           startHyperRandom();
         }
       });
+      ui.hyperRandomBtn.title = "Start a rapid-fire chaos session that reseeds and remixes settings at high speed.";
       ui.chaosModeSelect.value = state.chaosMode;
       ui.chaosModeSelect.addEventListener("change", () => {
         state.chaosMode = ui.chaosModeSelect.value;
@@ -1072,20 +1150,51 @@
         const val = clamp(Math.round(raw / 10) * 10, min, max);
         ui.countSlider.value = val;
         ui.countNumber.value = val;
-        ui.countValue.textContent = `${val}`;
+        ui.countValue.textContent = `${val.toLocaleString()}`;
         if (state.targetCount !== val) {
           state.targetCount = val;
           requestRender();
         }
       };
 
+      const syncPaletteRangeSpread = (value) => {
+        if (value === "") return;
+        const val = clamp(Number(value), 0, 1);
+        state.paletteRangeSpread = val;
+        if (ui.paletteRangeSlider && document.activeElement !== ui.paletteRangeSlider) {
+          ui.paletteRangeSlider.value = val;
+        }
+        if (ui.paletteRangeNumber && document.activeElement !== ui.paletteRangeNumber) {
+          ui.paletteRangeNumber.value = val.toFixed(2);
+        }
+        if (ui.paletteRangeValue) {
+          ui.paletteRangeValue.textContent = `±${Math.round(val * 180)}°`;
+        }
+        applyPaletteRange(true);
+      };
+
+      const syncPaletteRangeCount = (value) => {
+        if (value === "") return;
+        const min = Number(ui.paletteRangeCount.min);
+        const max = Number(ui.paletteRangeCount.max);
+        const raw = Number(value);
+        if (Number.isNaN(raw)) return;
+        if (raw < min && document.activeElement === ui.paletteRangeCount) {
+          return;
+        }
+        const val = clamp(Math.round(raw), min, max);
+        ui.paletteRangeCount.value = val;
+        state.paletteRangeCount = val;
+        applyPaletteRange(true);
+      };
+
       const syncSize = (value, fromSlider = false) => {
         if (state.mode === "uniform") {
           state.circleSize = clamp(Number(value), 0.2, 0.9);
-          ui.sizeLabel.textContent = `Circle Size (× cell)`;
+          setLabelCopy(ui.sizeLabel, "Circle Size (× cell)");
         } else {
           state.randomRadius = clamp(Number(value), 2, 40);
-          ui.sizeLabel.textContent = "Base Radius (px)";
+          setLabelCopy(ui.sizeLabel, "Base Radius (px)");
         }
         const finalValue = state.mode === "uniform" ? state.circleSize : state.randomRadius;
         const formatted = state.mode === "uniform" ? state.circleSize.toFixed(2) : state.randomRadius.toFixed(1);
@@ -1371,6 +1480,8 @@
         const preset = ui.palettePresetSelect.value;
         if (defaultPalettes[preset]) {
           state.palette = [...defaultPalettes[preset]];
+          state.paletteRangeColor = state.palette[0] || state.paletteRangeColor;
+          state.paletteRangeCount = state.palette.length;
           syncPaletteUI();
           requestRender();
         }
@@ -1387,6 +1498,27 @@
         syncPaletteUI();
         requestRender();
       });
+
+      ui.paletteRangeColor.addEventListener("input", (e) => {
+        state.paletteRangeColor = e.target.value;
+        applyPaletteRange(true);
+      });
+      ui.paletteRangeSlider.addEventListener("input", (e) => {
+        syncPaletteRangeSpread(e.target.value);
+      });
+      ui.paletteRangeNumber.addEventListener("input", (e) => {
+        syncPaletteRangeSpread(e.target.value);
+      });
+      ui.paletteRangeCount.addEventListener("input", (e) => {
+        syncPaletteRangeCount(e.target.value);
+      });
+      ui.paletteRangeCount.addEventListener("change", (e) => {
+        syncPaletteRangeCount(e.target.value);
+      });
+      ui.paletteRangeApplyBtn.addEventListener("click", () => {
+        applyPaletteRange(false);
+      });
+      ui.paletteRangeApplyBtn.title = "Lock in a new palette using the current range settings.";
 
       ui.jitterModeSelect.addEventListener("change", () => {
         state.jitterMode = ui.jitterModeSelect.value;
@@ -1575,6 +1707,7 @@
       ui.editNudgeValue.textContent = state.editNudge;
       ui.resNumber.value = state.resolution;
       ui.countNumber.value = state.targetCount;
+      ui.countValue.textContent = state.targetCount.toLocaleString();
 
       ui.displayCanvas.addEventListener("pointerdown", handlePointerDown);
       ui.displayCanvas.addEventListener("pointermove", handlePointerMove);
@@ -1585,6 +1718,7 @@
       handleModeChange();
       ui.colorModeSelect.dispatchEvent(new Event("change"));
       updateEditControls();
+      applyInfoTooltips();
     }
 
     function handleModeChange() {
@@ -1610,7 +1744,7 @@
         ui.sizeNumber.step = 0.1;
         ui.sizeNumber.value = state.randomRadius.toFixed(1);
       }
-      ui.sizeLabel.textContent = uniform ? "Circle Size (× cell)" : "Base Radius (px)";
+      setLabelCopy(ui.sizeLabel, uniform ? "Circle Size (× cell)" : "Base Radius (px)");
     }
 
     function toggleEditOverlay() {
@@ -1740,9 +1874,61 @@
       updateEditControls();
     }
 
+    function updatePaletteRangeControls() {
+      if (ui.paletteRangeColor && document.activeElement !== ui.paletteRangeColor) {
+        ui.paletteRangeColor.value = state.paletteRangeColor;
+      }
+      if (ui.paletteRangeSlider && document.activeElement !== ui.paletteRangeSlider) {
+        ui.paletteRangeSlider.value = state.paletteRangeSpread;
+      }
+      if (ui.paletteRangeNumber && document.activeElement !== ui.paletteRangeNumber) {
+        ui.paletteRangeNumber.value = state.paletteRangeSpread.toFixed(2);
+      }
+      if (ui.paletteRangeValue) {
+        ui.paletteRangeValue.textContent = `±${Math.round(state.paletteRangeSpread * 180)}°`;
+      }
+      if (ui.paletteRangeCount && document.activeElement !== ui.paletteRangeCount) {
+        ui.paletteRangeCount.value = state.paletteRangeCount;
+      }
+    }
+
+    function generatePaletteRange(baseHex, spread, count) {
+      const base = hexToRgb(baseHex || "#ffffff");
+      const { h, s, l } = rgbToHsl(base.r, base.g, base.b);
+      const span = clamp(spread, 0, 1) * 180;
+      const colors = [];
+      const total = Math.max(1, count);
+      for (let i = 0; i < total; i++) {
+        const t = total === 1 ? 0.5 : i / (total - 1);
+        const hue = h - span + t * span * 2;
+        const saturationPulse = clamp(s * (0.65 + Math.sin(t * Math.PI) * 0.35) + 0.15, 0.05, 1);
+        const lightPulse = clamp(l * 0.7 + 0.18 + Math.cos((t - 0.5) * Math.PI) * 0.18, 0.05, 0.95);
+        const rgb = hslToRgb(hue, saturationPulse, lightPulse);
+        colors.push(rgbToHex(rgb));
+      }
+      return colors;
+    }
+
+    function applyPaletteRange(auto = false) {
+      const min = Number(ui.paletteRangeCount?.min) || 3;
+      const max = Number(ui.paletteRangeCount?.max) || 24;
+      const desired = clamp(Math.round(Number(ui.paletteRangeCount?.value ?? state.paletteRangeCount)), min, max);
+      state.paletteRangeCount = desired;
+      const palette = generatePaletteRange(state.paletteRangeColor, state.paletteRangeSpread, desired);
+      state.palette = [...palette];
+      state.activePalette = [...palette];
+      syncPaletteUI();
+      if (!auto) {
+        updateStatus("Palette regenerated from the selected color range.");
+      }
+      requestRender();
+    }
+
     function syncPaletteUI() {
       ui.paletteGrid.innerHTML = "";
       state.activePalette = [...state.palette];
+      state.paletteRangeCount = state.palette.length;
+      updatePaletteRangeControls();
       state.palette.forEach((color, index) => {
         const node = ui.paletteCellTemplate.content.firstElementChild.cloneNode(true);
         const colorInput = node.querySelector("input[type='color']");
@@ -1750,11 +1936,16 @@
         colorInput.value = color;
         colorInput.addEventListener("input", (evt) => {
           state.palette[index] = evt.target.value;
+          state.paletteRangeColor = evt.target.value;
+          state.paletteRangeSpread = clamp(state.paletteRangeSpread, 0, 1);
+          state.paletteRangeCount = state.palette.length;
+          updatePaletteRangeControls();
           requestRender();
         });
         removeBtn.addEventListener("click", () => {
           if (state.palette.length > 1) {
             state.palette.splice(index, 1);
+            state.paletteRangeCount = state.palette.length;
             syncPaletteUI();
             requestRender();
           }
@@ -1981,7 +2172,7 @@
           if (Math.abs((state.circleSize ?? base) - base) > 1e-3) {
             state.circleSize = base;
             if (state.mode === "uniform") {
-              ui.sizeLabel.textContent = "Circle Size (× cell)";
+              setLabelCopy(ui.sizeLabel, "Circle Size (× cell)");
               ui.sizeNumber.min = 0.2;
               ui.sizeNumber.max = 0.9;
               ui.sizeNumber.step = 0.01;
@@ -1997,7 +2188,7 @@
           if (Math.abs((state.randomRadius ?? base) - base) > 1e-3) {
             state.randomRadius = base;
             if (state.mode === "random") {
-              ui.sizeLabel.textContent = "Base Radius (px)";
+              setLabelCopy(ui.sizeLabel, "Base Radius (px)");
               ui.sizeNumber.min = 2;
               ui.sizeNumber.max = 40;
               ui.sizeNumber.step = 0.1;
@@ -2160,7 +2351,7 @@
         state.staticMotionDepth = depth;
         state.staticMotionSpeed = speed;
         state.staticMotionParallax = parallax;
-        const modes = ["sway", "pulse", "orbit", "ripple", "glimmer", "cascade", "drift", "spark"];
+        const modes = ["sway", "pulse", "orbit", "ripple", "glimmer", "cascade", "drift", "spark", "aurora", "starlight"];
         const modeIndex = Math.floor((state.chaosPhase / (Math.PI * 1.5)) % modes.length);
         if (modes[modeIndex] && state.staticMotionMode !== modes[modeIndex]) {
           state.staticMotionMode = modes[modeIndex];
@@ -2193,7 +2384,7 @@
           const size = clamp(base + Math.sin(state.chaosPhase * 1.1) * 0.3 * intensity, sizeMin, sizeMax);
           if (Math.abs(state.circleSize - size) > 0.002) {
             state.circleSize = size;
-            ui.sizeLabel.textContent = "Circle Size (× cell)";
+            setLabelCopy(ui.sizeLabel, "Circle Size (× cell)");
             ui.sizeNumber.min = sizeMin;
             ui.sizeNumber.max = sizeMax;
             ui.sizeNumber.step = 0.01;
@@ -2209,7 +2400,7 @@
           const radius = clamp(base + Math.sin(state.chaosPhase * 1.4) * 8 * intensity, radiusMin, radiusMax);
           if (Math.abs(state.randomRadius - radius) > 0.2) {
             state.randomRadius = radius;
-            ui.sizeLabel.textContent = "Base Radius (px)";
+            setLabelCopy(ui.sizeLabel, "Base Radius (px)");
             ui.sizeNumber.min = radiusMin;
             ui.sizeNumber.max = radiusMax;
             ui.sizeNumber.step = 0.1;
@@ -2645,17 +2836,18 @@
             break;
           }
           case "glimmer": {
-            const flicker = (Math.sin(localPhase * 2.5 + index) + 1) * 0.5;
-            const scale = 1 + (flicker - 0.5) * depth * 0.6;
+            const flicker = (Math.sin(localPhase * 2.8 + index * 1.7) + 1) * 0.5;
+            const sparkle = Math.pow(flicker, 3) * depth;
             const tinted = {
-              r: clamp(color.r * scale, 0, 255),
-              g: clamp(color.g * scale, 0, 255),
-              b: clamp(color.b * scale, 0, 255),
+              r: clamp(color.r + (255 - color.r) * sparkle * 0.95 + 30 * sparkle, 0, 255),
+              g: clamp(color.g + (255 - color.g) * sparkle * 0.9 + 24 * sparkle, 0, 255),
+              b: clamp(color.b + (255 - color.b) * sparkle * 0.85 + 18 * sparkle, 0, 255),
               a: color.a
             };
             result.fillColor = colorToStyle(tinted);
-            result.positionDelta.x += (flicker - 0.5) * parallax * baseRadius * 0.6;
-            result.radiusDelta += (flicker - 0.5) * depth * baseRadius * 0.4;
+            result.positionDelta.x += (flicker - 0.5) * parallax * baseRadius * 0.7;
+            result.positionDelta.y += (sparkle - 0.5) * parallax * baseRadius * 0.35;
+            result.radiusDelta += (sparkle - 0.5) * depth * baseRadius * 0.5;
             break;
           }
           case "cascade": {
@@ -2687,6 +2879,33 @@
               a: color.a
             };
             result.fillColor = colorToStyle(glow);
+            break;
+          }
+          case "aurora": {
+            const wave = Math.sin(point.x * 0.004 + phase * 1.1) + Math.cos(point.y * 0.003 + phase * 0.7);
+            const driftAmt = wave * depth * baseRadius * 0.4;
+            result.positionDelta.y += driftAmt;
+            result.positionDelta.x += Math.sin(phase * 0.6 + point.y * 0.002) * parallax * baseRadius * 0.3;
+            result.radiusDelta += Math.cos(localPhase * 1.2) * depth * baseRadius * 0.35;
+            const hsl = rgbToHsl(color.r, color.g, color.b);
+            const hueShift = (Math.sin(phase * 0.5 + point.x * 0.0015) + 1) * 20 - 20;
+            const auroraColor = hslToRgb(hsl.h + hueShift, clamp(hsl.s + 0.2 * depth, 0, 1), clamp(hsl.l + 0.15 * depth - 0.05, 0, 1));
+            result.fillColor = colorToStyle({ ...auroraColor, a: color.a });
+            break;
+          }
+          case "starlight": {
+            const shimmer = Math.max(0, Math.sin(localPhase * 3.6 + point.x * 0.01 + point.y * 0.01));
+            const sparkle = (shimmer ** 4) * depth;
+            result.radiusDelta += sparkle * baseRadius * 0.8;
+            result.positionDelta.x += (rng() - 0.5) * parallax * baseRadius * 0.6 * sparkle;
+            result.positionDelta.y += (rng() - 0.5) * parallax * baseRadius * 0.6 * sparkle;
+            const flare = {
+              r: clamp(color.r + (255 - color.r) * sparkle * 0.95 + 45 * sparkle, 0, 255),
+              g: clamp(color.g + (255 - color.g) * sparkle * 0.9 + 30 * sparkle, 0, 255),
+              b: clamp(color.b + (255 - color.b) * sparkle * 0.85 + 20 * sparkle, 0, 255),
+              a: color.a
+            };
+            result.fillColor = colorToStyle(flare);
             break;
           }
           default: {
@@ -2878,6 +3097,170 @@
       ui.statusMessage.textContent = message;
     }
 
+    function preparePreviewForRecording(recordFps) {
+      if (recordingContext.active) return;
+      recordingContext = {
+        active: true,
+        prevPreviewOn: state.previewOn,
+        prevLivePreview: state.livePreview,
+        prevPreviewFps: state.previewFps
+      };
+      state.previewOn = true;
+      state.livePreview = true;
+      if (ui.previewToggle) {
+        ui.previewToggle.checked = true;
+        ui.previewToggle.disabled = true;
+      }
+      if (ui.livePreviewCheckbox) {
+        ui.livePreviewCheckbox.checked = true;
+        ui.livePreviewCheckbox.disabled = true;
+      }
+      if (ui.previewHoldBtn) {
+        ui.previewHoldBtn.disabled = true;
+        ui.previewHoldBtn.textContent = "Pause Preview";
+      }
+      if (state.previewFps !== recordFps) {
+        state.previewFps = recordFps;
+        state.previewBaseFps = recordFps;
+        updateControlTriple(ui.previewFpsSlider, ui.previewFpsNumber, ui.previewFpsValue, recordFps, 0);
+      }
+      schedulePreview(true);
+    }
+
+    function restorePreviewAfterRecording() {
+      if (!recordingContext.active) return;
+      const { prevPreviewOn, prevLivePreview, prevPreviewFps } = recordingContext;
+      recordingContext.active = false;
+      state.previewFps = prevPreviewFps;
+      state.previewBaseFps = prevPreviewFps;
+      updateControlTriple(ui.previewFpsSlider, ui.previewFpsNumber, ui.previewFpsValue, prevPreviewFps, 0);
+      state.previewOn = prevPreviewOn;
+      state.livePreview = prevLivePreview;
+      if (ui.previewToggle) {
+        ui.previewToggle.disabled = false;
+        ui.previewToggle.checked = prevPreviewOn;
+      }
+      if (ui.livePreviewCheckbox) {
+        ui.livePreviewCheckbox.disabled = false;
+        ui.livePreviewCheckbox.checked = prevLivePreview;
+      }
+      if (ui.previewHoldBtn) {
+        ui.previewHoldBtn.disabled = false;
+        ui.previewHoldBtn.textContent = prevPreviewOn ? "Pause Preview" : "Resume Preview";
+      }
+      if (prevPreviewOn && prevLivePreview) {
+        schedulePreview(true);
+      } else {
+        cancelPreview();
+        if (prevPreviewOn && !prevLivePreview) {
+          render(performance.now());
+        }
+      }
+    }
+
+    function ensureLabelTextSpan(label) {
+      if (!label) return null;
+      let textSpan = label.querySelector(".label-text");
+      if (!textSpan) {
+        const inlineValue = label.querySelector(".inline-value");
+        const rawText = label.textContent || "";
+        const valueText = inlineValue ? inlineValue.textContent : "";
+        const baseText = inlineValue ? rawText.replace(valueText, "").trim() : rawText.trim();
+        textSpan = document.createElement("span");
+        textSpan.className = "label-text";
+        textSpan.textContent = baseText;
+        if (inlineValue) {
+          label.insertBefore(textSpan, inlineValue);
+        } else {
+          label.insertBefore(textSpan, label.firstChild);
+        }
+        Array.from(label.childNodes).forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            label.removeChild(node);
+          }
+        });
+      }
+      return textSpan;
+    }
+
+    function setLabelCopy(label, text) {
+      const span = ensureLabelTextSpan(label);
+      if (span) {
+        span.textContent = text;
+      }
+    }
+
+    function attachInfoToLabel(label, text) {
+      if (!label || label.querySelector(".info-icon")) return;
+      ensureLabelTextSpan(label);
+      const icon = document.createElement("span");
+      icon.className = "info-icon";
+      icon.textContent = "i";
+      icon.title = text;
+      icon.setAttribute("aria-label", text);
+      icon.setAttribute("tabindex", "0");
+      label.appendChild(icon);
+    }
+
+    function attachInfoByInputId(id, text) {
+      const input = document.getElementById(id);
+      if (!input) return;
+      const label = input.closest("label") || document.querySelector(`label[for='${id}']`);
+      attachInfoToLabel(label, text);
+    }
+
+    function attachInfoBySelector(selector, text) {
+      const label = document.querySelector(selector);
+      attachInfoToLabel(label, text);
+    }
+
+    function applyInfoTooltips() {
+      attachInfoByInputId("mirrorCheckbox", "Flip the webcam horizontally for a familiar mirrored selfie view.");
+      attachInfoByInputId("previewToggle", "Toggle whether frames update automatically. Disable to save CPU while editing.");
+      attachInfoByInputId("livePreviewCheckbox", "Keeps the preview running continuously around the selected FPS target.");
+      attachInfoBySelector("label[for='resSlider']", "Set how many cells per side the uniform grid uses (higher = more circles).");
+      attachInfoBySelector("label[for='countSlider']", "Target number of Poisson circles. The sampler keeps them from overlapping.");
+      attachInfoToLabel(document.getElementById("sizeLabel"), "Adjust circle radius. In random mode this is measured in pixels.");
+      attachInfoBySelector("label[for='seedInput']", "All randomness comes from this seed. Same seed + settings = same mosaic.");
+      attachInfoBySelector("label[for='aspectRatioSelect']", "Force the canvas to common aspect ratios or keep the original source shape.");
+      attachInfoBySelector("label[for='colorModeSelect']", "Choose how sampled colors are remapped before drawing circles.");
+      attachInfoBySelector("label[for='gammaSlider']", "Rebalance mid-tones before grayscale/palette mapping for punchier output.");
+      attachInfoBySelector("label[for='palettePresetSelect']", "Load curated color sets as creative filters.");
+      attachInfoBySelector("label[for='paletteRangeColor']", "Pick the central hue for automatically generated palette ranges.");
+      attachInfoBySelector("label[for='paletteRangeSlider']", "Expand or tighten the hue window around the center color.");
+      attachInfoBySelector("label[for='paletteRangeCount']", "How many swatches to generate within the hue range.");
+      attachInfoBySelector("label[for='jitterModeSelect']", "Choose which property (brightness, hue, etc.) modulates circle variation.");
+      attachInfoBySelector("label[for='jitterStrength']", "Control how strongly size, offset, or tint respond to the jitter mode.");
+      attachInfoByInputId("outlineCheckbox", "Draws a fine stroke around each circle for crisper definition.");
+      attachInfoByInputId("paletteDitherCheckbox", "Adds subtle noise before palette snapping to reduce color banding.");
+      attachInfoByInputId("staticMotionCheckbox", "Keeps still images gently animating so uploaded photos feel alive.");
+      attachInfoBySelector("label[for='staticMotionMode']", "Select the animation flavor applied to still images.");
+      attachInfoBySelector("label[for='staticMotionSlider']", "Sets how deep the motion distortions bend circle size and offsets.");
+      attachInfoBySelector("label[for='staticMotionSpeed']", "Controls how quickly the static motion cycles.");
+      attachInfoBySelector("label[for='staticMotionParallax']", "Scales how far circles sway relative to brightness for layered depth.");
+      attachInfoByInputId("editSnapCheckbox", "In uniform mode, snaps moved circles back to their grid cell centers.");
+      attachInfoBySelector("label[for='editNudgeSlider']", "Keyboard arrow nudge distance while editing.");
+      attachInfoBySelector("label[for='editRadiusSlider']", "Resize the selected circle precisely when editing.");
+      attachInfoBySelector("label[for='sampleDetailSlider']", "Downsampled resolution of the source used for color sampling.");
+      attachInfoBySelector("label[for='sampleMaxSlider']", "Largest dimension of the sampling buffer—lower it for faster previews.");
+      attachInfoBySelector("label[for='temporalBlendSlider']", "Blend the current frame with previous ones for trailing, softer motion.");
+      attachInfoBySelector("label[for='previewFpsSlider']", "Target frames per second for the live preview loop.");
+      attachInfoBySelector("label[for='recordFpsSlider']", "Frame rate used when capturing WebM recordings.");
+      attachInfoBySelector("label[for='recordBitrateSlider']", "Video bitrate in megabits per second—higher preserves more detail.");
+      attachInfoBySelector("label[for='chaosModeSelect']", "Pick a pre-built chaos recipe that toggles related effects together.");
+      attachInfoBySelector("label[for='chaosSpeedSlider']", "How many chaotic tweaks happen per second while chaos is active.");
+      attachInfoBySelector("label[for='chaosIntensitySlider']", "Scale of each chaos effect—higher swings settings more dramatically.");
+      attachInfoByInputId("chaosSeedToggle", "Continuously re-rolls the seed for ever-changing arrangements.");
+      attachInfoByInputId("chaosPaletteToggle", "Breathes the palette hues and saturation over time.");
+      attachInfoByInputId("chaosMotionToggle", "Drives static motion depth and speed for cinematic movement.");
+      attachInfoByInputId("chaosColorToggle", "Waves through gamma and color shifts for dreamy looks.");
+      attachInfoByInputId("chaosSizeToggle", "Oscillates circle radii for a breathing mosaic.");
+      attachInfoByInputId("chaosAspectToggle", "Cycles aspect ratios while chaos runs for dynamic framing.");
+      attachInfoByInputId("chaosDetailToggle", "Pushes sample detail up/down to modulate texture.");
+      attachInfoByInputId("chaosJitterToggle", "Swings the jitter strength to alternate between calm and wild.");
+      attachInfoByInputId("chaosBlendToggle", "Animates temporal blending for a soft bloom-style trail.");
+    }
+
     function toggleRecording() {
       if (recorder && recorder.state === "recording") {
         recorder.stop();
@@ -2886,6 +3269,7 @@
       }
       try {
         const recordFps = Math.max(24, Math.min(120, Math.round(state.recordFps || 60)));
+        preparePreviewForRecording(recordFps);
         const stream = ui.displayCanvas.captureStream(recordFps);
         const track = stream.getVideoTracks?.()[0];
         if (track && track.applyConstraints) {
@@ -2914,15 +3298,20 @@
           URL.revokeObjectURL(url);
           ui.recordBtn.textContent = "Start Recording";
           ui.recordStatus.classList.add("hidden");
+          state.recordingActive = false;
+          restorePreviewAfterRecording();
           updateStatus("Recording saved as circles.webm");
         };
-        recorder.start();
+        recorder.start(Math.max(100, Math.floor(1000 / recordFps)));
+        state.recordingActive = true;
         ui.recordBtn.textContent = "Stop Recording";
         ui.recordStatus.classList.remove("hidden");
         updateStatus("Recording...");
       } catch (error) {
         console.error(error);
         updateStatus("Recording unavailable in this browser.");
+        state.recordingActive = false;
+        restorePreviewAfterRecording();
       }
     }
 
