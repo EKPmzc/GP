@@ -10,28 +10,58 @@ EKP Saturator is a JUCE 7 audio effect plugin (VST3/AU) focused on antialiased s
 - Built-in loudness metering and true-peak limiter skeleton for integration with mastering chains.
 - Analyzer, transfer curve display, and preset bar with hook points for factory content.
 
-## Building
+## Building & Running
 
-The project uses CMake and expects JUCE 7.0.12 as a dependency. By default JUCE is fetched automatically via `FetchContent`.
+### 1. Install prerequisites
+
+- **CMake 3.22+** and a recent compiler toolchain that supports C++17
+  (Visual Studio 2022, Xcode 14+, clang, or GCC 11+).
+- **JUCE 7.0.12**. The default CMake flow fetches JUCE automatically, but if
+  you are offline place a local JUCE checkout on disk and pass
+  `-DJUCE_DIR=/path/to/JUCE` when configuring.
+- *(Optional but recommended)* **Ninja** for faster multi-configuration builds.
+
+### 2. Configure the project
 
 ```bash
-cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 ```
 
-On macOS the AU target is generated automatically. On Windows the VST3 target is generated under `build/EKPSaturator_artefacts`.
+If you prefer another generator, substitute `-G "Ninja"` with e.g. `-G "Xcode"`
+or `-G "Visual Studio 17 2022"`.
+
+### 3. Build the plugin binaries
+
+```bash
+cmake --build build --config Release
+```
+
+The build produces platform-specific artefacts inside
+`build/EKPSaturator_artefacts/`. Look for:
+
+- **Windows:** `EKPSaturator.vst3`
+- **macOS:** `EKPSaturator.vst3` and `EKPSaturator.component` (AU)
+
+### 4. Load the plugin in a host
+
+Copy or symlink the generated artefacts to your DAW's plugin search paths and
+rescan. For quick testing you can use JUCE's
+[`AudioPluginHost`](https://github.com/juce-framework/JUCE/tree/master/extras/AudioPluginHost)
+application: launch it, add the build output folder to the scan paths, and load
+**EKP Saturator**.
 
 ### IDE Integration
 
 - **CLion / Visual Studio Code** – open the folder as a CMake project.
 - **Xcode** – generate via `cmake -B build -G Xcode`.
+- **Visual Studio** – generate via `cmake -B build -G "Visual Studio 17 2022"`.
 
 ## Testing
 
-Run the JUCE unit tests target:
+After configuring the project, build and run the JUCE unit test target:
 
 ```bash
-cmake --build build --target EKPTests
+cmake --build build --target EKPTests --config Release
 ```
 
 ## Plugin Notes
