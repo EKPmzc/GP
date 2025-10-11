@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seeded Circle Mosaic Studio</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background-color: #1b1b1f;
+      color: #f1f1f5;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #23232a;
+      border-bottom: 1px solid #333;
+      padding: 0.75rem 1rem;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      align-items: center;
+      font-size: 0.95rem;
+    }
+
+    .toolbar label,
+    .toolbar fieldset {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0;
+    }
+
+    fieldset {
+      border: 1px solid #3c3c46;
+      border-radius: 0.5rem;
+      padding: 0.4rem 0.8rem;
+    }
+
+    fieldset legend {
+      padding: 0 0.3rem;
+      font-size: 0.85rem;
+      color: #c1c1d1;
+    }
+
+    input[type="range"] {
+      accent-color: #6c9;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    button,
+    select {
+      background-color: #2f2f36;
+      color: inherit;
+      border: 1px solid #41414c;
+      border-radius: 0.35rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.9rem;
+    }
+
+    button:hover {
+      background-color: #3c3c46;
+      cursor: pointer;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    .canvas-wrapper {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #151519;
+      border: 1px solid #2c2c34;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      min-height: 60vh;
+      position: relative;
+    }
+
+    canvas {
+      max-width: 100%;
+      max-height: 100%;
+      background: #0f0f14;
+      border: 1px solid #2d2d33;
+      border-radius: 0.5rem;
+    }
+
+    #statusMessage {
+      color: #f4c38b;
+      font-size: 0.9rem;
+      min-height: 1.2rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .spacer {
+      flex-grow: 1;
+    }
+
+    .value-tag {
+      font-variant-numeric: tabular-nums;
+      min-width: 3ch;
+      display: inline-flex;
+      justify-content: center;
+    }
+
+    .palette-editor {
+      background: #23232a;
+      border: 1px solid #333;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .palette-editor h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .palette-editor p {
+      margin: 0;
+      color: #c1c1d1;
+      font-size: 0.9rem;
+    }
+
+    .palette-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .palette-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      background: #1f1f25;
+      border: 1px solid #34343e;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .palette-row label {
+      font-size: 0.85rem;
+      color: #e0e0ec;
+    }
+
+    .palette-row input[type="color"] {
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      border: none;
+      background: none;
+    }
+
+    .palette-hex-input {
+      width: 6rem;
+      text-transform: uppercase;
+    }
+
+    .palette-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 720px) {
+      fieldset {
+        width: 100%;
+      }
+      .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Seeded Circle Mosaic Studio</h1>
+    <div class="toolbar" id="toolbar">
+      <fieldset>
+        <legend>Source</legend>
+        <button id="cameraToggleBtn">Start Camera</button>
+        <input type="file" id="imageInput" accept="image/*" />
+      </fieldset>
+
+      <fieldset>
+        <legend>Mode</legend>
+        <label><input type="radio" name="mode" value="uniform" checked /> Uniform</label>
+        <label><input type="radio" name="mode" value="random" /> Random</label>
+      </fieldset>
+
+      <label for="resSlider" id="resLabel"><span id="resLabelText">Resolution</span> <span class="value-tag" id="resValue">40×40</span></label>
+      <input type="range" id="resSlider" min="1" max="200" value="40" />
+
+      <label for="sizeSlider" id="sizeLabel"><span id="sizeLabelText">Circle Size</span> <span class="value-tag" id="sizeValue">0.90</span></label>
+      <input type="range" id="sizeSlider" min="0.2" max="0.9" step="0.01" value="0.9" />
+
+      <label for="seedInput">Seed</label>
+      <input type="text" id="seedInput" />
+      <button id="randomizeBtn">Randomize</button>
+
+      <label for="gammaSlider">Gamma <span class="value-tag" id="gammaValue">1.00</span></label>
+      <input type="range" id="gammaSlider" min="0.5" max="2" step="0.01" value="1" />
+
+      <label for="colorMode">Color Mode</label>
+      <select id="colorMode">
+        <option value="source">Source Colors</option>
+        <option value="grayscale">Grayscale</option>
+        <option value="palette">Palette</option>
+      </select>
+
+      <label><input type="checkbox" id="mirrorCheckbox" checked /> Mirror Webcam</label>
+      <label><input type="checkbox" id="jitterCheckbox" /> Jitter Size by Brightness</label>
+      <label for="jitterSlider">Strength <span class="value-tag" id="jitterValue">0.50</span></label>
+      <input type="range" id="jitterSlider" min="0" max="1" step="0.01" value="0.5" disabled />
+
+      <label><input type="checkbox" id="outlineCheckbox" /> Outline Circles</label>
+      <label><input type="checkbox" id="livePreviewCheckbox" /> Live Preview</label>
+
+      <div class="spacer"></div>
+      <button id="renderBtn">Render Once</button>
+      <button id="recordBtn">Start Recording</button>
+      <button id="downloadBtn">Download PNG</button>
+    </div>
+  </header>
+  <main>
+    <div id="statusMessage"></div>
+    <div class="canvas-wrapper">
+      <canvas id="displayCanvas" width="800" height="600"></canvas>
+    </div>
+    <section class="palette-editor" id="paletteEditorSection">
+      <h2>Palette Editor</h2>
+      <p>Edit the swatches used when Color Mode is set to Palette.</p>
+      <div id="paletteList" class="palette-list"></div>
+      <div class="palette-actions">
+        <button id="addPaletteColorBtn" type="button">Add Color</button>
+        <button id="resetPaletteBtn" type="button">Reset Palette</button>
+      </div>
+    </section>
+  </main>
+
+  <video id="sourceVideo" class="hidden" playsinline muted></video>
+  <canvas id="sourceCanvas" class="hidden"></canvas>
+
+  <script>
+    const defaultPalette = [
+      [239, 71, 111],
+      [255, 209, 102],
+      [6, 214, 160],
+      [17, 138, 178],
+      [7, 59, 76],
+      [255, 125, 0],
+      [111, 45, 189],
+      [237, 242, 244],
+      [33, 33, 40],
+      [58, 12, 163]
+    ];
+
+    const state = {
+      mode: 'uniform',
+      seed: Date.now().toString(),
+      livePreview: false,
+      sourceType: 'none',
+      sourceReady: false,
+      imageElement: null,
+      cameraStream: null,
+      pendingAnimation: null,
+      lastAnimationRender: 0,
+      palette: defaultPalette.map(color => color.slice()),
+      recorder: null,
+      recordedChunks: [],
+      recordingStream: null,
+      recordingActive: false,
+      recordingCount: 1
+    };
+
+    const elements = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      cacheElements();
+      initUI();
+      initPaletteEditor();
+      updateSeed(state.seed);
+      updateStatus('Load an image or start the camera, then click "Render Once".');
+    });
+
+    function cacheElements() {
+      elements.canvas = document.getElementById('displayCanvas');
+      elements.ctx = elements.canvas.getContext('2d');
+      elements.sourceCanvas = document.getElementById('sourceCanvas');
+      elements.sourceCtx = elements.sourceCanvas.getContext('2d');
+      elements.video = document.getElementById('sourceVideo');
+      elements.cameraToggleBtn = document.getElementById('cameraToggleBtn');
+      elements.imageInput = document.getElementById('imageInput');
+      elements.resSlider = document.getElementById('resSlider');
+      elements.resValue = document.getElementById('resValue');
+      elements.sizeSlider = document.getElementById('sizeSlider');
+      elements.sizeValue = document.getElementById('sizeValue');
+      elements.gammaSlider = document.getElementById('gammaSlider');
+      elements.gammaValue = document.getElementById('gammaValue');
+      elements.seedInput = document.getElementById('seedInput');
+      elements.randomizeBtn = document.getElementById('randomizeBtn');
+      elements.colorMode = document.getElementById('colorMode');
+      elements.mirrorCheckbox = document.getElementById('mirrorCheckbox');
+      elements.jitterCheckbox = document.getElementById('jitterCheckbox');
+      elements.jitterSlider = document.getElementById('jitterSlider');
+      elements.jitterValue = document.getElementById('jitterValue');
+      elements.outlineCheckbox = document.getElementById('outlineCheckbox');
+      elements.livePreviewCheckbox = document.getElementById('livePreviewCheckbox');
+      elements.renderBtn = document.getElementById('renderBtn');
+      elements.recordBtn = document.getElementById('recordBtn');
+      elements.downloadBtn = document.getElementById('downloadBtn');
+      elements.resLabel = document.getElementById('resLabel');
+      elements.resLabelText = document.getElementById('resLabelText');
+      elements.sizeLabel = document.getElementById('sizeLabel');
+      elements.sizeLabelText = document.getElementById('sizeLabelText');
+      elements.statusMessage = document.getElementById('statusMessage');
+      elements.paletteList = document.getElementById('paletteList');
+      elements.addPaletteColorBtn = document.getElementById('addPaletteColorBtn');
+      elements.resetPaletteBtn = document.getElementById('resetPaletteBtn');
+    }
+
+    function initUI() {
+      document.querySelectorAll('input[name="mode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (radio.checked) {
+            state.mode = radio.value;
+            adjustControlsForMode();
+            render();
+          }
+        });
+      });
+
+      elements.resSlider.addEventListener('input', () => {
+        updateResolutionLabel();
+        render();
+      });
+
+      elements.sizeSlider.addEventListener('input', () => {
+        updateSizeLabel();
+        render();
+      });
+
+      elements.gammaSlider.addEventListener('input', () => {
+        elements.gammaValue.textContent = Number(elements.gammaSlider.value).toFixed(2);
+        render();
+      });
+
+      elements.seedInput.addEventListener('change', () => {
+        updateSeed(elements.seedInput.value.trim());
+        render();
+      });
+
+      elements.randomizeBtn.addEventListener('click', () => {
+        randomizeSeed();
+        render();
+      });
+
+      elements.colorMode.addEventListener('change', () => render());
+      elements.mirrorCheckbox.addEventListener('change', () => render());
+
+      elements.jitterCheckbox.addEventListener('change', () => {
+        elements.jitterSlider.disabled = !elements.jitterCheckbox.checked;
+        render();
+      });
+
+      elements.jitterSlider.addEventListener('input', () => {
+        elements.jitterValue.textContent = Number(elements.jitterSlider.value).toFixed(2);
+        render();
+      });
+
+      elements.outlineCheckbox.addEventListener('change', () => render());
+
+      elements.livePreviewCheckbox.addEventListener('change', () => {
+        state.livePreview = elements.livePreviewCheckbox.checked;
+        state.lastAnimationRender = 0;
+        render();
+        ensureAnimationLoop();
+      });
+
+      elements.renderBtn.addEventListener('click', () => render());
+      elements.recordBtn.addEventListener('click', () => toggleRecording());
+      elements.downloadBtn.addEventListener('click', () => downloadPNG());
+
+      elements.cameraToggleBtn.addEventListener('click', async () => {
+        if (state.sourceType === 'video') {
+          stopCamera();
+        } else {
+          await startCamera();
+        }
+      });
+
+      elements.imageInput.addEventListener('change', event => {
+        const file = event.target.files && event.target.files[0];
+        if (file) {
+          setSourceToImage(file);
+        }
+      });
+
+      window.addEventListener('resize', () => render());
+      window.addEventListener('keydown', handleKeyShortcuts);
+
+      adjustControlsForMode();
+      updateResolutionLabel();
+      updateSizeLabel();
+      elements.gammaValue.textContent = Number(elements.gammaSlider.value).toFixed(2);
+      elements.jitterValue.textContent = Number(elements.jitterSlider.value).toFixed(2);
+    }
+
+    function initPaletteEditor() {
+      renderPaletteEditor();
+      elements.addPaletteColorBtn.addEventListener('click', () => {
+        addPaletteColor('#ffffff');
+      });
+      elements.resetPaletteBtn.addEventListener('click', () => {
+        state.palette = defaultPalette.map(color => color.slice());
+        renderPaletteEditor();
+        if (elements.colorMode.value === 'palette') {
+          render();
+        }
+      });
+    }
+
+    function renderPaletteEditor() {
+      if (!elements.paletteList) return;
+      elements.paletteList.innerHTML = '';
+      state.palette.forEach((color, index) => {
+        const row = document.createElement('div');
+        row.className = 'palette-row';
+
+        const label = document.createElement('label');
+        label.textContent = `Color ${index + 1}`;
+        label.setAttribute('for', `paletteColor${index}`);
+        row.appendChild(label);
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.id = `paletteColor${index}`;
+        const hexValue = rgbArrayToHex(color);
+        colorInput.value = hexValue;
+
+        const hexInput = document.createElement('input');
+        hexInput.type = 'text';
+        hexInput.className = 'palette-hex-input';
+        hexInput.value = hexValue.toUpperCase();
+        hexInput.maxLength = 7;
+        hexInput.setAttribute('aria-label', `Hex value for color ${index + 1}`);
+
+        colorInput.addEventListener('input', event => {
+          const value = event.target.value;
+          state.palette[index] = hexToRgbArray(value);
+          hexInput.value = value.toUpperCase();
+          if (elements.colorMode.value === 'palette') {
+            render();
+          }
+        });
+
+        hexInput.addEventListener('change', () => {
+          const normalized = normalizeHex(hexInput.value);
+          if (!normalized) {
+            hexInput.value = rgbArrayToHex(state.palette[index]).toUpperCase();
+            return;
+          }
+          state.palette[index] = hexToRgbArray(normalized);
+          colorInput.value = normalized;
+          hexInput.value = normalized.toUpperCase();
+          if (elements.colorMode.value === 'palette') {
+            render();
+          }
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'Remove';
+        removeBtn.disabled = state.palette.length <= 1;
+        removeBtn.addEventListener('click', () => {
+          if (state.palette.length <= 1) {
+            return;
+          }
+          state.palette.splice(index, 1);
+          renderPaletteEditor();
+          if (elements.colorMode.value === 'palette') {
+            render();
+          }
+        });
+
+        row.appendChild(colorInput);
+        row.appendChild(hexInput);
+        row.appendChild(removeBtn);
+        elements.paletteList.appendChild(row);
+      });
+    }
+
+    function addPaletteColor(hex) {
+      state.palette.push(hexToRgbArray(hex));
+      renderPaletteEditor();
+      if (elements.colorMode.value === 'palette') {
+        render();
+      }
+    }
+
+    function toggleRecording() {
+      if (state.recordingActive) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+
+    function startRecording() {
+      if (state.recordingActive) {
+        return;
+      }
+      if (typeof MediaRecorder === 'undefined') {
+        updateStatus('MediaRecorder API is not supported in this browser.');
+        return;
+      }
+      if (!elements.canvas.captureStream) {
+        updateStatus('Canvas captureStream is unavailable in this browser.');
+        return;
+      }
+      let stream;
+      try {
+        stream = elements.canvas.captureStream(30);
+      } catch (error) {
+        console.error(error);
+        updateStatus('Unable to access the canvas stream for recording.');
+        return;
+      }
+
+      const mimeCandidates = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+      let recorder = null;
+      for (const mimeType of mimeCandidates) {
+        if (MediaRecorder.isTypeSupported && !MediaRecorder.isTypeSupported(mimeType)) {
+          continue;
+        }
+        try {
+          recorder = new MediaRecorder(stream, { mimeType });
+          break;
+        } catch (error) {
+          recorder = null;
+        }
+      }
+      if (!recorder) {
+        try {
+          recorder = new MediaRecorder(stream);
+        } catch (error) {
+          console.error(error);
+          stream.getTracks().forEach(track => track.stop());
+          updateStatus('Unable to start recording with this browser configuration.');
+          return;
+        }
+      }
+
+      state.recordedChunks = [];
+      state.recordingStream = stream;
+      state.recorder = recorder;
+      state.recordingActive = true;
+      elements.recordBtn.textContent = 'Stop Recording';
+      state.lastAnimationRender = 0;
+
+      recorder.addEventListener('dataavailable', event => {
+        if (event.data && event.data.size > 0) {
+          state.recordedChunks.push(event.data);
+        }
+      });
+      recorder.addEventListener('stop', handleRecorderStop);
+      recorder.addEventListener('error', handleRecorderError);
+
+      try {
+        recorder.start();
+      } catch (error) {
+        console.error(error);
+        updateStatus('Failed to start recording.');
+        state.recordingActive = false;
+        elements.recordBtn.textContent = 'Start Recording';
+        cleanupRecordingStream();
+        return;
+      }
+
+      render();
+      ensureAnimationLoop();
+      updateStatus('Recording started. Press "Stop Recording" to finish.');
+    }
+
+    function stopRecording() {
+      if (!state.recordingActive) {
+        return;
+      }
+      state.recordingActive = false;
+      elements.recordBtn.textContent = 'Start Recording';
+      if (state.recorder && state.recorder.state !== 'inactive') {
+        try {
+          state.recorder.stop();
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        cleanupRecordingStream();
+      }
+      ensureAnimationLoop();
+      updateStatus('Finalizing recording...');
+    }
+
+    function handleRecorderStop() {
+      const recorder = state.recorder;
+      const mimeType = recorder && recorder.mimeType ? recorder.mimeType : 'video/webm';
+      state.recordingActive = false;
+      elements.recordBtn.textContent = 'Start Recording';
+      if (state.recordedChunks.length) {
+        const blob = new Blob(state.recordedChunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const index = state.recordingCount++;
+        const filename = `mosaic-recording-${String(index).padStart(2, '0')}.webm`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        updateStatus(`Recording saved as ${filename}.`);
+      } else {
+        updateStatus('Recording stopped, but no frames were captured.');
+      }
+      ensureAnimationLoop();
+      cleanupRecordingStream();
+    }
+
+    function handleRecorderError(event) {
+      const error = event.error || event;
+      console.error(error);
+      updateStatus('Recording error: unable to continue.');
+      state.recordingActive = false;
+      elements.recordBtn.textContent = 'Start Recording';
+      cleanupRecordingStream();
+      ensureAnimationLoop();
+    }
+
+    function cleanupRecordingStream() {
+      if (state.recorder) {
+        state.recorder.removeEventListener('stop', handleRecorderStop);
+        state.recorder.removeEventListener('error', handleRecorderError);
+      }
+      if (state.recordingStream) {
+        state.recordingStream.getTracks().forEach(track => track.stop());
+      }
+      state.recorder = null;
+      state.recordingStream = null;
+      state.recordedChunks = [];
+    }
+
+    function handleKeyShortcuts(event) {
+      if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) {
+        return;
+      }
+      if (event.code === 'Space') {
+        event.preventDefault();
+        render();
+      } else if (event.key === 'r' || event.key === 'R') {
+        randomizeSeed();
+        render();
+      } else if (event.key === 's' || event.key === 'S') {
+        downloadPNG();
+      }
+    }
+
+    function updateResolutionLabel() {
+      if (state.mode === 'uniform') {
+        const n = Number(elements.resSlider.value);
+        elements.resValue.textContent = `${n}×${n}`;
+      } else {
+        const count = Number(elements.resSlider.value);
+        elements.resValue.textContent = `${count} circles`;
+      }
+    }
+
+    function updateSizeLabel() {
+      if (state.mode === 'uniform') {
+        elements.sizeValue.textContent = Number(elements.sizeSlider.value).toFixed(2);
+      } else {
+        elements.sizeValue.textContent = `${Number(elements.sizeSlider.value).toFixed(1)}px`;
+      }
+    }
+
+    function adjustControlsForMode() {
+      if (state.mode === 'uniform') {
+        elements.resSlider.min = 1;
+        elements.resSlider.max = 200;
+        if (Number(elements.resSlider.value) > 200) {
+          elements.resSlider.value = 40;
+        }
+        elements.resLabelText.textContent = 'Resolution';
+        elements.sizeSlider.min = 0.2;
+        elements.sizeSlider.max = 0.9;
+        elements.sizeSlider.step = 0.01;
+        if (Number(elements.sizeSlider.value) > 1.5) {
+          elements.sizeSlider.value = 0.9;
+        }
+        elements.sizeLabelText.textContent = 'Circle Size';
+      } else {
+        elements.resSlider.min = 10;
+        elements.resSlider.max = 10000;
+        if (Number(elements.resSlider.value) < 10) {
+          elements.resSlider.value = 1500;
+        }
+        elements.resLabelText.textContent = 'Target Count';
+        elements.sizeSlider.min = 2;
+        elements.sizeSlider.max = 40;
+        elements.sizeSlider.step = 0.1;
+        if (Number(elements.sizeSlider.value) < 2) {
+          elements.sizeSlider.value = 8;
+        }
+        elements.sizeLabelText.textContent = 'Base Radius';
+      }
+      updateResolutionLabel();
+      updateSizeLabel();
+    }
+
+    async function startCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        updateStatus('getUserMedia is not supported in this browser.');
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        elements.video.srcObject = stream;
+        await elements.video.play();
+        state.cameraStream = stream;
+        state.sourceType = 'video';
+        state.sourceReady = false;
+        elements.cameraToggleBtn.textContent = 'Stop Camera';
+        updateStatus('Camera streaming. Press "Render Once" to capture.');
+        if (elements.video.readyState >= 2) {
+          state.sourceReady = true;
+        } else {
+          elements.video.addEventListener('loadeddata', () => {
+            state.sourceReady = true;
+            render();
+          }, { once: true });
+        }
+      } catch (err) {
+        console.error(err);
+        updateStatus('Unable to access the camera. Please allow permissions or use an image.');
+      }
+    }
+
+    function stopCamera() {
+      if (state.cameraStream) {
+        state.cameraStream.getTracks().forEach(track => track.stop());
+        state.cameraStream = null;
+      }
+      elements.video.pause();
+      elements.video.srcObject = null;
+      state.sourceType = 'none';
+      state.sourceReady = false;
+      elements.cameraToggleBtn.textContent = 'Start Camera';
+      updateStatus('Camera stopped.');
+    }
+
+    function setSourceToImage(file) {
+      stopCamera();
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        state.imageElement = img;
+        state.sourceType = 'image';
+        state.sourceReady = true;
+        updateStatus('Image loaded. Press "Render Once".');
+        render();
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => {
+        updateStatus('Failed to load image file.');
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+
+    function updateSeed(str) {
+      if (!str) {
+        str = Date.now().toString();
+      }
+      state.seed = str;
+      elements.seedInput.value = str;
+    }
+
+    function randomizeSeed() {
+      const randomSeed = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+      updateSeed(randomSeed);
+    }
+
+    function wantsAnimation() {
+      return state.livePreview || state.recordingActive;
+    }
+
+    function ensureAnimationLoop() {
+      if (wantsAnimation()) {
+        if (!state.pendingAnimation) {
+          state.pendingAnimation = requestAnimationFrame(stepAnimation);
+        }
+      } else if (state.pendingAnimation) {
+        cancelAnimationFrame(state.pendingAnimation);
+        state.pendingAnimation = null;
+      }
+    }
+
+    function stepAnimation(timestamp) {
+      state.pendingAnimation = null;
+      if (!wantsAnimation()) {
+        return;
+      }
+      if (!state.lastAnimationRender || timestamp - state.lastAnimationRender >= 100) {
+        render();
+        state.lastAnimationRender = timestamp;
+      }
+      if (wantsAnimation()) {
+        state.pendingAnimation = requestAnimationFrame(stepAnimation);
+      }
+    }
+
+    function render() {
+      prepareSourceFrame();
+      if (!state.sourceReady) {
+        elements.ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
+        updateStatus('No source available. Load an image or start the camera.');
+        return;
+      }
+      const { width: sourceWidth, height: sourceHeight } = getSourceDimensions();
+      if (!sourceWidth || !sourceHeight) {
+        updateStatus('Source not ready yet.');
+        return;
+      }
+      const container = elements.canvas.parentElement;
+      const containerWidth = container.clientWidth - 2;
+      const containerHeight = container.clientHeight - 2;
+      const aspect = sourceWidth / sourceHeight;
+      let targetWidth = containerWidth;
+      let targetHeight = targetWidth / aspect;
+      if (targetHeight > containerHeight) {
+        targetHeight = containerHeight;
+        targetWidth = targetHeight * aspect;
+      }
+      elements.canvas.width = Math.round(targetWidth);
+      elements.canvas.height = Math.round(targetHeight);
+
+      const ctx = elements.ctx;
+      ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
+
+      const params = collectRenderParams();
+      const sampleFn = (x, y) => sampleColorAt(x, y);
+
+      if (state.mode === 'uniform') {
+        renderUniformGrid(ctx, params, sampleFn);
+      } else {
+        renderRandomPoisson(ctx, params, sampleFn);
+      }
+
+    }
+
+    function collectRenderParams() {
+      const baseSeed = seedFromString(state.seed);
+      return {
+        mode: state.mode,
+        resolution: Number(elements.resSlider.value),
+        size: Number(elements.sizeSlider.value),
+        gamma: Number(elements.gammaSlider.value),
+        colorMode: elements.colorMode.value,
+        mirror: elements.mirrorCheckbox.checked,
+        jitter: elements.jitterCheckbox.checked,
+        jitterStrength: Number(elements.jitterSlider.value),
+        outline: elements.outlineCheckbox.checked,
+        rng: mulberry32(baseSeed),
+        palette: state.palette && state.palette.length ? state.palette : defaultPalette
+      };
+    }
+
+    function prepareSourceFrame() {
+      const offscreen = elements.sourceCanvas;
+      const offCtx = elements.sourceCtx;
+      if (state.sourceType === 'video') {
+        if (!elements.video.videoWidth || !elements.video.videoHeight) {
+          state.sourceReady = false;
+          return;
+        }
+        offscreen.width = elements.video.videoWidth;
+        offscreen.height = elements.video.videoHeight;
+        offCtx.drawImage(elements.video, 0, 0, offscreen.width, offscreen.height);
+        state.sourceReady = true;
+      } else if (state.sourceType === 'image' && state.imageElement) {
+        offscreen.width = state.imageElement.naturalWidth;
+        offscreen.height = state.imageElement.naturalHeight;
+        offCtx.drawImage(state.imageElement, 0, 0);
+        state.sourceReady = true;
+      }
+    }
+
+    function getSourceDimensions() {
+      if (state.sourceType === 'video') {
+        return { width: elements.video.videoWidth, height: elements.video.videoHeight };
+      }
+      if (state.sourceType === 'image' && state.imageElement) {
+        return { width: state.imageElement.naturalWidth, height: state.imageElement.naturalHeight };
+      }
+      return { width: 0, height: 0 };
+    }
+
+    function renderUniformGrid(ctx, params, sampleFn) {
+      const width = ctx.canvas.width;
+      const height = ctx.canvas.height;
+      const n = Math.max(1, Math.round(params.resolution));
+      const cellWidth = width / n;
+      const cellHeight = height / n;
+      const radiusBase = Math.min(cellWidth, cellHeight) / 2;
+
+      for (let row = 0; row < n; row++) {
+        for (let col = 0; col < n; col++) {
+          const cx = (col + 0.5) * cellWidth;
+          const cy = (row + 0.5) * cellHeight;
+          const sample = processSample(sampleFn(cx, cy), params.gamma, params.colorMode, params.palette);
+          let radius = radiusBase * params.size;
+          if (params.jitter) {
+            radius *= 1 + params.jitterStrength * (0.5 - sample.luminance);
+          }
+          drawCircle(ctx, cx, cy, radius, sample.color, params.outline);
+        }
+      }
+      updateStatus(`Rendered uniform grid with ${n}×${n} circles.`);
+    }
+
+    function renderRandomPoisson(ctx, params, sampleFn) {
+      const width = ctx.canvas.width;
+      const height = ctx.canvas.height;
+      const targetCount = Math.round(params.resolution);
+      const baseRadius = Math.max(1, params.size);
+      const cellSize = baseRadius * 2;
+      const cols = Math.ceil(width / cellSize);
+      const rows = Math.ceil(height / cellSize);
+      // Spatial grid buckets accelerate the Poisson-style rejection sampling.
+      const grid = Array.from({ length: cols * rows }, () => []);
+      const circles = [];
+      const rng = params.rng;
+      const maxAttempts = targetCount * 30;
+
+      for (let attempt = 0; attempt < maxAttempts && circles.length < targetCount; attempt++) {
+        const x = rng() * width;
+        const y = rng() * height;
+        const sample = processSample(sampleFn(x, y), params.gamma, params.colorMode, params.palette);
+        let radius = baseRadius;
+        if (params.jitter) {
+          // Darker luminance enlarges circles when jitter is enabled.
+          radius *= 1 + params.jitterStrength * (0.5 - sample.luminance);
+        }
+        radius = Math.max(1, radius);
+        const gx = Math.floor(x / cellSize);
+        const gy = Math.floor(y / cellSize);
+        let fits = true;
+        // Inspect neighbouring buckets to guarantee circles stay non-overlapping.
+        for (let ny = Math.max(0, gy - 2); ny <= Math.min(rows - 1, gy + 2) && fits; ny++) {
+          for (let nx = Math.max(0, gx - 2); nx <= Math.min(cols - 1, gx + 2) && fits; nx++) {
+            const bucket = grid[ny * cols + nx];
+            for (const other of bucket) {
+              const dx = other.x - x;
+              const dy = other.y - y;
+              const distSq = dx * dx + dy * dy;
+              const minDist = other.radius + radius;
+              if (distSq < minDist * minDist) {
+                fits = false;
+                break;
+              }
+            }
+          }
+        }
+        if (fits) {
+          const bucket = grid[gy * cols + gx];
+          const circle = { x, y, radius, color: sample.color };
+          bucket.push(circle);
+          circles.push(circle);
+        }
+      }
+
+      circles.forEach(circle => {
+        drawCircle(ctx, circle.x, circle.y, circle.radius, circle.color, params.outline);
+      });
+      updateStatus(`Rendered ${circles.length} circles (target ${targetCount}).`);
+    }
+
+    function drawCircle(ctx, x, y, radius, color, outline) {
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      if (outline) {
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+        ctx.stroke();
+      }
+    }
+
+    function sampleColorAt(x, y) {
+      const { width: canvasWidth, height: canvasHeight } = elements.canvas;
+      const { width: sourceWidth, height: sourceHeight } = getSourceDimensions();
+      if (!sourceWidth || !sourceHeight) {
+        return { r: 0, g: 0, b: 0, a: 255 };
+      }
+      const nx = x / canvasWidth;
+      const ny = y / canvasHeight;
+      const sx = elements.mirrorCheckbox.checked ? (1 - nx) * sourceWidth : nx * sourceWidth;
+      const sy = ny * sourceHeight;
+      const px = Math.min(sourceWidth - 1, Math.max(0, Math.round(sx)));
+      const py = Math.min(sourceHeight - 1, Math.max(0, Math.round(sy)));
+      // Sample a single pixel from the off-screen canvas backing the current frame.
+      const data = elements.sourceCtx.getImageData(px, py, 1, 1).data;
+      return { r: data[0], g: data[1], b: data[2], a: data[3] };
+    }
+
+    function processSample(rgb, gamma, colorMode, palette) {
+      // Color pipeline: gamma correct then convert to grayscale/palette if requested.
+      const corrected = applyGamma(rgb, gamma);
+      const luminance = computeLuminance(corrected) / 255;
+      let color;
+      if (colorMode === 'grayscale') {
+        const gray = toGrayscale(corrected);
+        color = `rgb(${gray.r}, ${gray.g}, ${gray.b})`;
+      } else if (colorMode === 'palette') {
+        const nearest = nearestPaletteColor(corrected, palette);
+        color = `rgb(${nearest[0]}, ${nearest[1]}, ${nearest[2]})`;
+      } else {
+        color = `rgb(${Math.round(corrected.r)}, ${Math.round(corrected.g)}, ${Math.round(corrected.b)})`;
+      }
+      return { color, luminance };
+    }
+
+    function computeLuminance(rgb) {
+      return 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+    }
+
+    function seedFromString(str) {
+      // Simple string hash (FNV-1a inspired) to convert arbitrary strings to 32-bit seeds.
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function mulberry32(a) {
+      // Tiny fast PRNG with good distribution for visual randomness.
+      return function () {
+        let t = (a += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function applyGamma(rgb, gamma) {
+      // Apply gamma curve before color mapping; gamma < 1 lightens, > 1 darkens.
+      const factor = 1 / 255;
+      return {
+        r: Math.pow(rgb.r * factor, gamma) * 255,
+        g: Math.pow(rgb.g * factor, gamma) * 255,
+        b: Math.pow(rgb.b * factor, gamma) * 255
+      };
+    }
+
+    function toGrayscale(rgb) {
+      const y = computeLuminance(rgb);
+      return { r: Math.round(y), g: Math.round(y), b: Math.round(y) };
+    }
+
+    function nearestPaletteColor(rgb, palette) {
+      // Exhaustive nearest-neighbour search is fine for the tiny fixed palette.
+      let best = palette[0];
+      let bestDist = Infinity;
+      for (const color of palette) {
+        const dr = rgb.r - color[0];
+        const dg = rgb.g - color[1];
+        const db = rgb.b - color[2];
+        const dist = dr * dr + dg * dg + db * db;
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = color;
+        }
+      }
+      return best;
+    }
+
+    function normalizeHex(value) {
+      if (!value) {
+        return null;
+      }
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return null;
+      }
+      const prefixed = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+      if (/^#([0-9a-fA-F]{6})$/.test(prefixed)) {
+        return prefixed.toUpperCase();
+      }
+      return null;
+    }
+
+    function hexToRgbArray(hex) {
+      const normalized = normalizeHex(hex);
+      if (!normalized) {
+        return [0, 0, 0];
+      }
+      return [
+        parseInt(normalized.slice(1, 3), 16),
+        parseInt(normalized.slice(3, 5), 16),
+        parseInt(normalized.slice(5, 7), 16)
+      ];
+    }
+
+    function rgbArrayToHex(color) {
+      return `#${color
+        .map(component => Math.max(0, Math.min(255, component)).toString(16).padStart(2, '0'))
+        .join('')}`
+        .toUpperCase();
+    }
+
+    function downloadPNG() {
+      const link = document.createElement('a');
+      link.download = 'circles.png';
+      link.href = elements.canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function updateStatus(message) {
+      elements.statusMessage.textContent = message;
+    }
+  </script>
+</body>
+</html>
