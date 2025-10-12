@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seeded Circle Mosaic Studio</title>
+  <title>Seeded Mosaic Studio</title>
   <style>
     :root {
       color-scheme: dark;
@@ -356,7 +356,7 @@
 </head>
 <body>
   <header>
-    <h1>Seeded Circle Mosaic Studio</h1>
+    <h1>Seeded Mosaic Studio</h1>
     <p class="toolbar-note">Space: Render Once · R: Randomize · P: Preview · E: Edit Mode · S: Save PNG · C: Chaos Mode · Arrows: Nudge Selection</p>
   </header>
   <main>
@@ -451,6 +451,26 @@
           <label><input type="radio" name="mode" value="uniform" checked /> Uniform Grid</label>
           <label><input type="radio" name="mode" value="random" /> Random Poisson</label>
         </div>
+        <div class="control-row">
+          <label for="shapeSelect">Pixel Shape</label>
+          <select id="shapeSelect">
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+            <option value="diamond">Diamond</option>
+            <option value="triangle">Triangle</option>
+            <option value="pentagon">Pentagon</option>
+            <option value="hexagon">Hexagon</option>
+            <option value="octagon">Octagon</option>
+            <option value="decagon">Decagon</option>
+            <option value="star">Star</option>
+            <option value="burst">Burst</option>
+            <option value="cross">Cross</option>
+            <option value="cog">Cogwheel</option>
+            <option value="clover">Clover</option>
+            <option value="heart">Heart</option>
+            <option value="teardrop">Teardrop</option>
+          </select>
+        </div>
         <div class="control-row" id="uniformResolutionRow">
           <label for="resSlider">Grid Resolution <span id="resValue" class="inline-value">40×40</span></label>
           <div class="numeric-pair">
@@ -459,7 +479,7 @@
           </div>
         </div>
         <div class="control-row hidden" id="randomResolutionRow">
-          <label for="countSlider">Target Circles <span id="countValue" class="inline-value">1500</span></label>
+          <label for="countSlider">Target Tiles <span id="countValue" class="inline-value">1500</span></label>
           <div class="numeric-pair">
             <input type="range" id="countSlider" min="10" max="20000" step="10" value="1500" />
             <input type="number" id="countNumber" min="10" max="20000" step="10" value="1500" />
@@ -467,7 +487,7 @@
         </div>
         <div class="control-row">
           <div class="numeric-pair">
-            <label for="sizeSlider" id="sizeLabel">Circle Size</label>
+            <label for="sizeSlider" id="sizeLabel">Shape Size</label>
             <input type="range" id="sizeSlider" min="0.2" max="0.9" step="0.01" value="0.9" />
             <input type="number" id="sizeNumber" min="0.2" max="0.9" step="0.01" value="0.9" />
           </div>
@@ -557,7 +577,7 @@
           </div>
         </div>
         <div class="control-row">
-          <label class="toggle-label"><input type="checkbox" id="outlineCheckbox" />Outline Circles</label>
+          <label class="toggle-label"><input type="checkbox" id="outlineCheckbox" />Outline Tiles</label>
           <label class="toggle-label"><input type="checkbox" id="paletteDitherCheckbox" checked />Palette Dither</label>
         </div>
         <div class="control-row">
@@ -576,13 +596,16 @@
             <option value="spark">Spark</option>
             <option value="aurora">Aurora</option>
             <option value="starlight">Starlight</option>
+            <option value="vortex">Vortex</option>
+            <option value="tidal">Tidal</option>
+            <option value="lattice">Lattice</option>
           </select>
         </div>
         <div class="control-row">
           <label for="staticMotionSlider">Motion Depth <span id="staticMotionValue" class="inline-value">0.80</span></label>
           <div class="numeric-pair">
-            <input type="range" id="staticMotionSlider" min="0" max="3" step="0.01" value="0.8" />
-            <input type="number" id="staticMotionNumber" min="0" max="3" step="0.01" value="0.8" />
+            <input type="range" id="staticMotionSlider" min="0" max="5" step="0.01" value="0.8" />
+            <input type="number" id="staticMotionNumber" min="0" max="5" step="0.01" value="0.8" />
           </div>
         </div>
         <div class="control-row">
@@ -595,15 +618,15 @@
         <div class="control-row">
           <label for="staticMotionParallax">Depth Spread <span id="staticMotionParallaxValue" class="inline-value">0.60</span></label>
           <div class="numeric-pair">
-            <input type="range" id="staticMotionParallax" min="0" max="2" step="0.01" value="0.6" />
-            <input type="number" id="staticMotionParallaxNumber" min="0" max="2" step="0.01" value="0.6" />
+            <input type="range" id="staticMotionParallax" min="0" max="3" step="0.01" value="0.6" />
+            <input type="number" id="staticMotionParallaxNumber" min="0" max="3" step="0.01" value="0.6" />
           </div>
         </div>
       </section>
 
       <section class="control-section" aria-labelledby="editHeading">
         <h2 id="editHeading">Editing</h2>
-        <p class="edit-hint">Enable Edit Mode to select circles. Drag to move, scroll or the slider to resize, arrows to nudge, D to duplicate, Delete/Backspace to remove. Random mode keeps circles non-overlapping.</p>
+        <p class="edit-hint">Enable Edit Mode to select tiles. Drag to move, scroll or the slider to resize, arrows to nudge, D to duplicate, Delete/Backspace to remove. Random mode keeps tiles non-overlapping.</p>
         <div class="control-row">
           <label for="editSnapCheckbox" class="toggle-label"><input type="checkbox" id="editSnapCheckbox" checked />Snap to grid in Uniform</label>
         </div>
@@ -673,14 +696,32 @@
           </div>
         </div>
         <div class="control-row">
-          <label for="recordBitrateSlider">Record Bitrate (Mbps) <span id="recordBitrateValue" class="inline-value">10.0</span></label>
+          <label for="recordBitrateSlider">Record Bitrate (Mbps) <span id="recordBitrateValue" class="inline-value">18.0</span></label>
           <div class="numeric-pair">
-            <input type="range" id="recordBitrateSlider" min="2" max="25" step="0.5" value="10" />
-            <input type="number" id="recordBitrateNumber" min="2" max="25" step="0.5" value="10" />
+            <input type="range" id="recordBitrateSlider" min="2" max="25" step="0.5" value="18" />
+            <input type="number" id="recordBitrateNumber" min="2" max="25" step="0.5" value="18" />
           </div>
         </div>
         <div class="control-row">
-          <span>Circle Count</span>
+          <label for="recordModeSelect">Record Source</label>
+          <select id="recordModeSelect">
+            <option value="canvas" selected>Canvas Stream</option>
+            <option value="screen">Screen Capture</option>
+            <option value="window">Window Capture</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <label for="recordQualitySelect">Record Quality</label>
+          <select id="recordQualitySelect">
+            <option value="auto">Match Preview</option>
+            <option value="720p">720p</option>
+            <option value="1080p" selected>1080p</option>
+            <option value="1440p">1440p</option>
+            <option value="2160p">2160p</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <span>Tile Count</span>
           <span id="circleCountDisplay" class="inline-value">0</span>
         </div>
         <div class="control-row">
@@ -697,6 +738,7 @@
       </div>
       <video id="video" class="hidden" autoplay playsinline></video>
       <canvas id="sampleCanvas" class="hidden"></canvas>
+      <canvas id="recordCanvas" class="hidden"></canvas>
     </section>
   </main>
 
@@ -732,16 +774,181 @@
       Velvet: ["#1a0f1f", "#391c3a", "#5b2957", "#7f3a76", "#a54c95", "#d36bb8", "#f29cda", "#ffe3ff"],
       Polar: ["#0b1d26", "#103b57", "#126782", "#2596be", "#40c3ff", "#9ae5ff", "#f0fbff", "#ffffff"],
       Glimmerveil: ["#08090f", "#121c2e", "#233a5d", "#3e5a82", "#6f8db4", "#a8c6e8", "#e0ecff", "#ffffff"],
-      Emberlight: ["#120907", "#3a1211", "#6d1d16", "#a3321a", "#d9541f", "#f77f2f", "#fcb15b", "#ffe8c2"]
+      Emberlight: ["#120907", "#3a1211", "#6d1d16", "#a3321a", "#d9541f", "#f77f2f", "#fcb15b", "#ffe8c2"],
+      Moonlight: ["#090b1a", "#121c33", "#1e2b44", "#334866", "#4c6a88", "#6f8fad", "#98b4d4", "#dce7ff"],
+      SolarFlare: ["#2a0c00", "#541400", "#822300", "#b33900", "#e85b00", "#ff8f33", "#ffd37f", "#fff1c9"],
+      Crystal: ["#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702", "#bb3e03"]
     };
+
+    const supportsPathTransforms = (() => {
+      if (typeof document === "undefined" || typeof Path2D === "undefined" || typeof DOMMatrix === "undefined") {
+        return false;
+      }
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx || typeof ctx.fill !== "function") return false;
+      try {
+        const path = new Path2D();
+        path.rect(0, 0, 1, 1);
+        ctx.fill(path, new DOMMatrix());
+        return true;
+      } catch (err) {
+        return false;
+      }
+    })();
+
+    const shapeLibrary = (() => {
+      const TAU = Math.PI * 2;
+      const createPointTracer = (points) => (ctx, x, y, r) => {
+        if (!points.length) return;
+        ctx.moveTo(x + points[0][0] * r, y + points[0][1] * r);
+        for (let i = 1; i < points.length; i++) {
+          const [px, py] = points[i];
+          ctx.lineTo(x + px * r, y + py * r);
+        }
+        ctx.closePath();
+      };
+      const createPolygonTracer = (sides, rotation = -Math.PI / 2) => {
+        const pts = [];
+        const step = TAU / sides;
+        for (let i = 0; i < sides; i++) {
+          const angle = rotation + i * step;
+          pts.push([Math.cos(angle), Math.sin(angle)]);
+        }
+        return createPointTracer(pts);
+      };
+      const createStarTracer = (points, innerRatio = 0.5, rotation = -Math.PI / 2) => {
+        const pts = [];
+        const step = Math.PI / points;
+        for (let i = 0; i < points * 2; i++) {
+          const angle = rotation + i * step;
+          const radius = i % 2 === 0 ? 1 : innerRatio;
+          pts.push([Math.cos(angle) * radius, Math.sin(angle) * radius]);
+        }
+        return createPointTracer(pts);
+      };
+      const createCrossTracer = () => {
+        const t = 0.38;
+        const o = 1;
+        const pts = [
+          [-t, -o],
+          [t, -o],
+          [t, -t],
+          [o, -t],
+          [o, t],
+          [t, t],
+          [t, o],
+          [-t, o],
+          [-t, t],
+          [-o, t],
+          [-o, -t],
+          [-t, -t]
+        ];
+        return createPointTracer(pts);
+      };
+      const createCogTracer = (teeth = 10, innerRatio = 0.68, rotation = -Math.PI / 2) => {
+        const pts = [];
+        const step = Math.PI / teeth;
+        for (let i = 0; i < teeth * 2; i++) {
+          const radius = i % 2 === 0 ? 1 : innerRatio;
+          const angle = rotation + i * step;
+          pts.push([Math.cos(angle) * radius, Math.sin(angle) * radius]);
+        }
+        return createPointTracer(pts);
+      };
+      const createCloverTracer = () => {
+        return (ctx, x, y, r) => {
+          const petalRadius = r * 0.78;
+          const offset = r * 0.45;
+          ctx.moveTo(x + petalRadius, y);
+          for (let i = 0; i < 4; i++) {
+            const angle = i * (Math.PI / 2);
+            const cx = x + Math.cos(angle) * offset;
+            const cy = y + Math.sin(angle) * offset;
+            ctx.arc(cx, cy, petalRadius, angle - Math.PI / 2, angle + Math.PI / 2);
+          }
+          ctx.closePath();
+        };
+      };
+      const createHeartTracer = () => {
+        return (ctx, x, y, r) => {
+          const top = y - r * 0.3;
+          ctx.moveTo(x, top);
+          ctx.bezierCurveTo(x + r, y - r * 1.1, x + r * 1.3, y + r * 0.2, x, y + r);
+          ctx.bezierCurveTo(x - r * 1.3, y + r * 0.2, x - r, y - r * 1.1, x, top);
+          ctx.closePath();
+        };
+      };
+      const createTeardropTracer = () => {
+        return (ctx, x, y, r) => {
+          ctx.moveTo(x, y - r);
+          ctx.quadraticCurveTo(x + r * 0.9, y - r * 0.2, x, y + r);
+          ctx.quadraticCurveTo(x - r * 0.9, y - r * 0.2, x, y - r);
+          ctx.closePath();
+        };
+      };
+      const traceCircle = (ctx, x, y, r) => {
+        ctx.moveTo(x + r, y);
+        ctx.arc(x, y, r, 0, TAU);
+      };
+
+      const buildUnitPath = (tracer) => {
+        if (typeof Path2D === "undefined") return null;
+        const path = new Path2D();
+        const proxy = {
+          moveTo: (x, y) => path.moveTo(x, y),
+          lineTo: (x, y) => path.lineTo(x, y),
+          arc: (x, y, radius, start, end, anticlockwise) =>
+            path.arc(x, y, radius, start, end, anticlockwise),
+          bezierCurveTo: (cp1x, cp1y, cp2x, cp2y, x, y) =>
+            path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y),
+          quadraticCurveTo: (cpx, cpy, x, y) => path.quadraticCurveTo(cpx, cpy, x, y),
+          closePath: () => path.closePath()
+        };
+        tracer(proxy, 0, 0, 1);
+        return path;
+      };
+
+      const register = (map, key, label, tracer) => {
+        const definition = { label, trace: tracer };
+        if (supportsPathTransforms) {
+          definition.path = buildUnitPath(tracer);
+        }
+        map[key] = definition;
+      };
+
+      const shapes = {};
+      register(shapes, "circle", "Circle", traceCircle);
+      register(shapes, "square", "Square", createPolygonTracer(4, -Math.PI / 4));
+      register(shapes, "diamond", "Diamond", createPolygonTracer(4, -Math.PI / 2));
+      register(shapes, "triangle", "Triangle", createPolygonTracer(3, -Math.PI / 2));
+      register(shapes, "pentagon", "Pentagon", createPolygonTracer(5, -Math.PI / 2));
+      register(shapes, "hexagon", "Hexagon", createPolygonTracer(6, -Math.PI / 2));
+      register(shapes, "octagon", "Octagon", createPolygonTracer(8, -Math.PI / 2));
+      register(shapes, "decagon", "Decagon", createPolygonTracer(10, -Math.PI / 2));
+      register(shapes, "star", "Star", createStarTracer(5, 0.48));
+      register(shapes, "burst", "Burst", createStarTracer(8, 0.35));
+      register(shapes, "cross", "Cross", createCrossTracer());
+      register(shapes, "cog", "Cogwheel", createCogTracer());
+      register(shapes, "clover", "Clover", createCloverTracer());
+      register(shapes, "heart", "Heart", createHeartTracer());
+      register(shapes, "teardrop", "Teardrop", createTeardropTracer());
+      return shapes;
+    })();
+
+    function getShapeDefinition(name) {
+      return shapeLibrary[name] || shapeLibrary.circle;
+    }
 
     const state = {
       mode: "uniform",
+      shapeMode: "circle",
       resolution: 40,
       targetCount: 1500,
       circleSize: 0.9,
       randomRadius: 8,
       seed: Date.now().toString(),
+      seedHash: 0,
       colorMode: "source",
       gamma: 1,
       jitterMode: "none",
@@ -797,17 +1004,23 @@
       currentAspect: 16 / 9,
       aspectRatio: "source",
       recordFps: 60,
-      recordBitrate: 10,
+      recordBitrate: 18,
+      recordMode: "canvas",
+      recordQuality: "1080p",
       recordingActive: false,
       lastRenderSource: null,
       lastBounds: { offsetX: 0, offsetY: 0, width: 0, height: 0 },
-      loadedImage: null
+      loadedImage: null,
+      randomLayoutKey: null,
+      randomLayoutBase: null
     };
 
     const ui = {};
     let mediaStream = null;
     let recorder = null;
+    let recordStream = null;
     let recordedChunks = [];
+    const recordDimensions = { width: 0, height: 0 };
     let previewHandle = null;
     let rng = mulberry32(1);
     let recordingContext = {
@@ -816,10 +1029,12 @@
       prevLivePreview: true,
       prevPreviewFps: 60
     };
+    let renderBuffer = [];
     let poissTmp = {
       queue: [],
       grid: [],
       active: [],
+      jitterGrid: [],
       cellSize: 0,
       cols: 0,
       rows: 0
@@ -841,6 +1056,7 @@
       syncPaletteUI();
       resizeCanvas();
       state.seed = Date.now().toString();
+      state.seedHash = seedFromString(state.seed);
       ui.seedInput.value = state.seed;
       schedulePreview();
       updateStatus("Ready. Load an image or start the camera.");
@@ -861,6 +1077,12 @@
       ui.sampleCtx.imageSmoothingEnabled = true;
       ui.sampleCtx.imageSmoothingQuality = "high";
       ui.video = document.getElementById("video");
+      ui.recordCanvas = document.getElementById("recordCanvas");
+      if (ui.recordCanvas) {
+        ui.recordCtx = ui.recordCanvas.getContext("2d");
+        ui.recordCtx.imageSmoothingEnabled = true;
+        ui.recordCtx.imageSmoothingQuality = "high";
+      }
       ui.statusMessage = document.getElementById("statusMessage");
       ui.startCameraBtn = document.getElementById("startCameraBtn");
       ui.stopCameraBtn = document.getElementById("stopCameraBtn");
@@ -904,6 +1126,7 @@
       ui.sizeSlider = document.getElementById("sizeSlider");
       ui.sizeNumber = document.getElementById("sizeNumber");
       ui.sizeLabel = document.getElementById("sizeLabel");
+      ui.shapeSelect = document.getElementById("shapeSelect");
       ui.seedInput = document.getElementById("seedInput");
       ui.aspectRatioSelect = document.getElementById("aspectRatioSelect");
       ui.colorModeSelect = document.getElementById("colorModeSelect");
@@ -971,8 +1194,11 @@
       ui.recordBitrateSlider = document.getElementById("recordBitrateSlider");
       ui.recordBitrateNumber = document.getElementById("recordBitrateNumber");
       ui.recordBitrateValue = document.getElementById("recordBitrateValue");
+      ui.recordModeSelect = document.getElementById("recordModeSelect");
+      ui.recordQualitySelect = document.getElementById("recordQualitySelect");
       ui.circleCountDisplay = document.getElementById("circleCountDisplay");
       ui.fpsDisplay = document.getElementById("fpsDisplay");
+      ui.recordStatusDefault = ui.recordStatus ? ui.recordStatus.innerHTML : "";
     }
 
     function initUI() {
@@ -1033,13 +1259,13 @@
         ui.previewToggle.checked = false;
         ui.previewHoldBtn.textContent = "Resume Preview";
         render(performance.now());
-        updateStatus("Frame rendered. Enable Edit Mode to tweak circles.");
+        updateStatus("Frame rendered. Enable Edit Mode to tweak tiles.");
       });
       ui.randomizeBtn.addEventListener("click", () => {
         if (state.hyperRandom) stopHyperRandom();
-        state.seed = (Date.now() + Math.random()).toString();
+        const fresh = (Date.now() + Math.random()).toString();
+        setSeedValue(fresh);
         ui.seedInput.value = state.seed;
-        requestRender();
         updateStatus("Seed randomized. Render updated.");
       });
       ui.hyperRandomBtn.addEventListener("click", () => {
@@ -1128,6 +1354,14 @@
         });
       });
 
+      if (ui.shapeSelect) {
+        ui.shapeSelect.value = state.shapeMode;
+        ui.shapeSelect.addEventListener("change", () => {
+          state.shapeMode = ui.shapeSelect.value;
+          requestRender();
+        });
+      }
+
       const syncResolution = (value) => {
         if (value === "") return;
         const min = Number(ui.resSlider.min);
@@ -1191,7 +1425,7 @@
       const syncSize = (value, fromSlider = false) => {
         if (state.mode === "uniform") {
           state.circleSize = clamp(Number(value), 0.2, 0.9);
-          setLabelCopy(ui.sizeLabel, "Circle Size (× cell)");
+          setLabelCopy(ui.sizeLabel, "Shape Scale (× cell)");
         } else {
           state.randomRadius = clamp(Number(value), 2, 40);
           setLabelCopy(ui.sizeLabel, "Base Radius (px)");
@@ -1207,7 +1441,7 @@
         ui.sizeSlider.step = ui.sizeNumber.step;
         ui.sizeSlider.value = finalValue;
         ui.sizeNumber.value = finalValue;
-        ui.sizeNumber.setAttribute("aria-label", `Circle size ${formatted}`);
+        ui.sizeNumber.setAttribute("aria-label", `Tile size ${formatted}`);
         requestRender();
       };
 
@@ -1333,6 +1567,39 @@
         ui.recordBitrateValue.textContent = val.toFixed(1);
       };
 
+      const syncRecordMode = (value, silent = false) => {
+        if (!value) return;
+        state.recordMode = value;
+        if (ui.recordModeSelect && ui.recordModeSelect.value !== value) {
+          ui.recordModeSelect.value = value;
+        }
+        if (!silent) {
+          let message;
+          if (value === "screen") {
+            message = "Screen capture mode is ready. Start Recording to capture any monitor view.";
+          } else if (value === "window") {
+            message = "Window capture targets a single app window for higher fidelity grabs.";
+          } else {
+            message = "Canvas stream mode will record the mosaic directly at the chosen quality.";
+          }
+          updateStatus(message);
+        }
+      };
+
+      const syncRecordQuality = (value) => {
+        if (!value) return;
+        state.recordQuality = value;
+        if (ui.recordQualitySelect && ui.recordQualitySelect.value !== value) {
+          ui.recordQualitySelect.value = value;
+        }
+        if (state.recordMode === "canvas") {
+          ensureRecordCanvas();
+          if (recordingContext.active || state.recordingActive) {
+            updateRecordFrame(true);
+          }
+        }
+      };
+
       const syncChaosSpeed = (value) => {
         if (value === "") return;
         const min = Number(ui.chaosSpeedSlider.min);
@@ -1444,8 +1711,7 @@
 
       ui.seedInput.addEventListener("change", () => {
         if (state.hyperRandom) stopHyperRandom();
-        state.seed = ui.seedInput.value || "0";
-        requestRender();
+        setSeedValue(ui.seedInput.value);
       });
 
       ui.aspectRatioSelect.addEventListener("change", () => {
@@ -1652,6 +1918,21 @@
       ui.recordBitrateNumber.addEventListener("input", (e) => {
         syncRecordBitrate(e.target.value);
       });
+      if (ui.recordModeSelect) {
+        syncRecordMode(state.recordMode, true);
+        ui.recordModeSelect.addEventListener("change", (e) => {
+          syncRecordMode(e.target.value);
+          if (state.recordMode === "canvas") {
+            ensureRecordCanvas();
+          }
+        });
+      }
+      if (ui.recordQualitySelect) {
+        syncRecordQuality(state.recordQuality);
+        ui.recordQualitySelect.addEventListener("change", (e) => {
+          syncRecordQuality(e.target.value);
+        });
+      }
 
       ui.previewHoldBtn.textContent = state.previewOn ? "Pause Preview" : "Resume Preview";
       ui.aspectRatioSelect.value = state.aspectRatio;
@@ -1744,7 +2025,7 @@
         ui.sizeNumber.step = 0.1;
         ui.sizeNumber.value = state.randomRadius.toFixed(1);
       }
-      setLabelCopy(ui.sizeLabel, uniform ? "Circle Size (× cell)" : "Base Radius (px)");
+      setLabelCopy(ui.sizeLabel, uniform ? "Shape Scale (× cell)" : "Base Radius (px)");
     }
 
     function toggleEditOverlay() {
@@ -1778,14 +2059,14 @@
         ui.editRadiusSlider.value = value;
         ui.editRadiusNumber.value = value;
         ui.editRadiusValue.textContent = value.toFixed(1);
-        ui.selectionInfo.textContent = `Circle ${editState.selectedIndex + 1} of ${total}`;
+        ui.selectionInfo.textContent = `Tile ${editState.selectedIndex + 1} of ${total}`;
       } else {
         ui.editRadiusSlider.value = 20;
         ui.editRadiusNumber.value = 20;
         ui.editRadiusValue.textContent = "--";
         ui.editRadiusSlider.max = 400;
         ui.editRadiusNumber.max = 400;
-        ui.selectionInfo.textContent = total ? "Use the canvas or buttons to select." : "No circle selected.";
+        ui.selectionInfo.textContent = total ? "Use the canvas or buttons to select." : "No tile selected.";
       }
     }
 
@@ -2172,7 +2453,7 @@
           if (Math.abs((state.circleSize ?? base) - base) > 1e-3) {
             state.circleSize = base;
             if (state.mode === "uniform") {
-              setLabelCopy(ui.sizeLabel, "Circle Size (× cell)");
+              setLabelCopy(ui.sizeLabel, "Shape Scale (× cell)");
               ui.sizeNumber.min = 0.2;
               ui.sizeNumber.max = 0.9;
               ui.sizeNumber.step = 0.01;
@@ -2257,7 +2538,7 @@
     function advanceHyperSeed() {
       state.hyperRandomCounter = (state.hyperRandomCounter + 1) >>> 0;
       const next = ((state.hyperRandomBase + state.hyperRandomCounter) >>> 0).toString(36);
-      state.seed = next;
+      setSeedValue(next, false);
       if (document.activeElement !== ui.seedInput) {
         ui.seedInput.value = next;
       }
@@ -2351,7 +2632,7 @@
         state.staticMotionDepth = depth;
         state.staticMotionSpeed = speed;
         state.staticMotionParallax = parallax;
-        const modes = ["sway", "pulse", "orbit", "ripple", "glimmer", "cascade", "drift", "spark", "aurora", "starlight"];
+        const modes = ["sway", "pulse", "orbit", "ripple", "glimmer", "cascade", "drift", "spark", "aurora", "starlight", "vortex", "tidal", "lattice"];
         const modeIndex = Math.floor((state.chaosPhase / (Math.PI * 1.5)) % modes.length);
         if (modes[modeIndex] && state.staticMotionMode !== modes[modeIndex]) {
           state.staticMotionMode = modes[modeIndex];
@@ -2384,7 +2665,7 @@
           const size = clamp(base + Math.sin(state.chaosPhase * 1.1) * 0.3 * intensity, sizeMin, sizeMax);
           if (Math.abs(state.circleSize - size) > 0.002) {
             state.circleSize = size;
-            setLabelCopy(ui.sizeLabel, "Circle Size (× cell)");
+            setLabelCopy(ui.sizeLabel, "Shape Scale (× cell)");
             ui.sizeNumber.min = sizeMin;
             ui.sizeNumber.max = sizeMax;
             ui.sizeNumber.step = 0.01;
@@ -2558,7 +2839,9 @@
       currentSampleWidth = sampleWidth;
       currentSampleHeight = sampleHeight;
 
-      rng = mulberry32(seedFromString(state.seed));
+      const seedHash = typeof state.seedHash === "number" ? state.seedHash : seedFromString(state.seed || "0");
+      state.seedHash = seedHash;
+      rng = mulberry32(seedHash);
       const width = state.canvasCssWidth || ui.displayCanvas.width / (state.pixelRatio || 1);
       const height = state.canvasCssHeight || ui.displayCanvas.height / (state.pixelRatio || 1);
       const params = {
@@ -2586,14 +2869,14 @@
       state.lastBounds = bounds;
 
       const sampleFn = (x, y) => sampleColorAt(x, y);
-      state.circles = [];
+      const noiseFn = createCircleNoise(animationState.frame);
       editState.selectedIndex = -1;
 
       ui.displayCtx.clearRect(0, 0, params.width, params.height);
       if (state.mode === "uniform") {
-        renderUniformGrid(ui.displayCtx, params, sampleFn);
+        renderUniformGrid(ui.displayCtx, params, sampleFn, noiseFn);
       } else {
-        renderRandomPoisson(ui.displayCtx, params, sampleFn);
+        renderRandomPoisson(ui.displayCtx, params, sampleFn, noiseFn);
       }
 
       if (state.editMode) {
@@ -2607,6 +2890,9 @@
       const height = state.canvasCssHeight || ui.displayCanvas.height / (state.pixelRatio || 1);
       ui.displayCtx.clearRect(0, 0, width, height);
       paintCircles(ui.displayCtx, state.circles);
+      if (state.recordMode === "canvas") {
+        updateRecordFrame(recordingContext.active || state.recordingActive);
+      }
       if (state.editMode) drawSelection();
       if (ui.circleCountDisplay) {
         ui.circleCountDisplay.textContent = state.circles.length.toLocaleString();
@@ -2615,95 +2901,112 @@
     }
 
     // Deterministic N×N mosaic with optional jitter per circle.
-    function renderUniformGrid(ctx, params, sampleFn) {
+    function renderUniformGrid(ctx, params, sampleFn, noiseFn) {
       const cols = params.resolution;
       const rows = params.resolution;
       const cellWidth = params.drawWidth / cols;
       const cellHeight = params.drawHeight / rows;
       const radiusBase = Math.min(cellWidth, cellHeight) * 0.5 * state.circleSize;
       const jitterStrength = state.jitterStrength;
-      const toDraw = [];
-
       const sampleCellWidth = params.sampleWidth / cols;
       const sampleCellHeight = params.sampleHeight / rows;
       const bounds = { offsetX: params.offsetX, offsetY: params.offsetY, width: params.drawWidth, height: params.drawHeight };
+      const total = cols * rows;
+      if (renderBuffer.length < total) {
+        renderBuffer.length = total;
+      }
+      let index = 0;
       for (let row = 0; row < rows; row++) {
         const y = params.offsetY + (row + 0.5) * cellHeight;
         for (let col = 0; col < cols; col++) {
           const x = params.offsetX + (col + 0.5) * cellWidth;
           const sampleX = (col + 0.5) * sampleCellWidth;
           const sampleY = (row + 0.5) * sampleCellHeight;
-          const color = processColor(sampleFn(sampleX, sampleY));
-          const index = row * cols + col;
-          const jitter = computeJitter(color, jitterStrength, radiusBase, { x, y }, index, params);
+          const color = processColor(sampleFn(sampleX, sampleY), index, noiseFn);
+          const jitter = computeJitter(color, jitterStrength, radiusBase, { x, y }, index, params, noiseFn);
           const radius = clamp(radiusBase + jitter.radiusDelta, 1, radiusBase * 1.6);
           const pos = applyPositionJitter({ x, y }, jitter.positionDelta, radius, radius, bounds);
-          toDraw.push({ x: pos.x, y: pos.y, r: radius, fill: jitter.fillColor || colorToStyle(color) });
+          let circle = renderBuffer[index];
+          if (!circle) {
+            circle = renderBuffer[index] = { x: pos.x, y: pos.y, r: radius, fill: "" };
+          }
+          circle.x = pos.x;
+          circle.y = pos.y;
+          circle.r = radius;
+          circle.fill = jitter.fillColor || colorToStyle(color);
+          index++;
         }
       }
-
-      commitCircles(toDraw);
+      commitCircles(renderBuffer, index);
     }
 
-    // Seeded Poisson-disc placement for non-overlapping random circles.
-    function renderRandomPoisson(ctx, params, sampleFn) {
-      const radiusBase = params.randomRadius;
-      const jitterStrength = params.jitterStrength;
-      const toDraw = [];
-      const maxAttempts = 30;
+    function getRandomLayoutKey(params, seedHash) {
+      const parts = [
+        seedHash >>> 0,
+        Math.round(params.drawWidth * 100),
+        Math.round(params.drawHeight * 100),
+        Math.round(params.offsetX * 100),
+        Math.round(params.offsetY * 100),
+        Math.round(params.targetCount),
+        Math.round(params.randomRadius * 1000)
+      ];
+      return parts.join("|");
+    }
+
+    function buildRandomLayout(params, seedHash) {
+      const radiusBase = Math.max(1, params.randomRadius);
       const width = params.drawWidth;
       const height = params.drawHeight;
       const offsetX = params.offsetX;
       const offsetY = params.offsetY;
-      const bounds = { offsetX, offsetY, width, height };
-      const minRadius = Math.max(1, radiusBase * 0.4);
-
+      const maxAttempts = 30;
       const cellSize = radiusBase / Math.sqrt(2);
       const cols = Math.max(1, Math.ceil(width / cellSize));
       const rows = Math.max(1, Math.ceil(height / cellSize));
-      poissTmp.grid = new Array(cols * rows).fill(-1);
-      poissTmp.active = [];
-      const initial = {
-        x: offsetX + rng() * width,
-        y: offsetY + rng() * height,
-        r: radiusBase
-      };
-      poissTmp.active.push(initial);
-      toDraw.push(initial);
-      const gi = Math.floor((initial.x - offsetX) / cellSize);
-      const gj = Math.floor((initial.y - offsetY) / cellSize);
-      poissTmp.grid[gi + gj * cols] = 0;
+      const grid = new Int32Array(cols * rows);
+      grid.fill(-1);
+      const active = [];
+      const circles = [];
+      const rand = mulberry32(seedHash);
 
-      const addCircle = (circle) => {
-        poissTmp.active.push(circle);
-        toDraw.push(circle);
+      const createCircle = (x, y, r) => ({ x, y, r });
+      const pushCircle = (circle) => {
         const gx = Math.floor((circle.x - offsetX) / cellSize);
         const gy = Math.floor((circle.y - offsetY) / cellSize);
-        poissTmp.grid[gx + gy * cols] = toDraw.length - 1;
+        active.push(circle);
+        circles.push(circle);
+        grid[Math.max(0, Math.min(cols - 1, gx)) + Math.max(0, Math.min(rows - 1, gy)) * cols] = circles.length - 1;
       };
 
-      while (poissTmp.active.length && toDraw.length < params.targetCount) {
-        const idx = Math.floor(rng() * poissTmp.active.length);
-        const point = poissTmp.active[idx];
+      const initial = createCircle(
+        offsetX + rand() * width,
+        offsetY + rand() * height,
+        radiusBase * (0.75 + rand() * 0.5)
+      );
+      pushCircle(initial);
+
+      while (active.length && circles.length < params.targetCount) {
+        const idx = Math.floor(rand() * active.length);
+        const point = active[idx];
         let accepted = false;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          const angle = rng() * Math.PI * 2;
-          const radius = radiusBase * (0.75 + rng() * 0.5);
-          const dist = (point.r + radius) * (1.2 + rng() * 0.3);
-          const candidate = {
-            x: point.x + Math.cos(angle) * dist,
-            y: point.y + Math.sin(angle) * dist,
-            r: radius
-          };
+          const angle = rand() * Math.PI * 2;
+          const radius = radiusBase * (0.75 + rand() * 0.5);
+          const dist = (point.r + radius) * (1.2 + rand() * 0.3);
+          const candidate = createCircle(
+            point.x + Math.cos(angle) * dist,
+            point.y + Math.sin(angle) * dist,
+            radius
+          );
           if (candidate.x < offsetX + radius || candidate.x > offsetX + width - radius || candidate.y < offsetY + radius || candidate.y > offsetY + height - radius) continue;
           const gx = Math.floor((candidate.x - offsetX) / cellSize);
           const gy = Math.floor((candidate.y - offsetY) / cellSize);
           let fits = true;
           for (let yIdx = Math.max(0, gy - 2); yIdx <= Math.min(rows - 1, gy + 2) && fits; yIdx++) {
             for (let xIdx = Math.max(0, gx - 2); xIdx <= Math.min(cols - 1, gx + 2); xIdx++) {
-              const neighborIndex = poissTmp.grid[xIdx + yIdx * cols];
+              const neighborIndex = grid[xIdx + yIdx * cols];
               if (neighborIndex === -1) continue;
-              const neighbor = toDraw[neighborIndex];
+              const neighbor = circles[neighborIndex];
               const dx = neighbor.x - candidate.x;
               const dy = neighbor.y - candidate.y;
               const minDist = neighbor.r + candidate.r;
@@ -2714,39 +3017,79 @@
             }
           }
           if (fits) {
-            addCircle(candidate);
+            pushCircle(candidate);
             accepted = true;
             break;
           }
         }
         if (!accepted) {
-          poissTmp.active.splice(idx, 1);
+          active.splice(idx, 1);
         }
       }
 
-      const sampleScaleX = params.sampleWidth / width;
-      const sampleScaleY = params.sampleHeight / height;
-      const jitterGrid = Array.from({ length: cols * rows }, () => []);
-      for (let i = 0; i < toDraw.length; i++) {
-        const circle = toDraw[i];
-        const basePos = { x: circle.x, y: circle.y };
-        const baseRadius = circle.r;
-        const sx = clamp((basePos.x - offsetX) * sampleScaleX, 0, params.sampleWidth - 1);
-        const sy = clamp((basePos.y - offsetY) * sampleScaleY, 0, params.sampleHeight - 1);
-        const color = processColor(sampleFn(sx, sy));
-        const jitter = computeJitter(color, jitterStrength, baseRadius, basePos, i, params);
-        let newRadius = clamp(baseRadius + jitter.radiusDelta, minRadius, radiusBase * 2.2);
+      return { circles, cellSize, cols, rows, offsetX, offsetY, width, height };
+    }
+
+    function ensureRandomLayout(params) {
+      const seedHash = typeof state.seedHash === "number" ? state.seedHash : seedFromString(state.seed || "0");
+      const key = getRandomLayoutKey(params, seedHash);
+      if (!state.randomLayoutBase || state.randomLayoutKey !== key) {
+        state.randomLayoutBase = buildRandomLayout(params, seedHash);
+        state.randomLayoutKey = key;
+      }
+      return state.randomLayoutBase;
+    }
+
+    // Seeded Poisson-disc placement for non-overlapping random circles.
+    function renderRandomPoisson(ctx, params, sampleFn, noiseFn) {
+      const layoutInfo = ensureRandomLayout(params);
+      const baseCircles = layoutInfo.circles;
+      const count = baseCircles.length;
+      if (!count) {
+        commitCircles([], 0);
+        return;
+      }
+      if (renderBuffer.length < count) {
+        renderBuffer.length = count;
+      }
+      const bounds = { offsetX: params.offsetX, offsetY: params.offsetY, width: params.drawWidth, height: params.drawHeight };
+      const sampleScaleX = params.sampleWidth / Math.max(1, params.drawWidth);
+      const sampleScaleY = params.sampleHeight / Math.max(1, params.drawHeight);
+      const jitterStrength = params.jitterStrength;
+      const radiusBase = params.randomRadius;
+      const minRadius = Math.max(1, radiusBase * 0.4);
+      const maxRadius = radiusBase * 2.2;
+      const cols = layoutInfo.cols;
+      const rows = layoutInfo.rows;
+      const cellSize = layoutInfo.cellSize;
+      const gridSize = cols * rows;
+      if (!poissTmp.jitterGrid || poissTmp.jitterGrid.length !== gridSize) {
+        poissTmp.jitterGrid = Array.from({ length: gridSize }, () => []);
+      } else {
+        for (let i = 0; i < gridSize; i++) {
+          poissTmp.jitterGrid[i].length = 0;
+        }
+      }
+
+      for (let i = 0; i < count; i++) {
+        const base = baseCircles[i];
+        const basePos = { x: base.x, y: base.y };
+        const baseRadius = base.r;
+        const sx = clamp((basePos.x - bounds.offsetX) * sampleScaleX, 0, params.sampleWidth - 1);
+        const sy = clamp((basePos.y - bounds.offsetY) * sampleScaleY, 0, params.sampleHeight - 1);
+        const color = processColor(sampleFn(sx, sy), i, noiseFn);
+        const jitter = computeJitter(color, jitterStrength, baseRadius, basePos, i, params, noiseFn);
+        let newRadius = clamp(baseRadius + jitter.radiusDelta, minRadius, maxRadius);
         let newPos = applyPositionJitter(basePos, jitter.positionDelta, newRadius, newRadius, bounds);
-        let gx = Math.floor((newPos.x - offsetX) / cellSize);
-        let gy = Math.floor((newPos.y - offsetY) / cellSize);
-        gx = Math.max(0, Math.min(cols - 1, gx));
-        gy = Math.max(0, Math.min(rows - 1, gy));
+        let gx = Math.max(0, Math.min(cols - 1, Math.floor((newPos.x - bounds.offsetX) / cellSize)));
+        let gy = Math.max(0, Math.min(rows - 1, Math.floor((newPos.y - bounds.offsetY) / cellSize)));
         let fits = true;
         for (let yIdx = Math.max(0, gy - 2); yIdx <= Math.min(rows - 1, gy + 2) && fits; yIdx++) {
           for (let xIdx = Math.max(0, gx - 2); xIdx <= Math.min(cols - 1, gx + 2); xIdx++) {
-            const cell = jitterGrid[xIdx + yIdx * cols];
-            for (let c = 0; c < cell.length; c++) {
-              const neighbor = toDraw[cell[c]];
+            const bucket = poissTmp.jitterGrid[xIdx + yIdx * cols];
+            for (let c = 0; c < bucket.length; c++) {
+              const neighbor = renderBuffer[bucket[c]];
+              if (!neighbor) continue;
               const dx = neighbor.x - newPos.x;
               const dy = neighbor.y - newPos.y;
               const minDist = neighbor.r + newRadius;
@@ -2759,25 +3102,27 @@
           }
         }
         if (!fits) {
-          newRadius = clamp(baseRadius, minRadius, radiusBase * 2.2);
+          newRadius = clamp(baseRadius, minRadius, maxRadius);
           newPos = basePos;
-          gx = Math.floor((newPos.x - offsetX) / cellSize);
-          gy = Math.floor((newPos.y - offsetY) / cellSize);
-          gx = Math.max(0, Math.min(cols - 1, gx));
-          gy = Math.max(0, Math.min(rows - 1, gy));
+          gx = Math.max(0, Math.min(cols - 1, Math.floor((newPos.x - bounds.offsetX) / cellSize)));
+          gy = Math.max(0, Math.min(rows - 1, Math.floor((newPos.y - bounds.offsetY) / cellSize)));
+        }
+        let circle = renderBuffer[i];
+        if (!circle) {
+          circle = renderBuffer[i] = { x: newPos.x, y: newPos.y, r: newRadius, fill: "" };
         }
         circle.x = newPos.x;
         circle.y = newPos.y;
         circle.r = newRadius;
         circle.fill = jitter.fillColor || colorToStyle(color);
-        jitterGrid[gx + gy * cols].push(i);
+        poissTmp.jitterGrid[gx + gy * cols].push(i);
       }
 
-      commitCircles(toDraw);
+      commitCircles(renderBuffer, count);
     }
 
     // Apply gamma, grayscale, or palette mapping to sampled colors.
-    function processColor(color) {
+    function processColor(color, index = 0, noiseFn = null) {
       if (!color) return { r: 0, g: 0, b: 0, a: 255 };
       const gammaCorrected = applyGamma(color, state.gamma);
       if (state.colorMode === "grayscale") {
@@ -2787,7 +3132,8 @@
       if (state.colorMode === "palette") {
         let sample = gammaCorrected;
         if (state.paletteDither) {
-          const noise = (rng() - 0.5) * 16;
+          const n = noiseFn ? noiseFn(index, 0, false) - 0.5 : rng() - 0.5;
+          const noise = n * 16;
           sample = {
             r: clamp(sample.r + noise, 0, 255),
             g: clamp(sample.g + noise, 0, 255),
@@ -2802,12 +3148,14 @@
     }
 
     // Multi-mode jitter (brightness, hue, saturation, position) for stylization.
-    function computeJitter(color, strength, baseRadius, point, index = 0, params = {}) {
+    function computeJitter(color, strength, baseRadius, point, index = 0, params = {}, noiseFn = null) {
       const result = {
         radiusDelta: 0,
         positionDelta: { x: 0, y: 0 },
         fillColor: null
       };
+      const random = (variant = 0, animated = false) =>
+        noiseFn ? noiseFn(index, variant, animated) : rng();
       const motionActive = state.staticImageMotion && !mediaStream && state.loadedImage && state.staticMotionDepth > 0;
       if (motionActive) {
         const phase = (params.motionPhase || 0) * state.staticMotionSpeed;
@@ -2870,8 +3218,8 @@
             const flick = Math.max(0, Math.sin(localPhase * 3.2 + brightness * Math.PI));
             const burst = (flick ** 2) * depth;
             result.radiusDelta += burst * baseRadius * 0.6;
-            result.positionDelta.x += (rng() - 0.5) * parallax * baseRadius * 0.5 * burst;
-            result.positionDelta.y += (rng() - 0.5) * parallax * baseRadius * 0.5 * burst;
+            result.positionDelta.x += (random(1, true) - 0.5) * parallax * baseRadius * 0.5 * burst;
+            result.positionDelta.y += (random(2, true) - 0.5) * parallax * baseRadius * 0.5 * burst;
             const glow = {
               r: clamp(color.r + 180 * burst, 0, 255),
               g: clamp(color.g + 120 * burst, 0, 255),
@@ -2897,8 +3245,8 @@
             const shimmer = Math.max(0, Math.sin(localPhase * 3.6 + point.x * 0.01 + point.y * 0.01));
             const sparkle = (shimmer ** 4) * depth;
             result.radiusDelta += sparkle * baseRadius * 0.8;
-            result.positionDelta.x += (rng() - 0.5) * parallax * baseRadius * 0.6 * sparkle;
-            result.positionDelta.y += (rng() - 0.5) * parallax * baseRadius * 0.6 * sparkle;
+            result.positionDelta.x += (random(3, true) - 0.5) * parallax * baseRadius * 0.6 * sparkle;
+            result.positionDelta.y += (random(4, true) - 0.5) * parallax * baseRadius * 0.6 * sparkle;
             const flare = {
               r: clamp(color.r + (255 - color.r) * sparkle * 0.95 + 45 * sparkle, 0, 255),
               g: clamp(color.g + (255 - color.g) * sparkle * 0.9 + 30 * sparkle, 0, 255),
@@ -2906,6 +3254,40 @@
               a: color.a
             };
             result.fillColor = colorToStyle(flare);
+            break;
+          }
+          case "vortex": {
+            const swirl = localPhase * 1.6 + point.x * 0.002 - point.y * 0.002;
+            const radiusShift = depth * baseRadius * (0.45 + parallax * 0.25);
+            result.positionDelta.x += Math.cos(swirl) * radiusShift;
+            result.positionDelta.y += Math.sin(swirl) * radiusShift;
+            result.radiusDelta += Math.sin(localPhase * 2.2) * depth * baseRadius * 0.35;
+            break;
+          }
+          case "tidal": {
+            const tide = Math.sin(point.y * 0.004 + phase * 0.9);
+            const surge = Math.cos(point.x * 0.003 + phase * 1.1);
+            result.positionDelta.x += tide * depth * baseRadius * (0.35 + parallax * 0.2);
+            result.positionDelta.y += surge * depth * baseRadius * 0.45;
+            result.radiusDelta += Math.sin(localPhase * 1.4 + tide) * depth * baseRadius * 0.3;
+            break;
+          }
+          case "lattice": {
+            const waveX = Math.sin((point.x + phase * 60) * 0.01);
+            const waveY = Math.cos((point.y - phase * 60) * 0.01);
+            result.positionDelta.x += waveX * depth * baseRadius * 0.38;
+            result.positionDelta.y += waveY * depth * baseRadius * 0.38;
+            const latticeGlow = clamp((waveX * waveY) * 0.5 + 0.5, 0, 1);
+            result.radiusDelta += (waveX * waveY) * depth * baseRadius * 0.4;
+            if (!result.fillColor) {
+              const tint = {
+                r: clamp(color.r * (0.8 + latticeGlow * 0.4), 0, 255),
+                g: clamp(color.g * (0.85 + latticeGlow * 0.3), 0, 255),
+                b: clamp(color.b * (0.9 + latticeGlow * 0.2), 0, 255),
+                a: color.a
+              };
+              result.fillColor = colorToStyle(tint);
+            }
             break;
           }
           default: {
@@ -2928,13 +3310,13 @@
         const { h, s } = rgbToHsl(color.r, color.g, color.b);
         if (state.jitterMode === "hue") {
           const angle = (h / 360) * Math.PI * 2;
-          result.positionDelta.x = Math.cos(angle) * strength * baseRadius * 0.5 * (rng() - 0.5);
-          result.positionDelta.y = Math.sin(angle) * strength * baseRadius * 0.5 * (rng() - 0.5);
+          result.positionDelta.x = Math.cos(angle) * strength * baseRadius * 0.5 * (random(5, true) - 0.5);
+          result.positionDelta.y = Math.sin(angle) * strength * baseRadius * 0.5 * (random(6, true) - 0.5);
         } else {
           result.radiusDelta = ((s - 0.5) * strength) * baseRadius;
         }
       } else if (state.jitterMode === "position") {
-        const theta = rng() * Math.PI * 2;
+        const theta = random(7, true) * Math.PI * 2;
         const dist = strength * baseRadius;
         result.positionDelta.x = Math.cos(theta) * dist;
         result.positionDelta.y = Math.sin(theta) * dist;
@@ -2980,29 +3362,178 @@
       return { drawWidth, drawHeight, offsetX, offsetY };
     }
 
-    function commitCircles(circles) {
-      state.circles = circles.map((c) => ({ ...c }));
+    function computeRecordDimensions() {
+      const qualityMap = { "720p": 720, "1080p": 1080, "1440p": 1440, "2160p": 2160 };
+      const aspect = resolveAspectRatio(currentSampleWidth, currentSampleHeight) || state.currentAspect || 16 / 9;
+      const quality = state.recordQuality || "auto";
+      let width;
+      let height;
+      if (quality === "auto" || !qualityMap[quality]) {
+        width = ui.displayCanvas ? ui.displayCanvas.width : 1280;
+        height = ui.displayCanvas ? ui.displayCanvas.height : 720;
+      } else {
+        const base = qualityMap[quality];
+        if (aspect >= 1) {
+          height = base;
+          width = Math.round(height * aspect);
+        } else {
+          width = base;
+          height = Math.round(width / aspect);
+        }
+      }
+      width = Math.max(64, Math.round(width));
+      height = Math.max(64, Math.round(height));
+      if (width % 2) width += 1;
+      if (height % 2) height += 1;
+      return { width, height };
+    }
+
+    function ensureRecordCanvas() {
+      if (!ui.recordCanvas) return recordDimensions;
+      const dims = computeRecordDimensions();
+      if (recordDimensions.width !== dims.width || recordDimensions.height !== dims.height) {
+        recordDimensions.width = dims.width;
+        recordDimensions.height = dims.height;
+        ui.recordCanvas.width = dims.width;
+        ui.recordCanvas.height = dims.height;
+      }
+      if (ui.recordCtx) {
+        ui.recordCtx.setTransform(1, 0, 0, 1, 0, 0);
+        ui.recordCtx.imageSmoothingEnabled = true;
+        ui.recordCtx.imageSmoothingQuality = "high";
+      }
+      return recordDimensions;
+    }
+
+    function updateRecordFrame(force = false) {
+      if (state.recordMode !== "canvas") return;
+      if (!ui.recordCanvas || !ui.recordCtx) return;
+      if (!force && !recordingContext.active && !state.recordingActive) return;
+      const dims = ensureRecordCanvas();
+      if (!dims.width || !dims.height) return;
+      const ctx = ui.recordCtx;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, dims.width, dims.height);
+      ctx.fillStyle = "#09090d";
+      ctx.fillRect(0, 0, dims.width, dims.height);
+      if (!state.circles.length) return;
+      const sourceBounds = state.lastBounds && state.lastBounds.drawWidth
+        ? state.lastBounds
+        : { offsetX: 0, offsetY: 0, drawWidth: state.canvasCssWidth || dims.width, drawHeight: state.canvasCssHeight || dims.height };
+      const targetBounds = computeRenderBounds(dims.width, dims.height, currentSampleWidth, currentSampleHeight);
+      paintCircles(ctx, state.circles, { source: sourceBounds, target: targetBounds, width: dims.width, height: dims.height });
+    }
+
+    function commitCircles(circles, count = circles.length) {
+      if (!Array.isArray(circles)) return;
+      const limit = Math.max(0, Math.min(count, circles.length));
+      if (state.circles.length < limit) {
+        while (state.circles.length < limit) {
+          state.circles.push({ x: 0, y: 0, r: 0, fill: "" });
+        }
+      }
+      for (let i = 0; i < limit; i++) {
+        const src = circles[i];
+        let dest = state.circles[i];
+        if (!dest) {
+          dest = state.circles[i] = { x: src.x, y: src.y, r: src.r, fill: src.fill };
+        } else {
+          dest.x = src.x;
+          dest.y = src.y;
+          dest.r = src.r;
+          dest.fill = src.fill;
+        }
+      }
+      state.circles.length = limit;
       ui.displayCtx.clearRect(0, 0, ui.displayCanvas.width, ui.displayCanvas.height);
       paintCircles(ui.displayCtx, state.circles);
+      if (state.recordMode === "canvas") {
+        updateRecordFrame(recordingContext.active || state.recordingActive);
+      }
       if (state.editMode) drawSelection();
       if (ui.circleCountDisplay) {
-        ui.circleCountDisplay.textContent = circles.length.toLocaleString();
+        ui.circleCountDisplay.textContent = limit.toLocaleString();
       }
       updateEditControls();
     }
 
-    function paintCircles(ctx, circles) {
-      circles.forEach((circle) => {
-        ctx.beginPath();
-        ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
-        ctx.fillStyle = circle.fill;
-        ctx.fill();
-        if (state.outline) {
-          ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
-          ctx.lineWidth = 1;
-          ctx.stroke();
+    function paintCircles(ctx, circles, transform = null) {
+      if (!circles || !circles.length) return;
+      const shape = getShapeDefinition(state.shapeMode);
+      const outline = state.outline;
+      const tracer = shape.trace;
+      const path = supportsPathTransforms ? shape.path : null;
+      const useMatrix = Boolean(path);
+      const matrix = useMatrix ? new DOMMatrix() : null;
+      const strokeColor = "rgba(0, 0, 0, 0.45)";
+      if (outline) {
+        ctx.lineWidth = 1;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.strokeStyle = strokeColor;
+      }
+      const hasTransform = Boolean(transform);
+      let srcBounds = null;
+      let dstBounds = null;
+      let srcWidth = 1;
+      let srcHeight = 1;
+      let srcBase = 1;
+      let dstWidth = 1;
+      let dstHeight = 1;
+      let dstBase = 1;
+      if (hasTransform) {
+        const defaultSrc = state.lastBounds && state.lastBounds.drawWidth
+          ? state.lastBounds
+          : { offsetX: 0, offsetY: 0, drawWidth: ctx.canvas.width, drawHeight: ctx.canvas.height };
+        srcBounds = transform.source || defaultSrc;
+        dstBounds = transform.target || {
+          offsetX: 0,
+          offsetY: 0,
+          drawWidth: transform.width || ctx.canvas.width,
+          drawHeight: transform.height || ctx.canvas.height
+        };
+        srcWidth = Math.max(srcBounds.drawWidth, 1);
+        srcHeight = Math.max(srcBounds.drawHeight, 1);
+        srcBase = Math.max(Math.min(srcWidth, srcHeight), 1);
+        dstWidth = Math.max(dstBounds.drawWidth, 1);
+        dstHeight = Math.max(dstBounds.drawHeight, 1);
+        dstBase = Math.max(Math.min(dstWidth, dstHeight), 1);
+      }
+      for (let i = 0; i < circles.length; i++) {
+        const circle = circles[i];
+        let x = circle.x;
+        let y = circle.y;
+        let r = circle.r;
+        if (hasTransform) {
+          const normX = (circle.x - srcBounds.offsetX) / srcWidth;
+          const normY = (circle.y - srcBounds.offsetY) / srcHeight;
+          const normR = circle.r / srcBase;
+          x = dstBounds.offsetX + normX * dstBounds.drawWidth;
+          y = dstBounds.offsetY + normY * dstBounds.drawHeight;
+          r = normR * dstBase;
         }
-      });
+        ctx.fillStyle = circle.fill;
+        if (useMatrix) {
+          matrix.a = r;
+          matrix.b = 0;
+          matrix.c = 0;
+          matrix.d = r;
+          matrix.e = x;
+          matrix.f = y;
+          ctx.fill(path, matrix);
+          if (outline) {
+            ctx.stroke(path, matrix);
+          }
+        } else {
+          ctx.beginPath();
+          tracer(ctx, x, y, r);
+          ctx.closePath();
+          ctx.fill();
+          if (outline) {
+            ctx.stroke();
+          }
+        }
+      }
     }
 
     // Fast sample lookup into the cached downscaled buffer.
@@ -3035,6 +3566,21 @@
         t = Math.imul(t ^ (t >>> 15), t | 1);
         t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function createCircleNoise(frame = animationState.frame) {
+      const baseSeed = typeof state.seedHash === "number" ? state.seedHash : seedFromString(state.seed || "0");
+      const frameSeed = (frame >>> 0) + 1;
+      return (index = 0, variant = 0, animated = false) => {
+        let n = baseSeed ^ ((index + 1) * 0x9e3779b1);
+        n ^= ((variant + 1) * 0x85ebca77) >>> 0;
+        if (animated) {
+          n ^= (frameSeed * 0xc2b2ae3d) >>> 0;
+        }
+        n = Math.imul(n ^ (n >>> 15), 0xd168aae1);
+        n ^= n + Math.imul(n ^ (n >>> 7), 0x27d4eb2d);
+        return ((n ^ (n >>> 14)) >>> 0) / 4294967296;
       };
     }
 
@@ -3088,7 +3634,7 @@
 
     function downloadPNG() {
       const link = document.createElement("a");
-      link.download = "circles.png";
+      link.download = "mosaic.png";
       link.href = ui.displayCanvas.toDataURL("image/png");
       link.click();
     }
@@ -3097,13 +3643,25 @@
       ui.statusMessage.textContent = message;
     }
 
+    function setSeedValue(value, triggerRender = true) {
+      const next = value && String(value).length ? String(value) : "0";
+      state.seed = next;
+      state.seedHash = seedFromString(next);
+      state.randomLayoutKey = null;
+      if (triggerRender) {
+        requestRender();
+      }
+    }
+
     function preparePreviewForRecording(recordFps) {
       if (recordingContext.active) return;
       recordingContext = {
         active: true,
         prevPreviewOn: state.previewOn,
         prevLivePreview: state.livePreview,
-        prevPreviewFps: state.previewFps
+        prevPreviewFps: state.previewFps,
+        prevSampleDetail: state.sampleDetail,
+        prevSampleMax: state.sampleMaxDimension
       };
       state.previewOn = true;
       state.livePreview = true;
@@ -3119,21 +3677,56 @@
         ui.previewHoldBtn.disabled = true;
         ui.previewHoldBtn.textContent = "Pause Preview";
       }
+      let targetDims = {
+        width: state.canvasCssWidth || ui.displayCanvas.width,
+        height: state.canvasCssHeight || ui.displayCanvas.height
+      };
+      if (state.recordMode === "canvas") {
+        const dims = ensureRecordCanvas();
+        targetDims = { width: dims.width, height: dims.height };
+      }
+      const detailBoost = Math.max(state.sampleDetail || 0.85, 1);
+      if (detailBoost !== state.sampleDetail) {
+        state.sampleDetail = detailBoost;
+        updateControlTriple(ui.sampleDetailSlider, ui.sampleDetailNumber, ui.sampleDetailValue, detailBoost, 2);
+      }
+      const targetMax = Math.max(targetDims.width, targetDims.height, 720);
+      const maxBoost = Math.max(state.sampleMaxDimension || 720, targetMax);
+      if (maxBoost !== state.sampleMaxDimension) {
+        state.sampleMaxDimension = maxBoost;
+        if (ui.sampleMaxSlider) ui.sampleMaxSlider.value = maxBoost;
+        if (ui.sampleMaxNumber) ui.sampleMaxNumber.value = maxBoost;
+        if (ui.sampleMaxValue) ui.sampleMaxValue.textContent = maxBoost;
+      }
       if (state.previewFps !== recordFps) {
         state.previewFps = recordFps;
         state.previewBaseFps = recordFps;
         updateControlTriple(ui.previewFpsSlider, ui.previewFpsNumber, ui.previewFpsValue, recordFps, 0);
       }
+      state.sampleAccumulator = null;
+      refreshSampleBuffer();
       schedulePreview(true);
     }
 
     function restorePreviewAfterRecording() {
       if (!recordingContext.active) return;
-      const { prevPreviewOn, prevLivePreview, prevPreviewFps } = recordingContext;
+      const { prevPreviewOn, prevLivePreview, prevPreviewFps, prevSampleDetail, prevSampleMax } = recordingContext;
       recordingContext.active = false;
       state.previewFps = prevPreviewFps;
       state.previewBaseFps = prevPreviewFps;
       updateControlTriple(ui.previewFpsSlider, ui.previewFpsNumber, ui.previewFpsValue, prevPreviewFps, 0);
+      if (typeof prevSampleDetail === "number" && Math.abs(state.sampleDetail - prevSampleDetail) > 1e-3) {
+        state.sampleDetail = prevSampleDetail;
+        updateControlTriple(ui.sampleDetailSlider, ui.sampleDetailNumber, ui.sampleDetailValue, prevSampleDetail, 2);
+      }
+      if (typeof prevSampleMax === "number" && state.sampleMaxDimension !== prevSampleMax) {
+        state.sampleMaxDimension = prevSampleMax;
+        if (ui.sampleMaxSlider) ui.sampleMaxSlider.value = prevSampleMax;
+        if (ui.sampleMaxNumber) ui.sampleMaxNumber.value = prevSampleMax;
+        if (ui.sampleMaxValue) ui.sampleMaxValue.textContent = prevSampleMax;
+      }
+      state.sampleAccumulator = null;
+      refreshSampleBuffer();
       state.previewOn = prevPreviewOn;
       state.livePreview = prevLivePreview;
       if (ui.previewToggle) {
@@ -3218,35 +3811,38 @@
       attachInfoByInputId("mirrorCheckbox", "Flip the webcam horizontally for a familiar mirrored selfie view.");
       attachInfoByInputId("previewToggle", "Toggle whether frames update automatically. Disable to save CPU while editing.");
       attachInfoByInputId("livePreviewCheckbox", "Keeps the preview running continuously around the selected FPS target.");
-      attachInfoBySelector("label[for='resSlider']", "Set how many cells per side the uniform grid uses (higher = more circles).");
-      attachInfoBySelector("label[for='countSlider']", "Target number of Poisson circles. The sampler keeps them from overlapping.");
-      attachInfoToLabel(document.getElementById("sizeLabel"), "Adjust circle radius. In random mode this is measured in pixels.");
+      attachInfoBySelector("label[for='resSlider']", "Set how many cells per side the uniform grid uses (higher = more tiles).");
+      attachInfoBySelector("label[for='countSlider']", "Target number of Poisson tiles. The sampler keeps them from overlapping.");
+      attachInfoToLabel(document.getElementById("sizeLabel"), "Adjust tile radius. In random mode this is measured in pixels.");
+      attachInfoBySelector("label[for='shapeSelect']", "Switch the tile geometry between circles, polygons, stars, and other specialty shapes.");
       attachInfoBySelector("label[for='seedInput']", "All randomness comes from this seed. Same seed + settings = same mosaic.");
       attachInfoBySelector("label[for='aspectRatioSelect']", "Force the canvas to common aspect ratios or keep the original source shape.");
-      attachInfoBySelector("label[for='colorModeSelect']", "Choose how sampled colors are remapped before drawing circles.");
+      attachInfoBySelector("label[for='colorModeSelect']", "Choose how sampled colors are remapped before drawing tiles.");
       attachInfoBySelector("label[for='gammaSlider']", "Rebalance mid-tones before grayscale/palette mapping for punchier output.");
       attachInfoBySelector("label[for='palettePresetSelect']", "Load curated color sets as creative filters.");
       attachInfoBySelector("label[for='paletteRangeColor']", "Pick the central hue for automatically generated palette ranges.");
       attachInfoBySelector("label[for='paletteRangeSlider']", "Expand or tighten the hue window around the center color.");
       attachInfoBySelector("label[for='paletteRangeCount']", "How many swatches to generate within the hue range.");
-      attachInfoBySelector("label[for='jitterModeSelect']", "Choose which property (brightness, hue, etc.) modulates circle variation.");
+      attachInfoBySelector("label[for='jitterModeSelect']", "Choose which property (brightness, hue, etc.) modulates tile variation.");
       attachInfoBySelector("label[for='jitterStrength']", "Control how strongly size, offset, or tint respond to the jitter mode.");
-      attachInfoByInputId("outlineCheckbox", "Draws a fine stroke around each circle for crisper definition.");
+      attachInfoByInputId("outlineCheckbox", "Draws a fine stroke around each tile for crisper definition.");
       attachInfoByInputId("paletteDitherCheckbox", "Adds subtle noise before palette snapping to reduce color banding.");
       attachInfoByInputId("staticMotionCheckbox", "Keeps still images gently animating so uploaded photos feel alive.");
       attachInfoBySelector("label[for='staticMotionMode']", "Select the animation flavor applied to still images.");
-      attachInfoBySelector("label[for='staticMotionSlider']", "Sets how deep the motion distortions bend circle size and offsets.");
+      attachInfoBySelector("label[for='staticMotionSlider']", "Sets how deep the motion distortions bend tile size and offsets.");
       attachInfoBySelector("label[for='staticMotionSpeed']", "Controls how quickly the static motion cycles.");
-      attachInfoBySelector("label[for='staticMotionParallax']", "Scales how far circles sway relative to brightness for layered depth.");
-      attachInfoByInputId("editSnapCheckbox", "In uniform mode, snaps moved circles back to their grid cell centers.");
+      attachInfoBySelector("label[for='staticMotionParallax']", "Scales how far tiles sway relative to brightness for layered depth.");
+      attachInfoByInputId("editSnapCheckbox", "In uniform mode, snaps moved tiles back to their grid cell centers.");
       attachInfoBySelector("label[for='editNudgeSlider']", "Keyboard arrow nudge distance while editing.");
-      attachInfoBySelector("label[for='editRadiusSlider']", "Resize the selected circle precisely when editing.");
+      attachInfoBySelector("label[for='editRadiusSlider']", "Resize the selected tile precisely when editing.");
       attachInfoBySelector("label[for='sampleDetailSlider']", "Downsampled resolution of the source used for color sampling.");
       attachInfoBySelector("label[for='sampleMaxSlider']", "Largest dimension of the sampling buffer—lower it for faster previews.");
       attachInfoBySelector("label[for='temporalBlendSlider']", "Blend the current frame with previous ones for trailing, softer motion.");
       attachInfoBySelector("label[for='previewFpsSlider']", "Target frames per second for the live preview loop.");
       attachInfoBySelector("label[for='recordFpsSlider']", "Frame rate used when capturing WebM recordings.");
       attachInfoBySelector("label[for='recordBitrateSlider']", "Video bitrate in megabits per second—higher preserves more detail.");
+      attachInfoBySelector("label[for='recordModeSelect']", "Choose between direct canvas capture, full screen, or single-window recording.");
+      attachInfoBySelector("label[for='recordQualitySelect']", "Set the output resolution for canvas recordings.");
       attachInfoBySelector("label[for='chaosModeSelect']", "Pick a pre-built chaos recipe that toggles related effects together.");
       attachInfoBySelector("label[for='chaosSpeedSlider']", "How many chaotic tweaks happen per second while chaos is active.");
       attachInfoBySelector("label[for='chaosIntensitySlider']", "Scale of each chaos effect—higher swings settings more dramatically.");
@@ -3254,14 +3850,14 @@
       attachInfoByInputId("chaosPaletteToggle", "Breathes the palette hues and saturation over time.");
       attachInfoByInputId("chaosMotionToggle", "Drives static motion depth and speed for cinematic movement.");
       attachInfoByInputId("chaosColorToggle", "Waves through gamma and color shifts for dreamy looks.");
-      attachInfoByInputId("chaosSizeToggle", "Oscillates circle radii for a breathing mosaic.");
+      attachInfoByInputId("chaosSizeToggle", "Oscillates tile radii for a breathing mosaic.");
       attachInfoByInputId("chaosAspectToggle", "Cycles aspect ratios while chaos runs for dynamic framing.");
       attachInfoByInputId("chaosDetailToggle", "Pushes sample detail up/down to modulate texture.");
       attachInfoByInputId("chaosJitterToggle", "Swings the jitter strength to alternate between calm and wild.");
       attachInfoByInputId("chaosBlendToggle", "Animates temporal blending for a soft bloom-style trail.");
     }
 
-    function toggleRecording() {
+    async function toggleRecording() {
       if (recorder && recorder.state === "recording") {
         recorder.stop();
         updateStatus("Recording stopped. Preparing download...");
@@ -3270,15 +3866,31 @@
       try {
         const recordFps = Math.max(24, Math.min(120, Math.round(state.recordFps || 60)));
         preparePreviewForRecording(recordFps);
-        const stream = ui.displayCanvas.captureStream(recordFps);
+        let stream;
+        let dims = null;
+        const canDisplayCapture = navigator.mediaDevices?.getDisplayMedia;
+        if ((state.recordMode === "screen" || state.recordMode === "window") && canDisplayCapture) {
+          const videoConstraints = { frameRate: recordFps };
+          if (state.recordMode === "window") {
+            videoConstraints.displaySurface = "window";
+            videoConstraints.logicalSurface = true;
+          }
+          stream = await navigator.mediaDevices.getDisplayMedia({ video: videoConstraints, audio: false });
+          recordStream = stream;
+        } else {
+          dims = ensureRecordCanvas();
+          updateRecordFrame(true);
+          stream = ui.recordCanvas.captureStream(recordFps);
+          recordStream = stream;
+        }
         const track = stream.getVideoTracks?.()[0];
         if (track && track.applyConstraints) {
           track.applyConstraints({ frameRate: recordFps }).catch(() => {});
         }
-        const options = {
-          mimeType: "video/webm;codecs=vp9",
-          videoBitsPerSecond: Math.round((state.recordBitrate || 10) * 1_000_000)
-        };
+          const options = {
+            mimeType: "video/webm;codecs=vp9",
+            videoBitsPerSecond: Math.round((state.recordBitrate || 18) * 1_000_000)
+          };
         try {
           recorder = new MediaRecorder(stream, options);
         } catch (codecError) {
@@ -3293,24 +3905,53 @@
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = "circles.webm";
+          a.download = "mosaic.webm";
           a.click();
           URL.revokeObjectURL(url);
-          ui.recordBtn.textContent = "Start Recording";
-          ui.recordStatus.classList.add("hidden");
+          if (ui.recordBtn) ui.recordBtn.textContent = "Start Recording";
+          if (ui.recordStatus) {
+            ui.recordStatus.classList.add("hidden");
+            ui.recordStatus.innerHTML = ui.recordStatusDefault || '<span class="recording-indicator"></span> Recording';
+          }
           state.recordingActive = false;
           restorePreviewAfterRecording();
-          updateStatus("Recording saved as circles.webm");
+          updateStatus("Recording saved as mosaic.webm");
+          if (recordStream) {
+            recordStream.getTracks().forEach((track) => track.stop());
+            recordStream = null;
+          }
+          recordedChunks = [];
+          recorder = null;
         };
-        recorder.start(Math.max(100, Math.floor(1000 / recordFps)));
+        recorder.start(Math.max(16, Math.round(1000 / recordFps)));
         state.recordingActive = true;
-        ui.recordBtn.textContent = "Stop Recording";
-        ui.recordStatus.classList.remove("hidden");
-        updateStatus("Recording...");
+        if (ui.recordBtn) ui.recordBtn.textContent = "Stop Recording";
+        if (ui.recordStatus) {
+          let detail;
+          if (dims) {
+            detail = `Recording ${recordFps} fps · ${dims.width}×${dims.height}`;
+          } else if (state.recordMode === "window") {
+            detail = `Recording Window @ ${recordFps} fps`;
+          } else {
+            detail = `Recording Screen @ ${recordFps} fps`;
+          }
+          ui.recordStatus.innerHTML = `<span class="recording-indicator"></span> ${detail}`;
+          ui.recordStatus.classList.remove("hidden");
+        }
+        updateStatus("Recording… Press stop to finish and save.");
       } catch (error) {
         console.error(error);
-        updateStatus("Recording unavailable in this browser.");
+        updateStatus(`Recording failed: ${error.message || error}`);
         state.recordingActive = false;
+        if (ui.recordBtn) ui.recordBtn.textContent = "Start Recording";
+        if (ui.recordStatus) {
+          ui.recordStatus.classList.add("hidden");
+          ui.recordStatus.innerHTML = ui.recordStatusDefault || ui.recordStatus.innerHTML;
+        }
+        if (recordStream) {
+          recordStream.getTracks().forEach((track) => track.stop());
+          recordStream = null;
+        }
         restorePreviewAfterRecording();
       }
     }
@@ -3467,12 +4108,14 @@
       if (editState.selectedIndex === -1) return;
       const ctx = ui.displayCtx;
       const circle = state.circles[editState.selectedIndex];
+      const shape = getShapeDefinition(state.shapeMode);
       ctx.save();
       ctx.strokeStyle = "rgba(125, 211, 157, 0.8)";
       ctx.lineWidth = 2;
       ctx.setLineDash([6, 4]);
       ctx.beginPath();
-      ctx.arc(circle.x, circle.y, circle.r + 3, 0, Math.PI * 2);
+      shape.trace(ctx, circle.x, circle.y, circle.r + 3);
+      ctx.closePath();
       ctx.stroke();
       ctx.restore();
     }
