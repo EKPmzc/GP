@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' blob: data: https://apod.nasa.gov https://images-assets.nasa.gov https://picsum.photos https://images.unsplash.com https://www.artic.edu https://dog.ceo; media-src 'self' blob:; connect-src 'self' https://api.nasa.gov https://www.colr.org https://picsum.photos https://api.artic.edu https://dog.ceo https://images-assets.nasa.gov https://colormind.io; style-src 'self' 'unsafe-inline'; script-src 'self';"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mosaic Studio Desktop</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <h1>Mosaic Studio Desktop</h1>
+        <nav class="mode-tabs" role="tablist" aria-label="Effect families">
+          <button class="tab active" data-tab="mosaic" role="tab" aria-selected="true">Mosaic Lab</button>
+          <button class="tab" data-tab="glitch" role="tab">Glitch Forge</button>
+          <button class="tab" data-tab="aurora" role="tab">Aurora Synth</button>
+          <button class="tab" data-tab="particle" role="tab">Particle Studio</button>
+          <button class="tab" data-tab="audio" role="tab">Audio Reactor</button>
+          <button class="tab" data-tab="nebula" role="tab">Nebula Weave</button>
+          <button class="tab" data-tab="wave" role="tab">Wave Lab</button>
+          <button class="tab" data-tab="api" role="tab">API Fusion</button>
+          <button class="tab" data-tab="flux" role="tab">Flux Field</button>
+          <button class="tab" data-tab="sketch" role="tab">Sketchbook</button>
+          <button class="tab" data-tab="prism" role="tab">Prism Bloom</button>
+          <button class="tab" data-tab="ai" role="tab">AI Studio</button>
+        </nav>
+      </header>
+      <main>
+        <section class="canvas-stage">
+          <div class="aspect-wrapper">
+            <canvas id="displayCanvas" width="1280" height="720"></canvas>
+            <div class="stage-overlay">
+              <span id="statusText">Ready</span>
+              <span id="fpsText">0 fps</span>
+            </div>
+          </div>
+        </section>
+        <aside class="controls" id="controlPanel">
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Source <button class="info" data-info="source">i</button></h2>
+            <div class="control-row">
+              <button id="cameraToggle">Start Camera</button>
+              <label class="inline">
+                <input type="checkbox" id="mirrorToggle" checked /> Mirror
+              </label>
+            </div>
+            <div class="control-row">
+              <input type="file" id="fileInput" accept="image/*" />
+            </div>
+            <div class="control-row">
+              <label>Aspect Ratio
+                <select id="aspectSelect">
+                  <option value="source">Source</option>
+                  <option value="16:9">16 : 9</option>
+                  <option value="9:16">9 : 16</option>
+                  <option value="1:1">1 : 1</option>
+                  <option value="4:5">4 : 5</option>
+                  <option value="3:2">3 : 2</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label class="inline">Live Preview
+                <input type="checkbox" id="previewToggle" checked />
+              </label>
+              <button id="previewOnce">Render Once</button>
+            </div>
+            <div class="control-row">
+              <button id="startRecord">Record</button>
+              <button id="stopRecord" disabled>Stop</button>
+              <select id="recordMode">
+                <option value="canvas">Canvas Stream</option>
+                <option value="window">Window Capture</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Mode &amp; Resolution <button class="info" data-info="mode">i</button></h2>
+            <div class="control-row">
+              <label class="inline"><input type="radio" name="layoutMode" value="uniform" checked /> Uniform</label>
+              <label class="inline"><input type="radio" name="layoutMode" value="random" /> Random</label>
+              <label class="inline"><input type="radio" name="layoutMode" value="hybrid" /> Hybrid</label>
+            </div>
+            <div class="control-row">
+              <label for="resSlider">Resolution</label>
+              <input type="range" id="resSlider" min="1" max="240" value="40" step="1" />
+              <input type="number" id="resNumber" min="1" max="240" value="40" />
+              <span id="resLabel">40 × 40</span>
+            </div>
+            <div class="control-row" data-mode="random">
+              <label for="countSlider">Target Shapes</label>
+              <input type="range" id="countSlider" min="100" max="20000" value="1500" step="50" />
+              <input type="number" id="countNumber" min="100" max="20000" value="1500" />
+            </div>
+            <div class="control-row">
+              <label for="sizeSlider">Base Size</label>
+              <input type="range" id="sizeSlider" min="0.2" max="1.5" step="0.01" value="0.9" />
+              <input type="number" id="sizeNumber" min="0.2" max="1.5" step="0.01" value="0.9" />
+              <span id="sizeLabel">0.90× cell</span>
+            </div>
+            <div class="control-row">
+              <label for="shapeSelect">Shape</label>
+              <select id="shapeSelect"></select>
+            </div>
+            <div class="control-row">
+              <label class="inline"><input type="checkbox" id="outlineToggle" /> Outline</label>
+              <label class="inline"><input type="checkbox" id="lockGrid" checked /> Lock Grid Origin</label>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Color &amp; Palette <button class="info" data-info="color">i</button></h2>
+            <div class="control-row">
+              <label>Mode
+                <select id="colorMode">
+                  <option value="source">Source</option>
+                  <option value="grayscale">Grayscale</option>
+                  <option value="palette">Palette</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label for="gammaSlider">Gamma</label>
+              <input type="range" id="gammaSlider" min="0.5" max="2.5" step="0.05" value="1" />
+              <input type="number" id="gammaNumber" min="0.5" max="2.5" step="0.05" value="1" />
+            </div>
+            <div class="control-row">
+              <label>Preset
+                <select id="palettePreset"></select>
+              </label>
+              <button id="paletteApply">Apply</button>
+            </div>
+            <div class="control-row">
+              <label>Palette Range Center
+                <input type="color" id="paletteCenter" value="#ff8800" />
+              </label>
+              <label>Range
+                <input type="range" id="paletteRange" min="0" max="360" value="90" />
+              </label>
+            </div>
+            <div class="palette-editor" id="paletteEditor"></div>
+            <div class="control-row">
+              <button id="addColor">Add Color</button>
+              <button id="resetPalette">Reset</button>
+              <label class="inline"><input type="checkbox" id="paletteDither" checked /> Dither</label>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Jitter &amp; Motion <button class="info" data-info="jitter">i</button></h2>
+            <div class="control-row">
+              <label>Mode
+                <select id="jitterMode">
+                  <option value="none">None</option>
+                  <option value="brightness">Brightness</option>
+                  <option value="hue">Hue</option>
+                  <option value="saturation">Saturation</option>
+                  <option value="position">Position</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label for="jitterStrength">Strength</label>
+              <input type="range" id="jitterStrength" min="0" max="3" step="0.01" value="1" />
+              <input type="number" id="jitterNumber" min="0" max="3" step="0.01" value="1" />
+            </div>
+            <div class="control-row">
+              <label for="motionDepth">Static Motion Depth</label>
+              <input type="range" id="motionDepth" min="0" max="10" step="0.1" value="2" />
+              <input type="number" id="motionDepthNumber" min="0" max="10" step="0.1" value="2" />
+            </div>
+            <div class="control-row">
+              <label class="inline"><input type="checkbox" id="staticMotionToggle" /> Animate Still Source</label>
+            </div>
+            <div class="control-row">
+              <label>Chaos Mode
+                <select id="chaosMode"></select>
+              </label>
+              <button id="chaosBurst">Chaos 60 FPS</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Seed &amp; Preview <button class="info" data-info="seed">i</button></h2>
+            <div class="control-row">
+              <label>Seed <input type="text" id="seedInput" /></label>
+              <button id="randomizeSeed">Randomize</button>
+            </div>
+            <div class="control-row">
+              <button id="previewToggleBtn">Toggle Preview</button>
+              <span id="previewStatus">Preview ON</span>
+            </div>
+            <div class="control-row">
+              <span>Particles: <strong id="circleCount">0</strong></span>
+              <span>Sample: <strong id="sampleResolution">0×0</strong></span>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Editing <button class="info" data-info="edit">i</button></h2>
+            <div class="control-row">
+              <button id="editModeToggle">Enter Edit (E)</button>
+              <button id="editDuplicate" disabled>Duplicate</button>
+              <button id="editDelete" disabled>Delete</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Utility <button class="info" data-info="utility">i</button></h2>
+            <div class="control-row">
+              <button id="savePNG">Save PNG</button>
+              <button id="resetAll">Reset All</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="glitch" hidden>
+            <h2>Glitch Engine <button class="info" data-info="glitch">i</button></h2>
+            <div class="control-row">
+              <label>Intensity
+                <input type="range" id="glitchIntensity" min="0" max="1" step="0.01" value="0.35" />
+              </label>
+            </div>
+            <div class="control-row">
+              <label>Scanlines <input type="checkbox" id="glitchScanline" checked /></label>
+            </div>
+            <div class="control-row">
+              <button id="glitchSnap">Snapshot to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="aurora" hidden>
+            <h2>Aurora Synth <button class="info" data-info="aurora">i</button></h2>
+            <div class="control-row">
+              <label>Bloom Strength <input type="range" id="auroraBloom" min="0" max="4" step="0.05" value="1.5" /></label>
+            </div>
+            <div class="control-row">
+              <label>Drift Speed <input type="range" id="auroraDrift" min="0" max="4" step="0.05" value="1.2" /></label>
+            </div>
+            <div class="control-row">
+              <button id="auroraSnap">Snapshot to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="particle" hidden>
+            <h2>Particle Lab <button class="info" data-info="particle">i</button></h2>
+            <div class="control-row">
+              <label>Population
+                <input type="range" id="particleCount" min="200" max="20000" value="4000" step="100" />
+              </label>
+              <input type="number" id="particleCountNumber" min="200" max="20000" value="4000" step="100" />
+            </div>
+            <div class="control-row">
+              <label>Drift Speed
+                <input type="range" id="particleSpeed" min="0" max="5" value="1.2" step="0.05" />
+              </label>
+              <input type="number" id="particleSpeedNumber" min="0" max="5" value="1.2" step="0.05" />
+            </div>
+            <div class="control-row">
+              <label>Shape Set
+                <select id="particleShape"></select>
+              </label>
+              <label class="inline">Trails <input type="checkbox" id="particleTrail" checked /></label>
+            </div>
+            <div class="control-row">
+              <label>Palette Style
+                <select id="particlePalette">
+                  <option value="aurora">Aurora Mist</option>
+                  <option value="starlight">Starlight Drift</option>
+                  <option value="voltage">Voltage Surge</option>
+                  <option value="sunrise">Sunrise Bloom</option>
+                  <option value="custom">Use Mosaic Palette</option>
+                </select>
+              </label>
+              <button id="particleSnap">Send Frame to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="audio" hidden>
+            <h2>Audio Reactor <button class="info" data-info="audio">i</button></h2>
+            <div class="control-row">
+              <input type="file" id="audioFile" accept="audio/*" />
+              <button id="audioPlay" disabled>Play</button>
+              <button id="audioStop" disabled>Stop</button>
+            </div>
+            <div class="control-row">
+              <label>Target Filter
+                <select id="audioTarget">
+                  <option value="mosaic">Mosaic Lab</option>
+                  <option value="aurora">Aurora Synth</option>
+                  <option value="glitch">Glitch Forge</option>
+                  <option value="particle">Particle Studio</option>
+                  <option value="nebula">Nebula Weave</option>
+                  <option value="wave">Wave Lab</option>
+                  <option value="flux">Flux Field</option>
+                  <option value="sketch">Sketchbook</option>
+                  <option value="prism">Prism Bloom</option>
+                  <option value="ai">AI Studio</option>
+                </select>
+              </label>
+              <label>Smoothing
+                <input type="range" id="audioSmoothing" min="0" max="0.95" step="0.01" value="0.75" />
+              </label>
+              <input type="number" id="audioSmoothingNumber" min="0" max="0.95" step="0.01" value="0.75" />
+              <span>Level: <strong id="audioLevel">0.00</strong></span>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="mosaic">
+              <div class="control-row">
+                <label>Size Impact
+                  <input type="range" id="audioMosaicSize" min="0" max="1.5" step="0.05" value="0.6" />
+                </label>
+                <input type="number" id="audioMosaicSizeNumber" min="0" max="1.5" step="0.05" value="0.6" />
+              </div>
+              <div class="control-row">
+                <label>Jitter Boost
+                  <input type="range" id="audioMosaicJitter" min="0" max="2.5" step="0.05" value="0.9" />
+                </label>
+                <input type="number" id="audioMosaicJitterNumber" min="0" max="2.5" step="0.05" value="0.9" />
+              </div>
+              <div class="control-row">
+                <label>Hue Sweep
+                  <input type="range" id="audioMosaicHue" min="0" max="180" step="1" value="45" />
+                </label>
+                <input type="number" id="audioMosaicHueNumber" min="0" max="180" step="1" value="45" />
+              </div>
+              <div class="control-row">
+                <label>Saturation Lift
+                  <input type="range" id="audioMosaicSaturation" min="0" max="1.5" step="0.05" value="0.4" />
+                </label>
+                <input type="number" id="audioMosaicSaturationNumber" min="0" max="1.5" step="0.05" value="0.4" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="aurora" hidden>
+              <div class="control-row">
+                <label>Ribbon Bloom
+                  <input type="range" id="audioAuroraBloom" min="0" max="3" step="0.05" value="1.2" />
+                </label>
+                <input type="number" id="audioAuroraBloomNumber" min="0" max="3" step="0.05" value="1.2" />
+              </div>
+              <div class="control-row">
+                <label>Drift Warp
+                  <input type="range" id="audioAuroraDrift" min="0" max="3" step="0.05" value="1.4" />
+                </label>
+                <input type="number" id="audioAuroraDriftNumber" min="0" max="3" step="0.05" value="1.4" />
+              </div>
+              <div class="control-row">
+                <label>Tint Orbit
+                  <input type="range" id="audioAuroraHue" min="0" max="240" step="1" value="90" />
+                </label>
+                <input type="number" id="audioAuroraHueNumber" min="0" max="240" step="1" value="90" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="glitch" hidden>
+              <div class="control-row">
+                <label>Intensity Pulse
+                  <input type="range" id="audioGlitchIntensity" min="0" max="2" step="0.05" value="0.8" />
+                </label>
+                <input type="number" id="audioGlitchIntensityNumber" min="0" max="2" step="0.05" value="0.8" />
+              </div>
+              <div class="control-row">
+                <label>Band Chaos
+                  <input type="range" id="audioGlitchBands" min="0" max="220" step="5" value="80" />
+                </label>
+                <input type="number" id="audioGlitchBandsNumber" min="0" max="220" step="5" value="80" />
+              </div>
+              <div class="control-row">
+                <label>Color Warp
+                  <input type="range" id="audioGlitchColor" min="0" max="1" step="0.01" value="0.35" />
+                </label>
+                <input type="number" id="audioGlitchColorNumber" min="0" max="1" step="0.01" value="0.35" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="particle" hidden>
+              <div class="control-row">
+                <label>Orbit Boost
+                  <input type="range" id="audioParticleOrbit" min="0" max="3" step="0.05" value="1" />
+                </label>
+                <input type="number" id="audioParticleOrbitNumber" min="0" max="3" step="0.05" value="1" />
+              </div>
+              <div class="control-row">
+                <label>Trail Fade
+                  <input type="range" id="audioParticleTrail" min="0" max="1" step="0.05" value="0.4" />
+                </label>
+                <input type="number" id="audioParticleTrailNumber" min="0" max="1" step="0.05" value="0.4" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="nebula" hidden>
+              <div class="control-row">
+                <label>Density Lift
+                  <input type="range" id="audioNebulaDensity" min="0" max="1" step="0.05" value="0.5" />
+                </label>
+                <input type="number" id="audioNebulaDensityNumber" min="0" max="1" step="0.05" value="0.5" />
+              </div>
+              <div class="control-row">
+                <label>Swirl Warp
+                  <input type="range" id="audioNebulaSwirl" min="0" max="2" step="0.05" value="0.8" />
+                </label>
+                <input type="number" id="audioNebulaSwirlNumber" min="0" max="2" step="0.05" value="0.8" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="wave" hidden>
+              <div class="control-row">
+                <label>Amplitude Gain
+                  <input type="range" id="audioWaveAmplitude" min="0" max="2" step="0.05" value="0.7" />
+                </label>
+                <input type="number" id="audioWaveAmplitudeNumber" min="0" max="2" step="0.05" value="0.7" />
+              </div>
+              <div class="control-row">
+                <label>Color Spin
+                  <input type="range" id="audioWaveHue" min="0" max="240" step="1" value="120" />
+                </label>
+                <input type="number" id="audioWaveHueNumber" min="0" max="240" step="1" value="120" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="flux" hidden>
+              <div class="control-row">
+                <label>Flow Boost
+                  <input type="range" id="audioFluxFlow" min="0" max="3" step="0.05" value="1" />
+                </label>
+                <input type="number" id="audioFluxFlowNumber" min="0" max="3" step="0.05" value="1" />
+              </div>
+              <div class="control-row">
+                <label>Glow Pulse
+                  <input type="range" id="audioFluxGlow" min="0" max="1" step="0.05" value="0.5" />
+                </label>
+                <input type="number" id="audioFluxGlowNumber" min="0" max="1" step="0.05" value="0.5" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="sketch" hidden>
+              <div class="control-row">
+                <label>Edge Pulse
+                  <input type="range" id="audioSketchEdge" min="0" max="2" step="0.05" value="0.6" />
+                </label>
+                <input type="number" id="audioSketchEdgeNumber" min="0" max="2" step="0.05" value="0.6" />
+              </div>
+              <div class="control-row">
+                <label>Ink Flash
+                  <input type="range" id="audioSketchInk" min="0" max="1" step="0.05" value="0.4" />
+                </label>
+                <input type="number" id="audioSketchInkNumber" min="0" max="1" step="0.05" value="0.4" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="prism" hidden>
+              <div class="control-row">
+                <label>Layer Sweep
+                  <input type="range" id="audioPrismLayers" min="0" max="1" step="0.05" value="0.5" />
+                </label>
+                <input type="number" id="audioPrismLayersNumber" min="0" max="1" step="0.05" value="0.5" />
+              </div>
+              <div class="control-row">
+                <label>Bloom Spark
+                  <input type="range" id="audioPrismBloom" min="0" max="2" step="0.05" value="0.7" />
+                </label>
+                <input type="number" id="audioPrismBloomNumber" min="0" max="2" step="0.05" value="0.7" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="ai" hidden>
+              <div class="control-row">
+                <label>Palette Pulse
+                  <input type="range" id="audioAiBlend" min="0" max="1" step="0.05" value="0.5" />
+                </label>
+                <input type="number" id="audioAiBlendNumber" min="0" max="1" step="0.05" value="0.5" />
+              </div>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="nebula" hidden>
+            <h2>Nebula Controls <button class="info" data-info="nebula">i</button></h2>
+            <div class="control-row">
+              <label for="nebulaDensity">Particle Count</label>
+              <input type="range" id="nebulaDensity" min="500" max="20000" step="100" value="6000" />
+              <input type="number" id="nebulaDensityNumber" min="500" max="20000" step="100" value="6000" />
+            </div>
+            <div class="control-row">
+              <label for="nebulaSwirl">Swirl</label>
+              <input type="range" id="nebulaSwirl" min="0" max="4" step="0.05" value="1.2" />
+              <input type="number" id="nebulaSwirlNumber" min="0" max="4" step="0.05" value="1.2" />
+            </div>
+            <div class="control-row">
+              <label for="nebulaSpeed">Flow Speed</label>
+              <input type="range" id="nebulaSpeed" min="0" max="3" step="0.05" value="0.8" />
+              <input type="number" id="nebulaSpeedNumber" min="0" max="3" step="0.05" value="0.8" />
+            </div>
+            <div class="control-row">
+              <label>Palette
+                <select id="nebulaPalette">
+                  <option value="aurora">Aurora</option>
+                  <option value="starlight">Starlight</option>
+                  <option value="voltage">Voltage</option>
+                  <option value="sunrise">Sunrise</option>
+                  <option value="custom">Use Mosaic Palette</option>
+                </select>
+              </label>
+              <button id="nebulaSnap">Snap to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="wave" hidden>
+            <h2>Wave Lab <button class="info" data-info="wave">i</button></h2>
+            <div class="control-row">
+              <label for="waveAmplitude">Amplitude</label>
+              <input type="range" id="waveAmplitude" min="0" max="80" step="1" value="24" />
+              <input type="number" id="waveAmplitudeNumber" min="0" max="80" step="1" value="24" />
+            </div>
+            <div class="control-row">
+              <label for="waveFrequency">Frequency</label>
+              <input type="range" id="waveFrequency" min="0.2" max="6" step="0.05" value="1.8" />
+              <input type="number" id="waveFrequencyNumber" min="0.2" max="6" step="0.05" value="1.8" />
+            </div>
+            <div class="control-row">
+              <label for="waveHue">Hue Drift</label>
+              <input type="range" id="waveHue" min="0" max="360" step="1" value="180" />
+              <input type="number" id="waveHueNumber" min="0" max="360" step="1" value="180" />
+            </div>
+            <div class="control-row">
+              <button id="waveSnap">Snap Frame</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="flux" hidden>
+            <h2>Flux Field <button class="info" data-info="flux">i</button></h2>
+            <div class="control-row">
+              <label for="fluxDensity">Particle Count</label>
+              <input type="range" id="fluxDensity" min="1000" max="30000" step="250" value="8000" />
+              <input type="number" id="fluxDensityNumber" min="1000" max="30000" step="250" value="8000" />
+            </div>
+            <div class="control-row">
+              <label for="fluxFlow">Flow Speed</label>
+              <input type="range" id="fluxFlow" min="0" max="5" step="0.05" value="1.5" />
+              <input type="number" id="fluxFlowNumber" min="0" max="5" step="0.05" value="1.5" />
+            </div>
+            <div class="control-row">
+              <label for="fluxGlow">Glow</label>
+              <input type="range" id="fluxGlow" min="0" max="1" step="0.01" value="0.6" />
+              <input type="number" id="fluxGlowNumber" min="0" max="1" step="0.01" value="0.6" />
+            </div>
+            <div class="control-row">
+              <button id="fluxSnap">Snap Frame</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="sketch" hidden>
+            <h2>Sketchbook <button class="info" data-info="sketch">i</button></h2>
+            <div class="control-row">
+              <label for="sketchEdge">Edge Strength</label>
+              <input type="range" id="sketchEdge" min="0" max="4" step="0.1" value="1.4" />
+              <input type="number" id="sketchEdgeNumber" min="0" max="4" step="0.1" value="1.4" />
+            </div>
+            <div class="control-row">
+              <label for="sketchPaper">Paper Tint</label>
+              <input type="color" id="sketchPaper" value="#f2ede3" />
+            </div>
+            <div class="control-row">
+              <label class="inline"><input type="checkbox" id="sketchHalftone" /> Halftone Shade</label>
+              <label class="inline"><input type="checkbox" id="sketchInvert" /> Invert Ink</label>
+            </div>
+            <div class="control-row">
+              <button id="sketchSnap">Send to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="prism" hidden>
+            <h2>Prism Bloom <button class="info" data-info="prism">i</button></h2>
+            <div class="control-row">
+              <label for="prismLayers">Layer Count</label>
+              <input type="range" id="prismLayers" min="2" max="12" step="1" value="6" />
+              <input type="number" id="prismLayersNumber" min="2" max="12" step="1" value="6" />
+            </div>
+            <div class="control-row">
+              <label for="prismSaturation">Saturation</label>
+              <input type="range" id="prismSaturation" min="0" max="2" step="0.05" value="1.1" />
+              <input type="number" id="prismSaturationNumber" min="0" max="2" step="0.05" value="1.1" />
+            </div>
+            <div class="control-row">
+              <label for="prismDrift">Drift Speed</label>
+              <input type="range" id="prismDrift" min="0" max="4" step="0.05" value="1.3" />
+              <input type="number" id="prismDriftNumber" min="0" max="4" step="0.05" value="1.3" />
+            </div>
+            <div class="control-row">
+              <button id="prismSnap">Snapshot</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="ai" hidden>
+            <h2>AI Studio <button class="info" data-info="ai">i</button></h2>
+            <div class="control-row">
+              <button id="aiPalette">Generate AI Palette</button>
+              <button id="aiApplyPalette">Apply Palette</button>
+            </div>
+            <div class="control-row">
+              <label for="aiModel">Palette Model</label>
+              <select id="aiModel">
+                <option value="default">Colormind Default</option>
+                <option value="ui">Colormind UI</option>
+                <option value="retro">Retro Blend</option>
+              </select>
+            </div>
+            <div class="control-row">
+              <label for="aiBlend">Blend with Mosaic</label>
+              <input type="range" id="aiBlend" min="0" max="1" step="0.05" value="0.5" />
+              <input type="number" id="aiBlendNumber" min="0" max="1" step="0.05" value="0.5" />
+            </div>
+            <div class="control-row status-row">
+              <span id="aiStatus">Idle</span>
+            </div>
+            <div class="api-preview" id="aiPreview"></div>
+          </section>
+
+          <section class="control-group" data-tab-owner="api" hidden>
+            <h2>API Fusion <button class="info" data-info="api">i</button></h2>
+            <div class="control-row">
+              <button id="apiFetchApod">Load NASA APOD</button>
+              <button id="apiFetchPicsum">Load Picsum Scenic</button>
+              <button id="apiFetchArt">Load Art Institute</button>
+            </div>
+            <div class="control-row">
+              <button id="apiFetchPalette">Fetch Color Palette</button>
+              <button id="apiFetchDog">Load Canine Muse</button>
+              <button id="apiApplyPalette">Apply to Mosaic</button>
+            </div>
+            <div class="control-row status-row">
+              <span id="apiStatus">Idle</span>
+            </div>
+            <div class="api-preview" id="apiPreview" aria-live="polite"></div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <video id="video" autoplay playsinline muted hidden></video>
+    <canvas id="sampleCanvas" width="640" height="360" hidden></canvas>
+
+    <div id="infoTooltip" role="tooltip"></div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
