@@ -6,7 +6,7 @@ const videoEl = document.getElementById('video');
 const downsampleCanvas = document.createElement('canvas');
 const downsampleCtx = downsampleCanvas.getContext('2d');
 
-const TAB_IDS = ['mosaic', 'glitch', 'aurora', 'particle', 'audio', 'nebula', 'wave', 'api'];
+const TAB_IDS = ['mosaic', 'glitch', 'aurora', 'particle', 'audio', 'nebula', 'wave', 'spectrum', 'ink', 'pulse', 'ai', 'api'];
 const tabButtons = document.querySelectorAll('.mode-tabs .tab');
 const controlGroups = document.querySelectorAll('.control-group');
 const statusText = document.getElementById('statusText');
@@ -99,6 +99,46 @@ const waveControls = {
   snap: document.getElementById('waveSnap')
 };
 
+const spectrumControls = {
+  bands: document.getElementById('spectrumBands'),
+  bandsNumber: document.getElementById('spectrumBandsNumber'),
+  speed: document.getElementById('spectrumSpeed'),
+  speedNumber: document.getElementById('spectrumSpeedNumber'),
+  glow: document.getElementById('spectrumGlow'),
+  glowNumber: document.getElementById('spectrumGlowNumber'),
+  snap: document.getElementById('spectrumSnap')
+};
+
+const inkControls = {
+  detail: document.getElementById('inkDetail'),
+  detailNumber: document.getElementById('inkDetailNumber'),
+  contrast: document.getElementById('inkContrast'),
+  contrastNumber: document.getElementById('inkContrastNumber'),
+  invert: document.getElementById('inkInvert'),
+  snap: document.getElementById('inkSnap')
+};
+
+const pulseControls = {
+  density: document.getElementById('pulseDensity'),
+  densityNumber: document.getElementById('pulseDensityNumber'),
+  depth: document.getElementById('pulseDepth'),
+  depthNumber: document.getElementById('pulseDepthNumber'),
+  trails: document.getElementById('pulseTrails'),
+  snap: document.getElementById('pulseSnap')
+};
+
+const aiLabControls = {
+  model: document.getElementById('aiPaletteModel'),
+  prompt: document.getElementById('aiPrompt'),
+  generate: document.getElementById('aiGenerate'),
+  apply: document.getElementById('aiApplyPalette'),
+  glow: document.getElementById('aiGlow'),
+  glowNumber: document.getElementById('aiGlowNumber'),
+  snap: document.getElementById('aiSnap'),
+  previewRow: document.getElementById('aiPreviewRow'),
+  preview: document.getElementById('aiPalettePreview')
+};
+
 const particleControls = {
   count: document.getElementById('particleCount'),
   countNumber: document.getElementById('particleCountNumber'),
@@ -148,7 +188,35 @@ const audioControls = {
   glitchBands: document.getElementById('audioGlitchBands'),
   glitchBandsNumber: document.getElementById('audioGlitchBandsNumber'),
   glitchColor: document.getElementById('audioGlitchColor'),
-  glitchColorNumber: document.getElementById('audioGlitchColorNumber')
+  glitchColorNumber: document.getElementById('audioGlitchColorNumber'),
+  particleSpeed: document.getElementById('audioParticleSpeed'),
+  particleSpeedNumber: document.getElementById('audioParticleSpeedNumber'),
+  particleColor: document.getElementById('audioParticleColor'),
+  particleColorNumber: document.getElementById('audioParticleColorNumber'),
+  nebulaDensity: document.getElementById('audioNebulaDensity'),
+  nebulaDensityNumber: document.getElementById('audioNebulaDensityNumber'),
+  nebulaHue: document.getElementById('audioNebulaHue'),
+  nebulaHueNumber: document.getElementById('audioNebulaHueNumber'),
+  waveAmplitude: document.getElementById('audioWaveAmplitude'),
+  waveAmplitudeNumber: document.getElementById('audioWaveAmplitudeNumber'),
+  waveHue: document.getElementById('audioWaveHue'),
+  waveHueNumber: document.getElementById('audioWaveHueNumber'),
+  spectrumMotion: document.getElementById('audioSpectrumMotion'),
+  spectrumMotionNumber: document.getElementById('audioSpectrumMotionNumber'),
+  spectrumBrightness: document.getElementById('audioSpectrumBrightness'),
+  spectrumBrightnessNumber: document.getElementById('audioSpectrumBrightnessNumber'),
+  inkContrast: document.getElementById('audioInkContrast'),
+  inkContrastNumber: document.getElementById('audioInkContrastNumber'),
+  inkPaper: document.getElementById('audioInkPaper'),
+  inkPaperNumber: document.getElementById('audioInkPaperNumber'),
+  pulseDepth: document.getElementById('audioPulseDepth'),
+  pulseDepthNumber: document.getElementById('audioPulseDepthNumber'),
+  pulseTrails: document.getElementById('audioPulseTrails'),
+  pulseTrailsNumber: document.getElementById('audioPulseTrailsNumber'),
+  aiShift: document.getElementById('audioAiShift'),
+  aiShiftNumber: document.getElementById('audioAiShiftNumber'),
+  aiGlow: document.getElementById('audioAiGlow'),
+  aiGlowNumber: document.getElementById('audioAiGlowNumber')
 };
 
 const palettePresets = {
@@ -165,7 +233,11 @@ const palettePresets = {
   Solar: ['#2b1c4b', '#5f2f88', '#ff6f61', '#ffd460', '#fff4d8'],
   Lush: ['#0a2f1f', '#145a32', '#1e8f4d', '#6ed972', '#c7f9cc'],
   Dreamscape: ['#1b1d3c', '#3a3e7b', '#6a5acd', '#b69bff', '#f5eaff'],
-  Cyberwave: ['#01012b', '#0a0a6a', '#5f2eea', '#ff3ec9', '#ffd33d']
+  Cyberwave: ['#01012b', '#0a0a6a', '#5f2eea', '#ff3ec9', '#ffd33d'],
+  Vintage: ['#382923', '#705446', '#b88c6a', '#dfc7a3', '#f5ebd7'],
+  Oceanic: ['#021220', '#0b3954', '#087e8b', '#bfd7ea', '#fffbfa'],
+  Desert: ['#2d1b0d', '#7a3d1c', '#c66a2b', '#edc167', '#f8e5c9'],
+  Monochrome: ['#0a0a0a', '#2f2f2f', '#595959', '#8d8d8d', '#d9d9d9']
 };
 
 const particlePalettes = {
@@ -225,12 +297,26 @@ const waveState = {
   phase: 0
 };
 
+const pulseState = {
+  phases: [],
+  density: 24,
+  lastTime: 0,
+  seed: 0
+};
+
 const apiState = {
   palette: [],
   apod: null,
   picsum: null,
   art: null,
   dog: null
+};
+
+const aiState = {
+  palette: [],
+  model: 'colormind',
+  glow: 0.8,
+  loading: false
 };
 
 const audioState = {
@@ -249,7 +335,14 @@ const audioState = {
   config: {
     mosaic: { size: 0.6, jitter: 0.9, hue: 45, saturation: 0.4 },
     aurora: { bloom: 1.2, drift: 1.4, hue: 90 },
-    glitch: { intensity: 0.8, bands: 80, color: 0.35 }
+    glitch: { intensity: 0.8, bands: 80, color: 0.35 },
+    particle: { speed: 1, color: 60 },
+    nebula: { density: 1.2, hue: 80 },
+    wave: { amplitude: 0.9, hue: 90 },
+    spectrum: { motion: 1, brightness: 0.7 },
+    ink: { contrast: 0.8, paper: 0.4 },
+    pulse: { depth: 1.1, trails: 0.5 },
+    ai: { shift: 45, glow: 0.6 }
   }
 };
 
@@ -287,6 +380,10 @@ function init() {
   initParticleControls();
   initNebulaControls();
   initWaveControls();
+  initSpectrumControls();
+  initInkControls();
+  initPulseControls();
+  initAiControls();
   initApiControls();
   initAudioControls();
   initInfo();
@@ -328,6 +425,14 @@ function switchTab(tabId) {
     renderNebula(performance.now());
   } else if (tabId === 'wave') {
     renderWave(performance.now());
+  } else if (tabId === 'spectrum') {
+    renderSpectrum(performance.now());
+  } else if (tabId === 'ink') {
+    renderInk();
+  } else if (tabId === 'pulse') {
+    renderPulse(performance.now());
+  } else if (tabId === 'ai') {
+    renderAiCanvas(performance.now());
   } else if (tabId === 'audio') {
     renderAudioDriven(performance.now());
   } else if (tabId === 'api') {
@@ -447,12 +552,14 @@ function initControls() {
     const value = mosaicControls.seedInput.value.trim();
     state.seed = hashSeed(value);
     frameSeedOffset = 0;
+    seedPulseField(pulseState.density);
     queueRender();
   });
   mosaicControls.randomizeSeed.addEventListener('click', () => {
     const newSeed = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     mosaicControls.seedInput.value = newSeed;
     state.seed = hashSeed(newSeed);
+    seedPulseField(pulseState.density);
     queueRender();
   });
 
@@ -615,6 +722,100 @@ function initWaveControls() {
   });
 }
 
+function initSpectrumControls() {
+  if (!spectrumControls.bands) return;
+  linkSliderNumber(spectrumControls.bands, spectrumControls.bandsNumber, () => {
+    if (activeTab === 'spectrum') renderSpectrum(performance.now());
+  });
+  linkSliderNumber(spectrumControls.speed, spectrumControls.speedNumber, () => {
+    if (activeTab === 'spectrum') renderSpectrum(performance.now());
+  });
+  linkSliderNumber(spectrumControls.glow, spectrumControls.glowNumber, () => {
+    if (activeTab === 'spectrum') renderSpectrum(performance.now());
+  });
+  spectrumControls.snap.addEventListener('click', () => {
+    renderSpectrum(performance.now());
+    captureSnapshotToMosaic();
+    setStatus('Spectrum bloom captured to mosaic');
+  });
+}
+
+function initInkControls() {
+  if (!inkControls.detail) return;
+  linkSliderNumber(inkControls.detail, inkControls.detailNumber, () => {
+    if (activeTab === 'ink') renderInk();
+  });
+  linkSliderNumber(inkControls.contrast, inkControls.contrastNumber, () => {
+    if (activeTab === 'ink') renderInk();
+  });
+  inkControls.invert.addEventListener('change', () => {
+    if (activeTab === 'ink') renderInk();
+  });
+  inkControls.snap.addEventListener('click', () => {
+    renderInk();
+    captureSnapshotToMosaic();
+    setStatus('Ink sketch sent to mosaic');
+  });
+}
+
+function initPulseControls() {
+  if (!pulseControls.density) return;
+  linkSliderNumber(pulseControls.density, pulseControls.densityNumber, (value) => {
+    seedPulseField(parseInt(value, 10));
+    if (activeTab === 'pulse') renderPulse(performance.now());
+  });
+  linkSliderNumber(pulseControls.depth, pulseControls.depthNumber, () => {
+    if (activeTab === 'pulse') renderPulse(performance.now());
+  });
+  pulseControls.trails.addEventListener('change', () => {
+    if (activeTab === 'pulse') {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      renderPulse(performance.now());
+    }
+  });
+  pulseControls.snap.addEventListener('click', () => {
+    renderPulse(performance.now());
+    captureSnapshotToMosaic();
+    setStatus('Pulse grid frozen to mosaic');
+  });
+  seedPulseField(parseInt(pulseControls.density.value, 10));
+}
+
+function initAiControls() {
+  if (!aiLabControls.model) return;
+  aiLabControls.model.addEventListener('change', () => {
+    aiState.model = aiLabControls.model.value;
+  });
+  linkSliderNumber(aiLabControls.glow, aiLabControls.glowNumber, (value) => {
+    aiState.glow = parseFloat(value);
+    if (activeTab === 'ai') renderAiCanvas(performance.now());
+  });
+  aiLabControls.generate.addEventListener('click', () => {
+    generateAiPalette().catch((error) => {
+      setStatus(`AI palette failed: ${error.message}`);
+    });
+  });
+  aiLabControls.apply.addEventListener('click', () => {
+    if (!aiState.palette.length) return;
+    state.palette = aiState.palette.map((hex) => hex.toUpperCase());
+    refreshPaletteEditor();
+    mosaicControls.palettePreset.value = 'Custom';
+    state.colorMode = 'palette';
+    mosaicControls.colorMode.value = 'palette';
+    setStatus('AI palette applied to mosaic');
+    queueRender(true);
+  });
+  aiLabControls.snap.addEventListener('click', () => {
+    renderAiCanvas(performance.now());
+    captureSnapshotToMosaic();
+    setStatus('AI canvas captured to mosaic');
+  });
+  if (aiLabControls.apply) {
+    aiLabControls.apply.disabled = true;
+  }
+  updateAiPreview();
+}
+
 function initApiControls() {
   apiControls.fetchApod.addEventListener('click', fetchApodImage);
   apiControls.fetchPicsum.addEventListener('click', fetchPicsumImage);
@@ -694,6 +895,77 @@ function initAudioControls() {
     audioState.config.glitch.color = parseFloat(value);
     if (audioState.target === 'glitch') renderGlitch();
   });
+
+  if (audioControls.particleSpeed) {
+    linkSliderNumber(audioControls.particleSpeed, audioControls.particleSpeedNumber, (value) => {
+      audioState.config.particle.speed = parseFloat(value);
+    });
+  }
+  if (audioControls.particleColor) {
+    linkSliderNumber(audioControls.particleColor, audioControls.particleColorNumber, (value) => {
+      audioState.config.particle.color = parseFloat(value);
+    });
+  }
+  if (audioControls.nebulaDensity) {
+    linkSliderNumber(audioControls.nebulaDensity, audioControls.nebulaDensityNumber, (value) => {
+      audioState.config.nebula.density = parseFloat(value);
+    });
+  }
+  if (audioControls.nebulaHue) {
+    linkSliderNumber(audioControls.nebulaHue, audioControls.nebulaHueNumber, (value) => {
+      audioState.config.nebula.hue = parseFloat(value);
+    });
+  }
+  if (audioControls.waveAmplitude) {
+    linkSliderNumber(audioControls.waveAmplitude, audioControls.waveAmplitudeNumber, (value) => {
+      audioState.config.wave.amplitude = parseFloat(value);
+    });
+  }
+  if (audioControls.waveHue) {
+    linkSliderNumber(audioControls.waveHue, audioControls.waveHueNumber, (value) => {
+      audioState.config.wave.hue = parseFloat(value);
+    });
+  }
+  if (audioControls.spectrumMotion) {
+    linkSliderNumber(audioControls.spectrumMotion, audioControls.spectrumMotionNumber, (value) => {
+      audioState.config.spectrum.motion = parseFloat(value);
+    });
+  }
+  if (audioControls.spectrumBrightness) {
+    linkSliderNumber(audioControls.spectrumBrightness, audioControls.spectrumBrightnessNumber, (value) => {
+      audioState.config.spectrum.brightness = parseFloat(value);
+    });
+  }
+  if (audioControls.inkContrast) {
+    linkSliderNumber(audioControls.inkContrast, audioControls.inkContrastNumber, (value) => {
+      audioState.config.ink.contrast = parseFloat(value);
+    });
+  }
+  if (audioControls.inkPaper) {
+    linkSliderNumber(audioControls.inkPaper, audioControls.inkPaperNumber, (value) => {
+      audioState.config.ink.paper = parseFloat(value);
+    });
+  }
+  if (audioControls.pulseDepth) {
+    linkSliderNumber(audioControls.pulseDepth, audioControls.pulseDepthNumber, (value) => {
+      audioState.config.pulse.depth = parseFloat(value);
+    });
+  }
+  if (audioControls.pulseTrails) {
+    linkSliderNumber(audioControls.pulseTrails, audioControls.pulseTrailsNumber, (value) => {
+      audioState.config.pulse.trails = parseFloat(value);
+    });
+  }
+  if (audioControls.aiShift) {
+    linkSliderNumber(audioControls.aiShift, audioControls.aiShiftNumber, (value) => {
+      audioState.config.ai.shift = parseFloat(value);
+    });
+  }
+  if (audioControls.aiGlow) {
+    linkSliderNumber(audioControls.aiGlow, audioControls.aiGlowNumber, (value) => {
+      audioState.config.ai.glow = parseFloat(value);
+    });
+  }
 
   updateAudioTargetGroups();
 }
@@ -804,8 +1076,12 @@ function initInfo() {
     particle: 'Particle Lab uses GPU instancing to animate thousands of shapes as living particles—tune count, drift, palette, and capture keyframes.',
     nebula: 'Nebula Weave builds a GPU particle galaxy from your palette—tune density, swirl, and speed to breathe motion into stills.',
     wave: 'Wave Lab ripples particles across the canvas using sine-driven displacement for liquid, glimmering mosaics.',
+    spectrum: 'Spectrum Bloom transforms palettes into animated light bands—tune bands, drift, and glow for synthwave ribbons or soft washes.',
+    ink: 'Ink Sketch converts your source into pen-stroke edges with adjustable detail, contrast, and invertible paper stock.',
+    pulse: 'Pulse Grid stages instanced particles as a living grid of pulses—great for equalizer looks or motion-driven lattices.',
+    ai: 'AI Studio queries neural palette services (Colormind/Huemint) or builds procedural schemes, then renders glowing gradients ready for mosaic capture.',
     api: 'API Fusion pulls NASA APOD, Picsum landscapes, Art Institute paintings, dog photography, and remote palettes into the studio for instant remixes.',
-    audio: 'Audio Reactor syncs beats to your visuals—upload a track and drive mosaic, aurora, or glitch parameters with per-effect controls.'
+    audio: 'Audio Reactor syncs beats to your visuals—upload a track and drive every filter family with per-effect controls.'
   };
   document.querySelectorAll('button.info').forEach((btn) => {
     const key = btn.dataset.info;
@@ -843,6 +1119,10 @@ function initPalette() {
     option.textContent = name;
     mosaicControls.palettePreset.appendChild(option);
   });
+  const customOption = document.createElement('option');
+  customOption.value = 'Custom';
+  customOption.textContent = 'Custom';
+  mosaicControls.palettePreset.appendChild(customOption);
   mosaicControls.palettePreset.value = 'Warm';
   refreshPaletteEditor();
 }
@@ -1115,6 +1395,14 @@ function tick(ts) {
     renderNebula(ts);
   } else if (activeTab === 'wave') {
     renderWave(ts);
+  } else if (activeTab === 'spectrum') {
+    renderSpectrum(ts);
+  } else if (activeTab === 'ink') {
+    renderInk();
+  } else if (activeTab === 'pulse') {
+    renderPulse(ts);
+  } else if (activeTab === 'ai') {
+    renderAiCanvas(ts);
   }
   updateFPS(ts);
   requestAnimationFrame(tick);
@@ -1139,6 +1427,34 @@ function renderAudioDriven(ts) {
       renderGlitch();
       lastFrameTime = ts;
     }
+    return;
+  }
+  if (target === 'particle') {
+    renderParticleScene(ts);
+    return;
+  }
+  if (target === 'nebula') {
+    renderNebula(ts);
+    return;
+  }
+  if (target === 'wave') {
+    renderWave(ts);
+    return;
+  }
+  if (target === 'spectrum') {
+    renderSpectrum(ts);
+    return;
+  }
+  if (target === 'ink') {
+    renderInk();
+    return;
+  }
+  if (target === 'pulse') {
+    renderPulse(ts);
+    return;
+  }
+  if (target === 'ai') {
+    renderAiCanvas(ts);
   }
 }
 
@@ -1534,6 +1850,21 @@ function seedParticleField(force = false) {
   }
 }
 
+function seedPulseField(density) {
+  const dim = Math.max(2, density);
+  const rng = mulberry32((state.seed ^ 0x39f1ab) + dim);
+  pulseState.phases = [];
+  for (let i = 0; i < dim * dim; i++) {
+    pulseState.phases.push({
+      phase: rng() * Math.PI * 2,
+      speed: 0.6 + rng() * 1.1,
+      hue: rng()
+    });
+  }
+  pulseState.density = dim;
+  pulseState.seed = state.seed;
+}
+
 function getParticlePaletteColors() {
   return resolvePaletteColors(particleState.palette);
 }
@@ -1553,7 +1884,8 @@ function resolvePaletteColors(name) {
 }
 
 function renderParticleScene(timestamp = performance.now()) {
-  if (activeTab !== 'particle') return;
+  const shouldRender = activeTab === 'particle' || (activeTab === 'audio' && audioState.target === 'particle');
+  if (!shouldRender) return;
   if (!particleRenderer) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#0d1320';
@@ -1571,6 +1903,7 @@ function renderParticleScene(timestamp = performance.now()) {
   const dt = particleState.lastTime ? Math.min(0.05, Math.max(0, (timestamp - particleState.lastTime) / 1000)) : 0.016;
   particleState.lastTime = timestamp;
 
+  const audioInfluence = applyAudioToParticle({ speed: particleState.speed });
   if (particleState.trails) {
     ctx.fillStyle = 'rgba(5,7,12,0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1593,7 +1926,7 @@ function renderParticleScene(timestamp = performance.now()) {
 
   for (let i = 0; i < particleState.particles.length; i++) {
     const particle = particleState.particles[i];
-    particle.angle += dt * particleState.speed * particle.speed;
+    particle.angle += dt * audioInfluence.speed * particle.speed;
     particle.orbit += dt * 0.2;
     const radius = baseRadius * (0.25 + particle.radius * 0.75);
     const wobble = Math.sin(particle.orbit + shimmer + particle.offset) * 0.15;
@@ -1601,7 +1934,11 @@ function renderParticleScene(timestamp = performance.now()) {
     const y = centerY + Math.sin(particle.angle * 0.85 + particle.orbit) * radius * (0.9 + wobble * 0.2);
     particle.colorPhase = (particle.colorPhase + dt * 0.1) % 1;
     const paletteIndex = Math.floor(particle.colorPhase * paletteCount) % paletteCount;
-    const color = palette[paletteIndex];
+    const baseColor = palette[paletteIndex];
+    const hsv = rgbToHsv(baseColor);
+    hsv.h = (hsv.h + audioInfluence.colorSwing + 1) % 1;
+    const tinted = hsvToRgb(hsv);
+    const color = { r: tinted.r, g: tinted.g, b: tinted.b, a: baseColor.a };
     const twinkle = 0.6 + 0.4 * Math.sin(timestamp * 0.002 + particle.offset);
     const radiusPx = (particle.size + twinkle * 2) * (0.8 + shimmer * 0.3);
     shapes.push({
@@ -1642,7 +1979,8 @@ function seedNebulaCloud(force = false) {
 }
 
 function renderNebula(timestamp = performance.now()) {
-  if (activeTab !== 'nebula') return;
+  const shouldRender = activeTab === 'nebula' || (activeTab === 'audio' && audioState.target === 'nebula');
+  if (!shouldRender) return;
   if (!particleRenderer) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#0d1320';
@@ -1666,6 +2004,7 @@ function renderNebula(timestamp = performance.now()) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
   const palette = resolvePaletteColors(nebulaState.palette === 'custom' ? 'custom' : nebulaState.palette);
+  const audioInfluence = applyAudioToNebula();
   const shapes = [];
   const centerX = width / 2;
   const centerY = height / 2;
@@ -1684,13 +2023,16 @@ function renderNebula(timestamp = performance.now()) {
     const y = centerY + Math.sin(angle * 0.85) * dist;
     const colorIndex = Math.abs((seed.paletteIndex + Math.floor((time + seed.noise) * 6)) % paletteCount);
     const baseColor = palette[colorIndex] || palette[0];
+    const hsv = rgbToHsv(baseColor);
+    hsv.h = (hsv.h + audioInfluence.hueShift / 360 + 1) % 1;
+    const tinted = hsvToRgb(hsv);
     const twinkle = 0.55 + 0.45 * Math.sin(time * 2.4 + seed.noise);
-    const radius = Math.max(2.5, 3 + dist * 0.006 * (1 + twinkle));
+    const radius = Math.max(2.5, (3 + dist * 0.006 * (1 + twinkle)) * audioInfluence.densityFactor);
     shapes.push({
       x,
       y,
       radius,
-      color: baseColor,
+      color: { r: tinted.r, g: tinted.g, b: tinted.b, a: baseColor.a },
       shapeId,
       rotation: angle
     });
@@ -1708,7 +2050,8 @@ function renderNebula(timestamp = performance.now()) {
 }
 
 function renderWave(timestamp = performance.now()) {
-  if (activeTab !== 'wave') return;
+  const shouldRender = activeTab === 'wave' || (activeTab === 'audio' && audioState.target === 'wave');
+  if (!shouldRender) return;
   if (!particleRenderer) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#041018';
@@ -1725,9 +2068,10 @@ function renderWave(timestamp = performance.now()) {
   const width = canvas.width;
   const height = canvas.height;
   ctx.clearRect(0, 0, width, height);
+  const waveAudio = applyAudioToWaveSettings({ amplitude: waveState.amplitude, hue: waveState.hue });
   const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, `hsla(${(waveState.hue + 20) % 360}, 78%, 55%, 1)`);
-  gradient.addColorStop(1, `hsla(${(waveState.hue + 200) % 360}, 65%, 14%, 1)`);
+  gradient.addColorStop(0, `hsla(${(waveAudio.hue + 20) % 360}, 78%, 55%, 1)`);
+  gradient.addColorStop(1, `hsla(${(waveAudio.hue + 200) % 360}, 65%, 14%, 1)`);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
   const cols = Math.max(32, Math.floor(width / 18));
@@ -1737,9 +2081,9 @@ function renderWave(timestamp = performance.now()) {
   const palette = resolvePaletteColors('Starlight');
   const shapes = [];
   const freq = waveState.frequency;
-  const amp = waveState.amplitude;
+  const amp = waveAudio.amplitude;
   const time = timestamp * 0.001;
-  const hueShift = (waveState.hue % 360) / 360;
+  const hueShift = (waveAudio.hue % 360) / 360;
   const shapeId = shapeLibrary[state.shapeName]?.index ?? shapeLibrary.Circle?.index ?? 0;
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -1773,6 +2117,235 @@ function renderWave(timestamp = performance.now()) {
     time: timestamp * 0.001
   });
   ctx.drawImage(particleRenderer.canvas, 0, 0, width, height);
+}
+
+function renderSpectrum(timestamp = performance.now()) {
+  const shouldRender = activeTab === 'spectrum' || (activeTab === 'audio' && audioState.target === 'spectrum');
+  if (!shouldRender) return;
+  const width = canvas.width;
+  const height = canvas.height;
+  const baseBands = parseInt(spectrumControls.bands?.value ?? '24', 10) || 24;
+  const baseSpeed = parseFloat(spectrumControls.speed?.value ?? '1.2');
+  const baseGlow = parseFloat(spectrumControls.glow?.value ?? '0.6');
+  const audioInfluence = applyAudioToSpectrum({ bands: baseBands, speed: baseSpeed, glow: baseGlow });
+  const paletteHex = state.palette.length ? state.palette : palettePresets.Aurora;
+  const paletteRgb = paletteHex.map((hex) => hexToRgb(hex));
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#04070d';
+  ctx.fillRect(0, 0, width, height);
+  const bands = Math.max(4, audioInfluence.bands);
+  const time = timestamp * 0.00035 * audioInfluence.speed;
+  for (let i = 0; i < bands; i++) {
+    const t = (i / bands + time) % 1;
+    const color = samplePaletteColor(paletteRgb, t + audioInfluence.hueShift / 360);
+    const luminanceBoost = audioInfluence.brightness;
+    const rgb = {
+      r: clamp(color.r * luminanceBoost, 0, 255),
+      g: clamp(color.g * luminanceBoost, 0, 255),
+      b: clamp(color.b * luminanceBoost, 0, 255)
+    };
+    const next = samplePaletteColor(paletteRgb, t + 0.08 + audioInfluence.hueShift / 360);
+    const rgbNext = {
+      r: clamp(next.r * luminanceBoost, 0, 255),
+      g: clamp(next.g * luminanceBoost, 0, 255),
+      b: clamp(next.b * luminanceBoost, 0, 255)
+    };
+    const x0 = Math.floor((i / bands) * width);
+    const x1 = Math.floor(((i + 1) / bands) * width + 1);
+    const gradient = ctx.createLinearGradient(x0, 0, x1, height);
+    gradient.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},0.85)`);
+    gradient.addColorStop(1, `rgba(${rgbNext.r},${rgbNext.g},${rgbNext.b},0.85)`);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(x0, 0, Math.max(1, x1 - x0), height);
+  }
+  ctx.globalCompositeOperation = 'screen';
+  ctx.fillStyle = `rgba(255,255,255,${Math.min(0.55, 0.12 + audioInfluence.glow * 0.3)})`;
+  ctx.fillRect(0, 0, width, height);
+  ctx.globalCompositeOperation = 'source-over';
+  renderGlimmer({ canvasW: width, canvasH: height, jitterStrength: audioInfluence.glow });
+}
+
+function renderInk() {
+  const shouldRender = activeTab === 'ink' || (activeTab === 'audio' && audioState.target === 'ink');
+  if (!shouldRender) return;
+  if (!ensureSourceReady()) return;
+  const sample = downsampleSource();
+  const detail = Math.max(1, parseInt(inkControls.detail?.value ?? '5', 10));
+  const baseContrast = parseFloat(inkControls.contrast?.value ?? '1.2');
+  const invert = !!inkControls.invert?.checked;
+  const audioInfluence = applyAudioToInk({ contrast: baseContrast, paper: invert ? 1 : 0 });
+  const contrast = audioInfluence.contrast;
+  const paperFlash = invert ? audioInfluence.paper : Math.max(0, audioInfluence.paper - 0.2);
+  const width = canvas.width;
+  const height = canvas.height;
+  const scaleX = width / sample.width;
+  const scaleY = height / sample.height;
+  ctx.clearRect(0, 0, width, height);
+  const background = invert ? '#f5f4ee' : '#06080f';
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, width, height);
+  const stroke = invert ? '#10131a' : '#fdfdf7';
+  ctx.strokeStyle = stroke;
+  ctx.lineCap = 'round';
+  const data = sample.data;
+  const threshold = 0.08;
+  for (let y = 1; y < sample.height - 1; y += detail) {
+    for (let x = 1; x < sample.width - 1; x += detail) {
+      const idx = (y * sample.width + x) * 4;
+      const lum = toGrayscale({ r: data[idx], g: data[idx + 1], b: data[idx + 2] }) / 255;
+      const left = toGrayscale({
+        r: data[idx - 4],
+        g: data[idx - 3],
+        b: data[idx - 2]
+      }) / 255;
+      const right = toGrayscale({
+        r: data[idx + 4],
+        g: data[idx + 5],
+        b: data[idx + 6]
+      }) / 255;
+      const up = toGrayscale({
+        r: data[idx - sample.width * 4],
+        g: data[idx - sample.width * 4 + 1],
+        b: data[idx - sample.width * 4 + 2]
+      }) / 255;
+      const down = toGrayscale({
+        r: data[idx + sample.width * 4],
+        g: data[idx + sample.width * 4 + 1],
+        b: data[idx + sample.width * 4 + 2]
+      }) / 255;
+      const gx = right - left;
+      const gy = down - up;
+      const magnitude = Math.sqrt(gx * gx + gy * gy) * contrast;
+      if (magnitude < threshold) continue;
+      const centerX = (x + 0.5) * scaleX;
+      const centerY = (y + 0.5) * scaleY;
+      const angle = Math.atan2(gy, gx);
+      const length = Math.max(2, Math.min(scaleX, scaleY) * (detail * 0.4 + magnitude * 6));
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle);
+      ctx.globalAlpha = clamp(magnitude, 0.15, 1);
+      ctx.lineWidth = Math.max(0.6, Math.min(scaleX, scaleY) * 0.4);
+      ctx.beginPath();
+      ctx.moveTo(-length / 2, 0);
+      ctx.lineTo(length / 2, 0);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+  if (paperFlash > 0.05) {
+    ctx.globalAlpha = Math.min(0.4, paperFlash);
+    ctx.fillStyle = invert ? 'rgba(14,18,28,0.08)' : 'rgba(255,255,255,0.15)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function renderPulse(timestamp = performance.now()) {
+  const shouldRender = activeTab === 'pulse' || (activeTab === 'audio' && audioState.target === 'pulse');
+  if (!shouldRender) return;
+  if (!particleRenderer) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#05080f';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '16px Inter, system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('WebGL required for Pulse Grid', canvas.width / 2, canvas.height / 2);
+    ctx.restore();
+    return;
+  }
+  const density = Math.max(2, parseInt(pulseControls.density?.value ?? '24', 10));
+  if (pulseState.density !== density || pulseState.seed !== state.seed || pulseState.phases.length !== density * density) {
+    seedPulseField(density);
+  }
+  const width = canvas.width;
+  const height = canvas.height;
+  const dt = pulseState.lastTime ? Math.min(0.05, Math.max(0, (timestamp - pulseState.lastTime) / 1000)) : 0.016;
+  pulseState.lastTime = timestamp;
+  const baseDepth = parseFloat(pulseControls.depth?.value ?? '1');
+  const trailsBase = pulseControls.trails?.checked ? 0.25 : 0;
+  const audioInfluence = applyAudioToPulse({ depth: baseDepth, trails: trailsBase });
+  const fade = Math.min(0.6, audioInfluence.trails + (pulseControls.trails?.checked ? 0.12 : 0));
+  if (pulseControls.trails?.checked || audioInfluence.trails > 0.05) {
+    ctx.fillStyle = `rgba(4,7,12,${Math.max(0.08, fade)})`;
+    ctx.fillRect(0, 0, width, height);
+  } else {
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#05080f';
+    ctx.fillRect(0, 0, width, height);
+  }
+  const paletteHex = state.palette.length ? state.palette : palettePresets.Neon;
+  const paletteRgb = paletteHex.map((hex) => hexToRgb(hex));
+  const shapes = [];
+  const stepX = width / density;
+  const stepY = height / density;
+  const time = timestamp * 0.0012;
+  for (let y = 0; y < density; y++) {
+    for (let x = 0; x < density; x++) {
+      const index = y * density + x;
+      const info = pulseState.phases[index];
+      info.phase += dt * info.speed;
+      const pulsate = Math.sin(info.phase + info.hue * 6 + time) * 0.5 + 0.5;
+      const radius = Math.max(1.5, Math.min(stepX, stepY) * 0.25 * (0.6 + pulsate * audioInfluence.depth));
+      const px = x * stepX + stepX / 2;
+      const py = y * stepY + stepY / 2;
+      const color = samplePaletteColor(paletteRgb, info.hue + pulsate * 0.1);
+      shapes.push({
+        x: px,
+        y: py,
+        radius,
+        color: { r: color.r, g: color.g, b: color.b, a: 255 },
+        shapeId: shapeLibrary[state.shapeName]?.index ?? shapeLibrary.Circle?.index ?? 0,
+        rotation: info.phase
+      });
+    }
+  }
+  particleRenderer.draw(shapes, {
+    width,
+    height,
+    outline: false,
+    glimmer: true,
+    time: timestamp * 0.001
+  });
+  ctx.drawImage(particleRenderer.canvas, 0, 0, width, height);
+}
+
+function renderAiCanvas(timestamp = performance.now()) {
+  const shouldRender = activeTab === 'ai' || (activeTab === 'audio' && audioState.target === 'ai');
+  if (!shouldRender) return;
+  const width = canvas.width;
+  const height = canvas.height;
+  const paletteHex = aiState.palette.length
+    ? aiState.palette
+    : state.palette.length
+    ? state.palette
+    : palettePresets.Aurora;
+  const paletteRgb = paletteHex.map((hex) => hexToRgb(hex));
+  const audioInfluence = applyAudioToAi({ shift: 0, glow: aiState.glow });
+  ctx.clearRect(0, 0, width, height);
+  const layers = paletteRgb.length;
+  for (let i = 0; i < layers; i++) {
+    const base = paletteRgb[i];
+    const hsv = rgbToHsv(base);
+    hsv.h = (hsv.h + audioInfluence.shift / 360 + i * 0.02) % 1;
+    const tinted = hsvToRgb(hsv);
+    const next = paletteRgb[(i + 1) % layers];
+    const nextTint = hsvToRgb({ ...rgbToHsv(next), h: (rgbToHsv(next).h + audioInfluence.shift / 360 + (i + 1) * 0.02) % 1 });
+    const gradient = ctx.createLinearGradient(0, i * (height / layers), width, (i + 1) * (height / layers));
+    gradient.addColorStop(0, `rgba(${tinted.r},${tinted.g},${tinted.b},0.9)`);
+    gradient.addColorStop(1, `rgba(${nextTint.r},${nextTint.g},${nextTint.b},0.9)`);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, i * (height / layers), width, height / layers + 1);
+  }
+  ctx.globalCompositeOperation = 'overlay';
+  const noiseStrength = 0.08 + Math.abs(Math.sin(timestamp * 0.001)) * 0.1;
+  ctx.fillStyle = `rgba(255,255,255,${noiseStrength})`;
+  ctx.fillRect(0, 0, width, height);
+  ctx.globalCompositeOperation = 'source-over';
+  renderGlimmer({ canvasW: width, canvasH: height, jitterStrength: audioInfluence.glow });
 }
 
 function colorize(rgb, params, idx) {
@@ -1885,6 +2458,23 @@ function nearestPaletteColor(color, palette) {
     }
   }
   return best;
+}
+
+function samplePaletteColor(palette, t) {
+  if (!palette.length) {
+    return { r: 255, g: 255, b: 255 };
+  }
+  const scaled = ((t % 1) + 1) % 1 * palette.length;
+  const index = Math.floor(scaled) % palette.length;
+  const next = (index + 1) % palette.length;
+  const frac = scaled - Math.floor(scaled);
+  const a = palette[index];
+  const b = palette[next];
+  return {
+    r: a.r + (b.r - a.r) * frac,
+    g: a.g + (b.g - a.g) * frac,
+    b: a.b + (b.b - a.b) * frac
+  };
 }
 
 function mulberry32(a) {
@@ -2136,6 +2726,35 @@ function resetAllSettings() {
   mosaicControls.motionDepthNumber.value = 2;
   state.palette = [...palettePresets.Warm];
   refreshPaletteEditor();
+  if (spectrumControls.bands) {
+    spectrumControls.bands.value = 24;
+    spectrumControls.bandsNumber.value = 24;
+  }
+  if (spectrumControls.speed) {
+    spectrumControls.speed.value = 1.2;
+    spectrumControls.speedNumber.value = 1.2;
+  }
+  if (spectrumControls.glow) {
+    spectrumControls.glow.value = 0.6;
+    spectrumControls.glowNumber.value = 0.6;
+  }
+  if (inkControls.detail) {
+    inkControls.detail.value = 5;
+    inkControls.detailNumber.value = 5;
+    inkControls.contrast.value = 1.2;
+    inkControls.contrastNumber.value = 1.2;
+    inkControls.invert.checked = false;
+  }
+  if (pulseControls.density) {
+    pulseControls.density.value = 24;
+    pulseControls.densityNumber.value = 24;
+    pulseControls.depth.value = 1;
+    pulseControls.depthNumber.value = 1;
+    pulseControls.trails.checked = true;
+    seedPulseField(24);
+  }
+  aiState.palette = [];
+  updateAiPreview();
   queueRender();
 }
 
@@ -2328,6 +2947,102 @@ function applyAudioToGlitch(intensity) {
   return result;
 }
 
+function applyAudioToParticle(settings) {
+  const result = { speed: settings.speed, colorSwing: 0 };
+  if (!audioState.running || audioState.target !== 'particle') {
+    return result;
+  }
+  const level = audioState.level;
+  const treble = audioState.treble;
+  const cfg = audioState.config.particle;
+  result.speed = clamp(settings.speed * (1 + level * cfg.speed), 0.1, 6);
+  result.colorSwing = ((treble - 0.5) * cfg.color) / 180;
+  return result;
+}
+
+function applyAudioToNebula() {
+  const result = { densityFactor: 1, hueShift: 0 };
+  if (!audioState.running || audioState.target !== 'nebula') {
+    return result;
+  }
+  const level = audioState.level;
+  const treble = audioState.treble;
+  const cfg = audioState.config.nebula;
+  result.densityFactor = clamp(1 + level * cfg.density, 0.3, 4);
+  result.hueShift = (treble - 0.5) * cfg.hue;
+  return result;
+}
+
+function applyAudioToWaveSettings(settings) {
+  const result = { amplitude: settings.amplitude, hue: settings.hue };
+  if (!audioState.running || audioState.target !== 'wave') {
+    return result;
+  }
+  const level = audioState.level;
+  const treble = audioState.treble;
+  const cfg = audioState.config.wave;
+  result.amplitude = clamp(settings.amplitude * (1 + level * cfg.amplitude), 0, 120);
+  result.hue = (settings.hue + (treble - 0.5) * cfg.hue) % 360;
+  if (result.hue < 0) result.hue += 360;
+  return result;
+}
+
+function applyAudioToSpectrum(settings) {
+  const result = { ...settings, bands: settings.bands, speed: settings.speed, glow: settings.glow, brightness: 1, hueShift: 0 };
+  if (!audioState.running || audioState.target !== 'spectrum') {
+    return result;
+  }
+  const level = audioState.level;
+  const bass = audioState.bass;
+  const treble = audioState.treble;
+  const cfg = audioState.config.spectrum;
+  result.speed = clamp(settings.speed + level * cfg.motion, 0, 12);
+  result.bands = clamp(Math.round(settings.bands * (1 + bass * 0.5)), 4, 128);
+  result.brightness = clamp(1 + level * cfg.brightness, 0.2, 3);
+  result.glow = clamp(settings.glow + bass * 0.4, 0, 3);
+  result.hueShift = (treble - 0.5) * 60;
+  return result;
+}
+
+function applyAudioToInk(settings) {
+  const result = { contrast: settings.contrast, paper: settings.paper };
+  if (!audioState.running || audioState.target !== 'ink') {
+    return result;
+  }
+  const level = audioState.level;
+  const treble = audioState.treble;
+  const cfg = audioState.config.ink;
+  result.contrast = clamp(settings.contrast + level * cfg.contrast, 0, 4);
+  result.paper = clamp(settings.paper + (treble - 0.5) * cfg.paper, 0, 1.5);
+  return result;
+}
+
+function applyAudioToPulse(settings) {
+  const result = { depth: settings.depth, trails: settings.trails };
+  if (!audioState.running || audioState.target !== 'pulse') {
+    return result;
+  }
+  const level = audioState.level;
+  const bass = audioState.bass;
+  const cfg = audioState.config.pulse;
+  result.depth = clamp(settings.depth + level * cfg.depth, 0, 4);
+  result.trails = clamp(settings.trails + bass * cfg.trails, 0, 1);
+  return result;
+}
+
+function applyAudioToAi(settings) {
+  const result = { shift: settings.shift, glow: settings.glow };
+  if (!audioState.running || audioState.target !== 'ai') {
+    return result;
+  }
+  const level = audioState.level;
+  const treble = audioState.treble;
+  const cfg = audioState.config.ai;
+  result.shift = clamp(settings.shift + (treble - 0.5) * cfg.shift, -360, 360);
+  result.glow = clamp(settings.glow + level * cfg.glow, 0, 4);
+  return result;
+}
+
 async function fetchApodImage() {
   apiControls.status.textContent = 'Loading NASA APOD…';
   try {
@@ -2447,6 +3162,7 @@ async function fetchArtImage() {
     setStatus('Art Institute imagery loaded');
   } catch (error) {
     apiControls.status.textContent = `Art API error: ${error.message}`;
+    await fetchMetMuseumFallback();
   }
 }
 
@@ -2474,6 +3190,43 @@ async function fetchDogImage() {
     setStatus('Canine muse loaded into mosaic source');
   } catch (error) {
     apiControls.status.textContent = `Dog API error: ${error.message}`;
+  }
+}
+
+async function fetchMetMuseumFallback() {
+  try {
+    const search = await fetch('https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=landscape');
+    if (!search.ok) {
+      throw new Error(`Met search HTTP ${search.status}`);
+    }
+    const ids = await search.json();
+    const objectIDs = ids?.objectIDs || [];
+    if (!objectIDs.length) {
+      throw new Error('Met search returned no results');
+    }
+    const rng = mulberry32(state.seed ^ 0x5d13f1);
+    const id = objectIDs[Math.floor(rng() * objectIDs.length)];
+    const recordRes = await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`);
+    if (!recordRes.ok) {
+      throw new Error(`Met object HTTP ${recordRes.status}`);
+    }
+    const record = await recordRes.json();
+    if (!record?.primaryImageLarge) {
+      throw new Error('Met object missing image');
+    }
+    const img = await loadImage(record.primaryImageLarge);
+    transferImageToSample(img);
+    apiState.art = {
+      title: record.title || 'Metropolitan Museum of Art',
+      date: record.objectDate || '',
+      artist: record.artistDisplayName || 'Unknown artist',
+      url: record.primaryImageLarge
+    };
+    apiControls.status.textContent = 'Met Museum image loaded';
+    refreshApiPreview();
+    setStatus('Met Museum fallback imagery loaded');
+  } catch (fallbackError) {
+    apiControls.status.textContent = `Met fallback failed: ${fallbackError.message}`;
   }
 }
 
@@ -2512,6 +3265,130 @@ function applyRemotePalette() {
   queueRender();
   apiControls.status.textContent = 'Palette applied to mosaic';
   setStatus('Remote palette applied');
+}
+
+async function generateAiPalette() {
+  if (aiState.loading) return;
+  aiState.loading = true;
+  if (aiLabControls.generate) {
+    aiLabControls.generate.disabled = true;
+    aiLabControls.generate.textContent = 'Generating…';
+  }
+  setStatus('Generating AI-assisted palette…');
+  const prompt = aiLabControls.prompt?.value.trim() || 'mosaic dream';
+  const model = aiLabControls.model?.value || 'colormind';
+  try {
+    let palette;
+    if (model === 'colormind') {
+      palette = await requestColormindPalette(prompt);
+    } else {
+      palette = await requestHuemintPalette(prompt);
+    }
+    if (!palette.length) {
+      throw new Error('Empty palette response');
+    }
+    aiState.palette = palette;
+    setStatus('AI palette ready – preview updated');
+  } catch (error) {
+    console.warn('AI palette fallback', error);
+    aiState.palette = buildProceduralPalette(prompt);
+    setStatus(`AI service fallback used: ${error.message}`);
+  } finally {
+    aiState.loading = false;
+    if (aiLabControls.generate) {
+      aiLabControls.generate.disabled = false;
+      aiLabControls.generate.textContent = 'Generate Palette';
+    }
+    updateAiPreview();
+  }
+}
+
+async function requestColormindPalette(prompt) {
+  const model = chooseColormindModel(prompt);
+  const response = await fetch('https://colormind.io/api/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, input: ['N', 'N', 'N', 'N', 'N'] })
+  });
+  if (!response.ok) {
+    throw new Error(`Colormind HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  if (!data || !Array.isArray(data.result)) {
+    throw new Error('Colormind returned invalid data');
+  }
+  return data.result.map((rgb) => rgbToHex({ r: rgb[0], g: rgb[1], b: rgb[2] }));
+}
+
+async function requestHuemintPalette(prompt) {
+  const response = await fetch('https://api.huemint.com/colorpalette', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mode: 'transformer',
+      num_colors: 5,
+      temperature: 0.75,
+      adjacency: '111111',
+      palette: null,
+      seed: prompt || 'mosaic'
+    })
+  });
+  if (!response.ok) {
+    throw new Error(`Huemint HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  const palette = data?.results?.[0]?.palette;
+  if (!Array.isArray(palette) || !palette.length) {
+    throw new Error('Huemint returned no palette');
+  }
+  return palette.map((rgb) => {
+    const [r, g, b] = rgb;
+    return rgbToHex({ r: Math.round(r), g: Math.round(g), b: Math.round(b) });
+  });
+}
+
+function chooseColormindModel(prompt) {
+  const lower = prompt.toLowerCase();
+  if (lower.includes('neon') || lower.includes('cyber')) return 'ui';
+  if (lower.includes('nature') || lower.includes('forest')) return 'default';
+  if (lower.includes('sunset') || lower.includes('warm')) return 'default';
+  if (lower.includes('material')) return 'material';
+  return 'default';
+}
+
+function buildProceduralPalette(prompt) {
+  const seed = hashSeed(prompt || 'ai-fallback');
+  const rng = mulberry32(seed);
+  const palette = [];
+  for (let i = 0; i < 5; i++) {
+    const h = (rng() + i * 0.21) % 1;
+    const s = 0.55 + rng() * 0.35;
+    const v = 0.55 + rng() * 0.35;
+    const rgb = hsvToRgb({ h, s, v });
+    palette.push(rgbToHex(rgb));
+  }
+  return palette;
+}
+
+function updateAiPreview() {
+  if (!aiLabControls.preview) return;
+  aiLabControls.preview.innerHTML = '';
+  if (!aiState.palette.length) {
+    if (aiLabControls.previewRow) aiLabControls.previewRow.hidden = true;
+    if (aiLabControls.apply) aiLabControls.apply.disabled = true;
+    return;
+  }
+  if (aiLabControls.previewRow) aiLabControls.previewRow.hidden = false;
+  aiState.palette.forEach((hex) => {
+    const swatch = document.createElement('div');
+    swatch.className = 'swatch';
+    swatch.style.background = hex;
+    const label = document.createElement('span');
+    label.textContent = hex.toUpperCase();
+    swatch.appendChild(label);
+    aiLabControls.preview.appendChild(swatch);
+  });
+  if (aiLabControls.apply) aiLabControls.apply.disabled = false;
 }
 
 function refreshApiPreview() {
@@ -2691,14 +3568,49 @@ function readFileAsDataURL(file) {
   });
 }
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Image load failed'));
-    img.src = src;
-  });
+async function loadImage(source) {
+  const resolveFromTag = (url) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.decoding = 'async';
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Image load failed'));
+      img.src = url;
+    });
+
+  if (source instanceof HTMLImageElement) {
+    return source;
+  }
+
+  if (source instanceof Blob) {
+    const objectUrl = URL.createObjectURL(source);
+    try {
+      const img = await resolveFromTag(objectUrl);
+      return img;
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  if (typeof source === 'string') {
+    if (source.startsWith('data:') || source.startsWith('blob:') || source.startsWith('file:')) {
+      return resolveFromTag(source);
+    }
+    try {
+      const response = await fetch(source, { cache: 'no-store', mode: 'cors' });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const blob = await response.blob();
+      return await loadImage(blob);
+    } catch (networkError) {
+      console.warn('Direct fetch failed, falling back to tag load', networkError);
+      return resolveFromTag(source);
+    }
+  }
+
+  throw new Error('Unsupported image source');
 }
 
 function transferImageToSample(img) {
@@ -2840,21 +3752,21 @@ function createParticleRenderer(shapeLibrary) {
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        const count = Math.min(particles.length, maxInstances);
+        const count = Math.min(shapes.length, maxInstances);
         if (!count) return;
         for (let i = 0; i < count; i++) {
-          const shape = shapes[i];
+          const shape = shapes[i] || {};
           const base = i * floatsPerInstance;
-          instanceData[base] = shape.x;
-          instanceData[base + 1] = shape.y;
-          instanceData[base + 2] = shape.radius;
+          instanceData[base] = shape.x || 0;
+          instanceData[base + 1] = shape.y || 0;
+          instanceData[base + 2] = Math.max(0.001, shape.radius || 0);
           const color = shape.color || { r: 255, g: 255, b: 255, a: 255 };
-          instanceData[base + 3] = (color.r ?? 255) / 255;
-          instanceData[base + 4] = (color.g ?? 255) / 255;
-          instanceData[base + 5] = (color.b ?? 255) / 255;
-          instanceData[base + 6] = (color.a ?? 255) / 255;
+          instanceData[base + 3] = clamp((color.r ?? 255) / 255, 0, 1);
+          instanceData[base + 4] = clamp((color.g ?? 255) / 255, 0, 1);
+          instanceData[base + 5] = clamp((color.b ?? 255) / 255, 0, 1);
+          instanceData[base + 6] = clamp((color.a ?? 255) / 255, 0, 1);
           instanceData[base + 7] = shape.shapeId ?? 0;
-          instanceData[base + 8] = shape.rotation ?? 0;
+          instanceData[base + 8] = typeof shape.rotation === 'number' ? shape.rotation : 0;
         }
         gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, instanceData.subarray(0, count * floatsPerInstance));

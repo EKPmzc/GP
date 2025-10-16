@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' blob: data: https://apod.nasa.gov https://images-assets.nasa.gov https://picsum.photos https://images.unsplash.com https://www.artic.edu https://dog.ceo; media-src 'self' blob:; connect-src 'self' https://api.nasa.gov https://www.colr.org https://picsum.photos https://api.artic.edu https://dog.ceo https://images-assets.nasa.gov; style-src 'self' 'unsafe-inline'; script-src 'self';"
+      content="default-src 'self'; img-src 'self' blob: data: https://apod.nasa.gov https://images-assets.nasa.gov https://picsum.photos https://images.unsplash.com https://www.artic.edu https://dog.ceo https://images.dog.ceo; media-src 'self' blob:; connect-src 'self' https://api.nasa.gov https://www.colr.org https://picsum.photos https://api.artic.edu https://dog.ceo https://images-assets.nasa.gov https://api.colormind.io https://api.huemint.com https://collectionapi.metmuseum.org; style-src 'self' 'unsafe-inline'; script-src 'self';"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mosaic Studio Desktop</title>
@@ -22,6 +22,10 @@
           <button class="tab" data-tab="audio" role="tab">Audio Reactor</button>
           <button class="tab" data-tab="nebula" role="tab">Nebula Weave</button>
           <button class="tab" data-tab="wave" role="tab">Wave Lab</button>
+          <button class="tab" data-tab="spectrum" role="tab">Spectrum Bloom</button>
+          <button class="tab" data-tab="ink" role="tab">Ink Sketch</button>
+          <button class="tab" data-tab="pulse" role="tab">Pulse Grid</button>
+          <button class="tab" data-tab="ai" role="tab">AI Studio</button>
           <button class="tab" data-tab="api" role="tab">API Fusion</button>
         </nav>
       </header>
@@ -289,6 +293,13 @@
                   <option value="mosaic">Mosaic Lab</option>
                   <option value="aurora">Aurora Synth</option>
                   <option value="glitch">Glitch Forge</option>
+                  <option value="particle">Particle Studio</option>
+                  <option value="nebula">Nebula Weave</option>
+                  <option value="wave">Wave Lab</option>
+                  <option value="spectrum">Spectrum Bloom</option>
+                  <option value="ink">Ink Sketch</option>
+                  <option value="pulse">Pulse Grid</option>
+                  <option value="ai">AI Studio</option>
                 </select>
               </label>
               <label>Smoothing
@@ -363,6 +374,111 @@
                 <input type="number" id="audioGlitchColorNumber" min="0" max="1" step="0.01" value="0.35" />
               </div>
             </div>
+
+            <div class="audio-filter-group" data-audio-filter="particle" hidden>
+              <div class="control-row">
+                <label>Speed Boost
+                  <input type="range" id="audioParticleSpeed" min="0" max="3" step="0.05" value="1" />
+                </label>
+                <input type="number" id="audioParticleSpeedNumber" min="0" max="3" step="0.05" value="1" />
+              </div>
+              <div class="control-row">
+                <label>Color Swing
+                  <input type="range" id="audioParticleColor" min="0" max="180" step="1" value="60" />
+                </label>
+                <input type="number" id="audioParticleColorNumber" min="0" max="180" step="1" value="60" />
+              </div>
+            </div>
+
+            <div class="audio-filter-group" data-audio-filter="nebula" hidden>
+              <div class="control-row">
+                <label>Density React
+                  <input type="range" id="audioNebulaDensity" min="0" max="2.5" step="0.05" value="1.2" />
+                </label>
+                <input type="number" id="audioNebulaDensityNumber" min="0" max="2.5" step="0.05" value="1.2" />
+              </div>
+              <div class="control-row">
+                <label>Hue Drift
+                  <input type="range" id="audioNebulaHue" min="0" max="240" step="1" value="80" />
+                </label>
+                <input type="number" id="audioNebulaHueNumber" min="0" max="240" step="1" value="80" />
+              </div>
+            </div>
+
+            <div class="audio-filter-group" data-audio-filter="wave" hidden>
+              <div class="control-row">
+                <label>Amplitude Gain
+                  <input type="range" id="audioWaveAmplitude" min="0" max="2" step="0.05" value="0.9" />
+                </label>
+                <input type="number" id="audioWaveAmplitudeNumber" min="0" max="2" step="0.05" value="0.9" />
+              </div>
+              <div class="control-row">
+                <label>Hue Sweep
+                  <input type="range" id="audioWaveHue" min="0" max="240" step="1" value="90" />
+                </label>
+                <input type="number" id="audioWaveHueNumber" min="0" max="240" step="1" value="90" />
+              </div>
+            </div>
+
+            <div class="audio-filter-group" data-audio-filter="spectrum" hidden>
+              <div class="control-row">
+                <label>Band Motion
+                  <input type="range" id="audioSpectrumMotion" min="0" max="3" step="0.05" value="1" />
+                </label>
+                <input type="number" id="audioSpectrumMotionNumber" min="0" max="3" step="0.05" value="1" />
+              </div>
+              <div class="control-row">
+                <label>Luminosity
+                  <input type="range" id="audioSpectrumBrightness" min="0" max="2" step="0.05" value="0.7" />
+                </label>
+                <input type="number" id="audioSpectrumBrightnessNumber" min="0" max="2" step="0.05" value="0.7" />
+              </div>
+            </div>
+
+            <div class="audio-filter-group" data-audio-filter="ink" hidden>
+              <div class="control-row">
+                <label>Edge Drive
+                  <input type="range" id="audioInkContrast" min="0" max="2" step="0.05" value="0.8" />
+                </label>
+                <input type="number" id="audioInkContrastNumber" min="0" max="2" step="0.05" value="0.8" />
+              </div>
+              <div class="control-row">
+                <label>Paper Flash
+                  <input type="range" id="audioInkPaper" min="0" max="1" step="0.05" value="0.4" />
+                </label>
+                <input type="number" id="audioInkPaperNumber" min="0" max="1" step="0.05" value="0.4" />
+              </div>
+            </div>
+
+            <div class="audio-filter-group" data-audio-filter="pulse" hidden>
+              <div class="control-row">
+                <label>Pulse Depth
+                  <input type="range" id="audioPulseDepth" min="0" max="3" step="0.05" value="1.1" />
+                </label>
+                <input type="number" id="audioPulseDepthNumber" min="0" max="3" step="0.05" value="1.1" />
+              </div>
+              <div class="control-row">
+                <label>Trail Echo
+                  <input type="range" id="audioPulseTrails" min="0" max="1" step="0.05" value="0.5" />
+                </label>
+                <input type="number" id="audioPulseTrailsNumber" min="0" max="1" step="0.05" value="0.5" />
+              </div>
+            </div>
+
+            <div class="audio-filter-group" data-audio-filter="ai" hidden>
+              <div class="control-row">
+                <label>Palette Shift
+                  <input type="range" id="audioAiShift" min="0" max="180" step="1" value="45" />
+                </label>
+                <input type="number" id="audioAiShiftNumber" min="0" max="180" step="1" value="45" />
+              </div>
+              <div class="control-row">
+                <label>Glow Boost
+                  <input type="range" id="audioAiGlow" min="0" max="2" step="0.05" value="0.6" />
+                </label>
+                <input type="number" id="audioAiGlowNumber" min="0" max="2" step="0.05" value="0.6" />
+              </div>
+            </div>
           </section>
 
           <section class="control-group" data-tab-owner="nebula" hidden>
@@ -415,6 +531,99 @@
             </div>
             <div class="control-row">
               <button id="waveSnap">Snap Frame</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="spectrum" hidden>
+            <h2>Spectrum Bloom <button class="info" data-info="spectrum">i</button></h2>
+            <div class="control-row">
+              <label for="spectrumBands">Bands</label>
+              <input type="range" id="spectrumBands" min="4" max="64" step="1" value="24" />
+              <input type="number" id="spectrumBandsNumber" min="4" max="64" step="1" value="24" />
+            </div>
+            <div class="control-row">
+              <label for="spectrumSpeed">Drift Speed</label>
+              <input type="range" id="spectrumSpeed" min="0" max="6" step="0.05" value="1.2" />
+              <input type="number" id="spectrumSpeedNumber" min="0" max="6" step="0.05" value="1.2" />
+            </div>
+            <div class="control-row">
+              <label for="spectrumGlow">Glow</label>
+              <input type="range" id="spectrumGlow" min="0" max="2" step="0.05" value="0.6" />
+              <input type="number" id="spectrumGlowNumber" min="0" max="2" step="0.05" value="0.6" />
+            </div>
+            <div class="control-row">
+              <button id="spectrumSnap">Capture to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="ink" hidden>
+            <h2>Ink Sketch <button class="info" data-info="ink">i</button></h2>
+            <div class="control-row">
+              <label for="inkDetail">Detail</label>
+              <input type="range" id="inkDetail" min="1" max="10" step="1" value="5" />
+              <input type="number" id="inkDetailNumber" min="1" max="10" step="1" value="5" />
+            </div>
+            <div class="control-row">
+              <label for="inkContrast">Contrast</label>
+              <input type="range" id="inkContrast" min="0" max="3" step="0.05" value="1.2" />
+              <input type="number" id="inkContrastNumber" min="0" max="3" step="0.05" value="1.2" />
+            </div>
+            <div class="control-row">
+              <label><input type="checkbox" id="inkInvert" /> Invert Paper</label>
+            </div>
+            <div class="control-row">
+              <button id="inkSnap">Send Sketch to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="pulse" hidden>
+            <h2>Pulse Grid <button class="info" data-info="pulse">i</button></h2>
+            <div class="control-row">
+              <label for="pulseDensity">Density</label>
+              <input type="range" id="pulseDensity" min="4" max="80" step="1" value="24" />
+              <input type="number" id="pulseDensityNumber" min="4" max="80" step="1" value="24" />
+            </div>
+            <div class="control-row">
+              <label for="pulseDepth">Depth</label>
+              <input type="range" id="pulseDepth" min="0" max="2.5" step="0.05" value="1" />
+              <input type="number" id="pulseDepthNumber" min="0" max="2.5" step="0.05" value="1" />
+            </div>
+            <div class="control-row">
+              <label><input type="checkbox" id="pulseTrails" checked /> Trails</label>
+            </div>
+            <div class="control-row">
+              <button id="pulseSnap">Freeze Pulse to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="ai" hidden>
+            <h2>AI Studio <button class="info" data-info="ai">i</button></h2>
+            <div class="control-row">
+              <label>AI Palette Model
+                <select id="aiPaletteModel">
+                  <option value="colormind">Colormind (deep palette)</option>
+                  <option value="huemint">Huemint Landscape</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label for="aiPrompt">Prompt / Theme</label>
+              <input type="text" id="aiPrompt" placeholder="e.g. neon cyberpunk alley" />
+            </div>
+            <div class="control-row">
+              <button id="aiGenerate">Generate Palette</button>
+              <button id="aiApplyPalette" disabled>Apply to Mosaic</button>
+            </div>
+            <div class="control-row">
+              <label for="aiGlow">Overlay Glow</label>
+              <input type="range" id="aiGlow" min="0" max="2.5" step="0.05" value="0.8" />
+              <input type="number" id="aiGlowNumber" min="0" max="2.5" step="0.05" value="0.8" />
+            </div>
+            <div class="control-row">
+              <button id="aiSnap">Render AI Canvas</button>
+            </div>
+            <div class="control-row" id="aiPreviewRow" hidden>
+              <div class="ai-preview" id="aiPalettePreview"></div>
             </div>
           </section>
 

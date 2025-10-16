@@ -39,7 +39,10 @@ if (-not (Get-Command $csc -ErrorAction SilentlyContinue)) {
   throw "csc.exe not found. Install .NET Framework Developer Pack to compile the launcher."
 }
 $iconPath = Join-Path $PSScriptRoot 'launcher-icon.ico'
-$iconArg = if (Test-Path $iconPath) { "/win32icon:\"$iconPath\"" } else { '' }
-& $csc /nologo /target:winexe /out:$Output $iconArg $source
+$args = @('/nologo','/target:winexe',"/out:$Output", $source)
+if (Test-Path $iconPath) {
+  $args += "/win32icon:$iconPath"
+}
+& $csc @args
 Remove-Item $source -Force
 Write-Host "Launcher written to $Output"
