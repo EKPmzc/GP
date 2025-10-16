@@ -6,7 +6,7 @@ const videoEl = document.getElementById('video');
 const downsampleCanvas = document.createElement('canvas');
 const downsampleCtx = downsampleCanvas.getContext('2d');
 
-const TAB_IDS = ['mosaic', 'glitch', 'aurora'];
+const TAB_IDS = ['mosaic', 'glitch', 'aurora', 'particle', 'api'];
 const tabButtons = document.querySelectorAll('.mode-tabs .tab');
 const controlGroups = document.querySelectorAll('.control-group');
 const statusText = document.getElementById('statusText');
@@ -78,6 +78,25 @@ const auroraControls = {
   snap: document.getElementById('auroraSnap')
 };
 
+const particleControls = {
+  count: document.getElementById('particleCount'),
+  countNumber: document.getElementById('particleCountNumber'),
+  speed: document.getElementById('particleSpeed'),
+  speedNumber: document.getElementById('particleSpeedNumber'),
+  shape: document.getElementById('particleShape'),
+  trail: document.getElementById('particleTrail'),
+  palette: document.getElementById('particlePalette'),
+  snap: document.getElementById('particleSnap')
+};
+
+const apiControls = {
+  fetchApod: document.getElementById('apiFetchApod'),
+  fetchPalette: document.getElementById('apiFetchPalette'),
+  applyPalette: document.getElementById('apiApplyPalette'),
+  status: document.getElementById('apiStatus'),
+  preview: document.getElementById('apiPreview')
+};
+
 const palettePresets = {
   Warm: ['#8d2a0f', '#c6451c', '#f49b17', '#ffd45c', '#ffe6b1'],
   Cool: ['#0f1f45', '#174e87', '#1e8bd3', '#8ad2ff', '#e0f6ff'],
@@ -91,6 +110,13 @@ const palettePresets = {
   Starlight: ['#0a0c1a', '#21305a', '#3f72af', '#f1f6f9', '#ffd166']
 };
 
+const particlePalettes = {
+  aurora: ['#112240', '#1e4676', '#33a1c9', '#7ef5ff', '#d4fbff'],
+  starlight: ['#0b0f1f', '#1f2a4f', '#4f5fa8', '#f5f7ff', '#ffd6ff'],
+  voltage: ['#070912', '#00ffc6', '#00a6ff', '#ffd300', '#ff4ecd'],
+  sunrise: ['#140818', '#ff6a3d', '#ffd166', '#ffe9c7', '#6df0ff']
+};
+
 const chaosPresets = {
   Tranquil: { jitter: 0.4, motion: 0.8, dither: true },
   Pulse: { jitter: 1.2, motion: 2.5, dither: true },
@@ -101,6 +127,7 @@ const chaosPresets = {
 };
 
 const shapeLibrary = createShapeLibrary();
+const particleRenderer = createParticleRenderer(shapeLibrary);
 let activeTab = 'mosaic';
 let previewActive = true;
 let editMode = false;
@@ -111,6 +138,21 @@ let lastSource = 'none';
 let frameSeedOffset = 0;
 let lastFrameTime = 0;
 let fpsSamples = [];
+
+const particleState = {
+  particles: [],
+  count: 4000,
+  speed: 1.2,
+  shapeName: 'mix',
+  palette: 'aurora',
+  trails: true,
+  lastTime: 0
+};
+
+const apiState = {
+  palette: [],
+  apod: null
+};
 
 const state = {
   mode: 'uniform',
@@ -143,6 +185,8 @@ init();
 function init() {
   initTabs();
   initControls();
+  initParticleControls();
+  initApiControls();
   initInfo();
   initShapeOptions();
   initPalette();
@@ -176,6 +220,10 @@ function switchTab(tabId) {
     renderGlitch();
   } else if (tabId === 'aurora') {
     renderAurora();
+  } else if (tabId === 'particle') {
+    renderParticleScene(performance.now());
+  } else if (tabId === 'api') {
+    refreshApiPreview();
   }
 }
 
@@ -210,6 +258,7 @@ function initControls() {
   mosaicControls.shapeSelect.addEventListener('change', () => {
     state.shapeName = mosaicControls.shapeSelect.value;
     queueRender();
+    seedParticleField(true);
   });
   mosaicControls.outlineToggle.addEventListener('change', () => {
     state.outline = mosaicControls.outlineToggle.checked;
@@ -317,10 +366,11 @@ function initControls() {
     captureSnapshotToMosaic();
   });
 
-  auroraControls.bloom.addEventListener('input', renderAurora);
-  auroraControls.drift.addEventListener('input', renderAurora);
+  const auroraRefresh = () => renderAurora(performance.now());
+  auroraControls.bloom.addEventListener('input', auroraRefresh);
+  auroraControls.drift.addEventListener('input', auroraRefresh);
   auroraControls.snap.addEventListener('click', () => {
-    renderAurora();
+    auroraRefresh();
     captureSnapshotToMosaic();
   });
 
@@ -330,6 +380,88 @@ function initControls() {
   window.addEventListener('resize', handleResize);
   updateSizeControlMode(state.mode);
   handleResize();
+}
+
+function initParticleControls() {
+  if (!particleRenderer) {
+    particleControls.count.disabled = true;
+    particleControls.countNumber.disabled = true;
+    particleControls.speed.disabled = true;
+    particleControls.speedNumber.disabled = true;
+    particleControls.shape.disabled = true;
+    particleControls.trail.disabled = true;
+    particleControls.palette.disabled = true;
+    particleControls.snap.disabled = true;
+    setStatus('WebGL unavailable – particle lab offline');
+    return;
+  }
+  const shapeKeys = Object.keys(shapeLibrary);
+  particleControls.shape.innerHTML = '';
+  const matchOption = document.createElement('option');
+  matchOption.value = 'match';
+  matchOption.textContent = 'Match Mosaic Shape';
+  particleControls.shape.append(matchOption);
+  const mixOption = document.createElement('option');
+  mixOption.value = 'mix';
+  mixOption.textContent = 'Cycle Shapes';
+  particleControls.shape.append(mixOption);
+  shapeKeys.forEach((name) => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    particleControls.shape.append(opt);
+  });
+  particleControls.shape.value = 'mix';
+  particleState.shapeName = 'mix';
+
+  linkSliderNumber(particleControls.count, particleControls.countNumber, (value) => {
+    particleState.count = parseInt(value, 10);
+    seedParticleField(true);
+    if (activeTab === 'particle') {
+      renderParticleScene(performance.now());
+    }
+  });
+  linkSliderNumber(particleControls.speed, particleControls.speedNumber, (value) => {
+    particleState.speed = parseFloat(value);
+    if (activeTab === 'particle') {
+      renderParticleScene(performance.now());
+    }
+  });
+
+  particleControls.shape.addEventListener('change', () => {
+    particleState.shapeName = particleControls.shape.value;
+    seedParticleField(true);
+    if (activeTab === 'particle') {
+      renderParticleScene(performance.now());
+    }
+  });
+  particleControls.trail.addEventListener('change', () => {
+    particleState.trails = particleControls.trail.checked;
+    if (activeTab === 'particle') {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      renderParticleScene(performance.now());
+    }
+  });
+  particleControls.palette.addEventListener('change', () => {
+    particleState.palette = particleControls.palette.value;
+    if (activeTab === 'particle') {
+      renderParticleScene(performance.now());
+    }
+  });
+  particleControls.snap.addEventListener('click', () => {
+    renderParticleScene(performance.now());
+    captureSnapshotToMosaic();
+    setStatus('Particle frame captured to mosaic');
+  });
+
+  seedParticleField(true);
+}
+
+function initApiControls() {
+  apiControls.fetchApod.addEventListener('click', fetchApodImage);
+  apiControls.fetchPalette.addEventListener('click', fetchRemotePalette);
+  apiControls.applyPalette.addEventListener('click', applyRemotePalette);
+  refreshApiPreview();
 }
 
 function initInfo() {
@@ -342,7 +474,9 @@ function initInfo() {
     edit: 'Freeze a frame then move, duplicate, or delete shapes directly on canvas without regenerating the mosaic.',
     utility: 'Export PNG renders, reset to defaults, and manage project housekeeping.',
     glitch: 'Glitch Forge slices frames into displaced bands, with optional scanlines, ready to snap back into the Mosaic lab.',
-    aurora: 'Aurora Synth paints bloom-heavy ribbons and drift, useful for ambient backgrounds that can feed the Mosaic renderer.'
+    aurora: 'Aurora Synth paints bloom-heavy ribbons and drift, useful for ambient backgrounds that can feed the Mosaic renderer.',
+    particle: 'Particle Lab uses GPU instancing to animate thousands of shapes as living particles—tune count, drift, palette, and capture keyframes.',
+    api: 'API Fusion loads NASA imagery and remote palettes so you can remix live data directly inside the mosaic workflow.'
   };
   document.querySelectorAll('button.info').forEach((btn) => {
     const key = btn.dataset.info;
@@ -504,23 +638,21 @@ function stopCamera() {
   setStatus('Camera stopped');
 }
 
-function handleFile(event) {
+async function handleFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  const url = URL.createObjectURL(file);
-  const img = new Image();
-  img.onload = () => {
-    state.videoActive = false;
-    stopCamera();
-    sampleCanvas.width = img.width;
-    sampleCanvas.height = img.height;
-    sampleCtx.drawImage(img, 0, 0, img.width, img.height);
-    lastSource = 'image';
-    state.lastStillFrame = performance.now();
-    URL.revokeObjectURL(url);
-    queueRender();
-  };
-  img.src = url;
+  try {
+    await setSourceToImage(file);
+    setStatus(`Loaded ${file.name}`);
+  } catch (error) {
+    setStatus(`Image failed: ${error.message}`);
+  }
+}
+
+async function setSourceToImage(file) {
+  const dataUrl = await readFileAsDataURL(file);
+  const img = await loadImage(dataUrl);
+  transferImageToSample(img);
 }
 
 function handleResize() {
@@ -538,7 +670,15 @@ function handleResize() {
   }
   canvas.width = Math.round(width);
   canvas.height = Math.round(height);
-  queueRender();
+  if (activeTab === 'mosaic') {
+    queueRender();
+  } else if (activeTab === 'particle') {
+    renderParticleScene(performance.now());
+  } else if (activeTab === 'aurora') {
+    renderAurora(performance.now());
+  } else if (activeTab === 'glitch') {
+    renderGlitch();
+  }
 }
 
 function determineAspectRatio() {
@@ -561,11 +701,17 @@ function queueRender() {
 }
 
 function tick(ts) {
-  if (previewActive && activeTab === 'mosaic') {
-    if (ts - lastFrameTime > 1000 / 60) {
-      renderMosaic();
-      lastFrameTime = ts;
+  if (activeTab === 'mosaic') {
+    if (previewActive) {
+      if (ts - lastFrameTime > 1000 / 60) {
+        renderMosaic();
+        lastFrameTime = ts;
+      }
     }
+  } else if (activeTab === 'particle') {
+    renderParticleScene(ts);
+  } else if (activeTab === 'aurora') {
+    renderAurora(ts);
   }
   updateFPS(ts);
   requestAnimationFrame(tick);
@@ -689,6 +835,7 @@ function collectParams() {
     jitterStrength,
     palette,
     shape,
+    shapeIndex: shape?.index ?? 0,
     outline,
     mirror,
     dither,
@@ -717,7 +864,15 @@ function renderUniformGrid(context, params, sampleFn, skipDraw = false) {
       const finalColor = colorize(gammaColor, params, idx);
       const jitterFactor = computeJitter(jitterMode, jitterStrength, color, cx, cy, params);
       const shapeRadius = radiusBase * jitterFactor;
-      shapes.push({ x: cx, y: cy, radius: shapeRadius, color: finalColor, idx });
+      shapes.push({
+        x: cx,
+        y: cy,
+        radius: shapeRadius,
+        color: finalColor,
+        idx,
+        shapeId: params.shapeIndex,
+        rotation: 0
+      });
       idx++;
     }
   }
@@ -748,7 +903,9 @@ function renderRandomPoisson(context, params, sampleFn, skipDraw = false) {
     x: fx,
     y: fy,
     radius: firstRadius,
-    color: firstFinal
+    color: firstFinal,
+    shapeId: params.shapeIndex,
+    rotation: rng() * Math.PI * 2
   };
   active.push(firstPoint);
   shapes.push(firstPoint);
@@ -770,7 +927,14 @@ function renderRandomPoisson(context, params, sampleFn, skipDraw = false) {
       const finalColor = colorize(gammaColor, params, shapes.length);
       const jitterFactor = computeJitter(jitterMode, jitterStrength, color, nx, ny, params);
       const localRadius = clamp(baseSize * jitterFactor, minRadius, maxRadius);
-      const candidate = { x: nx, y: ny, radius: localRadius, color: finalColor };
+      const candidate = {
+        x: nx,
+        y: ny,
+        radius: localRadius,
+        color: finalColor,
+        shapeId: params.shapeIndex,
+        rotation: rng() * Math.PI * 2
+      };
       if (fits(candidate, grid, cellSize, gridW)) {
         shapes.push(candidate);
         active.push(candidate);
@@ -790,6 +954,19 @@ function renderRandomPoisson(context, params, sampleFn, skipDraw = false) {
 }
 
 function drawShapes(context, shapes, params) {
+  if (!shapes.length) return;
+  if (particleRenderer) {
+    particleRenderer.draw(shapes, {
+      width: canvas.width,
+      height: canvas.height,
+      outline: params.outline,
+      glimmer: state.chaosMode === 'Glimmer',
+      time: performance.now() * 0.001
+    });
+    context.drawImage(particleRenderer.canvas, 0, 0, canvas.width, canvas.height);
+    return;
+  }
+  // Fallback CPU drawing if WebGL is unavailable
   const path = params.shape.path;
   context.save();
   for (const shape of shapes) {
@@ -851,6 +1028,118 @@ function computeJitter(mode, strength, color, x, y, params) {
     return 1 + noise * 0.7 * strength;
   }
   return 1;
+}
+
+function seedParticleField(force = false) {
+  if (!particleRenderer) return;
+  if (!force && particleState.particles.length === particleState.count) return;
+  const rng = mulberry32(state.seed ^ 0x517cc1b7);
+  const shapeKeys = Object.keys(shapeLibrary);
+  const mosaicShape = shapeLibrary[state.shapeName]?.index ?? 0;
+  particleState.particles = [];
+  for (let i = 0; i < particleState.count; i++) {
+    let shapeId = mosaicShape;
+    if (particleState.shapeName === 'mix') {
+      const key = shapeKeys[i % shapeKeys.length];
+      shapeId = shapeLibrary[key].index;
+    } else if (particleState.shapeName === 'match') {
+      shapeId = mosaicShape;
+    } else if (shapeLibrary[particleState.shapeName]) {
+      shapeId = shapeLibrary[particleState.shapeName].index;
+    }
+    particleState.particles.push({
+      angle: rng() * Math.PI * 2,
+      radius: rng(),
+      speed: 0.6 + rng() * 1.4,
+      size: 3 + rng() * 7,
+      offset: rng() * Math.PI * 2,
+      orbit: rng() * Math.PI * 2,
+      colorPhase: rng(),
+      shapeId
+    });
+  }
+}
+
+function getParticlePaletteColors() {
+  let colors;
+  if (particleState.palette === 'custom') {
+    colors = state.palette.length ? state.palette : palettePresets.Warm;
+  } else {
+    colors = particlePalettes[particleState.palette] || particlePalettes.aurora;
+  }
+  return colors.map((hex) => ({ ...hexToRgb(hex), a: 255 }));
+}
+
+function renderParticleScene(timestamp = performance.now()) {
+  if (activeTab !== 'particle') return;
+  if (!particleRenderer) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#0d1320';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.font = '16px Inter, system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('WebGL required for Particle Lab', canvas.width / 2, canvas.height / 2);
+    ctx.restore();
+    return;
+  }
+  seedParticleField();
+  const dt = particleState.lastTime ? Math.min(0.05, Math.max(0, (timestamp - particleState.lastTime) / 1000)) : 0.016;
+  particleState.lastTime = timestamp;
+
+  if (particleState.trails) {
+    ctx.fillStyle = 'rgba(5,7,12,0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#05080f');
+    gradient.addColorStop(1, '#0c1424');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  const palette = getParticlePaletteColors();
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const baseRadius = Math.min(centerX, centerY) * 0.9;
+  const shapes = [];
+  const paletteCount = palette.length || 1;
+  const shimmer = Math.sin(timestamp * 0.0015) * 0.5 + 0.5;
+
+  for (let i = 0; i < particleState.particles.length; i++) {
+    const particle = particleState.particles[i];
+    particle.angle += dt * particleState.speed * particle.speed;
+    particle.orbit += dt * 0.2;
+    const radius = baseRadius * (0.25 + particle.radius * 0.75);
+    const wobble = Math.sin(particle.orbit + shimmer + particle.offset) * 0.15;
+    const x = centerX + Math.cos(particle.angle) * radius;
+    const y = centerY + Math.sin(particle.angle * 0.85 + particle.orbit) * radius * (0.9 + wobble * 0.2);
+    particle.colorPhase = (particle.colorPhase + dt * 0.1) % 1;
+    const paletteIndex = Math.floor(particle.colorPhase * paletteCount) % paletteCount;
+    const color = palette[paletteIndex];
+    const twinkle = 0.6 + 0.4 * Math.sin(timestamp * 0.002 + particle.offset);
+    const radiusPx = (particle.size + twinkle * 2) * (0.8 + shimmer * 0.3);
+    shapes.push({
+      x,
+      y,
+      radius: radiusPx,
+      color,
+      shapeId: particle.shapeId,
+      rotation: particle.angle
+    });
+  }
+
+  particleRenderer.draw(shapes, {
+    width: canvas.width,
+    height: canvas.height,
+    outline: false,
+    glimmer: 1,
+    time: timestamp * 0.001
+  });
+  ctx.drawImage(particleRenderer.canvas, 0, 0, canvas.width, canvas.height);
 }
 
 function colorize(rgb, params, idx) {
@@ -1278,37 +1567,148 @@ function renderGlitch() {
   ctx.restore();
 }
 
-function renderAurora() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function renderAurora(timestamp = performance.now()) {
   const bloom = parseFloat(auroraControls.bloom.value);
   const drift = parseFloat(auroraControls.drift.value);
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, '#030b19');
-  gradient.addColorStop(1, '#0c1626');
-  ctx.fillStyle = gradient;
+  const t = timestamp * 0.001;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const background = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  background.addColorStop(0, '#030512');
+  background.addColorStop(1, '#071124');
+  ctx.fillStyle = background;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const layers = 6;
-  const rng = mulberry32(state.seed + frameSeedOffset);
+
+  const layers = 7;
+  const rng = mulberry32(state.seed + 0x9e3779b1);
   for (let i = 0; i < layers; i++) {
+    const amplitude = (0.35 + i * 0.12) * canvas.height * 0.2 * bloom;
+    const frequency = 0.4 + i * 0.18;
+    const offset = rng() * Math.PI * 2;
     const path = new Path2D();
-    const amplitude = (i + 1) * 30 * bloom;
-    const frequency = 0.5 + i * 0.15;
-    path.moveTo(0, canvas.height / 2);
-    for (let x = 0; x <= canvas.width; x += 20) {
-      const y = canvas.height / 2 + Math.sin((x / canvas.width) * Math.PI * 2 * frequency + drift * i) * amplitude;
+    path.moveTo(0, canvas.height * 0.65);
+    for (let x = 0; x <= canvas.width; x += 12) {
+      const progress = x / canvas.width;
+      const wave = Math.sin(progress * Math.PI * 2 * frequency + drift * t + offset);
+      const y = canvas.height * 0.55 + wave * amplitude;
       path.lineTo(x, y);
     }
     path.lineTo(canvas.width, canvas.height);
     path.lineTo(0, canvas.height);
     path.closePath();
-    const hue = (rng() * 360) | 0;
-    ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${0.1 + 0.1 * i})`;
+    const hue = (rng() * 180 + 120) % 360;
+    const alpha = 0.08 + i * 0.05;
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, `hsla(${hue}, 80%, ${40 + i * 4}%, ${alpha})`);
+    gradient.addColorStop(1, `hsla(${(hue + 60) % 360}, 70%, ${60 + i * 5}%, ${alpha * 0.6})`);
+    ctx.fillStyle = gradient;
     ctx.fill(path);
   }
+
   ctx.globalCompositeOperation = 'screen';
-  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fillStyle = `rgba(255,255,255,${0.08 + bloom * 0.05})`;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.globalCompositeOperation = 'source-over';
+  if (activeTab === 'aurora') {
+    renderGlimmer({ canvasW: canvas.width, canvasH: canvas.height, jitterStrength: bloom });
+  }
+}
+
+async function fetchApodImage() {
+  apiControls.status.textContent = 'Loading NASA APOD…';
+  try {
+    const response = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&thumbs=true');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    const imageUrl = data.media_type === 'image' ? data.url : data.thumbnail_url;
+    if (!imageUrl) {
+      throw new Error('No image available');
+    }
+    const img = await loadImage(imageUrl);
+    transferImageToSample(img);
+    apiState.apod = {
+      title: data.title,
+      date: data.date,
+      explanation: data.explanation,
+      url: imageUrl
+    };
+    apiControls.status.textContent = 'APOD loaded and ready';
+    refreshApiPreview();
+    setStatus('NASA imagery loaded into mosaic source');
+  } catch (error) {
+    apiControls.status.textContent = `APOD error: ${error.message}`;
+  }
+}
+
+async function fetchRemotePalette() {
+  apiControls.status.textContent = 'Fetching palette…';
+  try {
+    const response = await fetch('https://www.colr.org/json/colors/random/7');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const payload = await response.json();
+    const colors = (payload.colors || [])
+      .map((entry) => entry.hex)
+      .filter(Boolean)
+      .map((hex) => `#${hex.padStart(6, '0')}`);
+    if (!colors.length) {
+      throw new Error('Palette API returned no colors');
+    }
+    apiState.palette = colors;
+    apiControls.status.textContent = `Palette ready (${colors.length})`;
+    refreshApiPreview();
+  } catch (error) {
+    apiControls.status.textContent = `Palette error: ${error.message}`;
+  }
+}
+
+function applyRemotePalette() {
+  if (!apiState.palette.length) {
+    apiControls.status.textContent = 'Fetch a palette first';
+    return;
+  }
+  state.palette = [...apiState.palette];
+  refreshPaletteEditor();
+  state.colorMode = 'palette';
+  mosaicControls.colorMode.value = 'palette';
+  queueRender();
+  apiControls.status.textContent = 'Palette applied to mosaic';
+  setStatus('Remote palette applied');
+}
+
+function refreshApiPreview() {
+  const container = apiControls.preview;
+  if (!container) return;
+  container.innerHTML = '';
+  if (apiState.apod) {
+    const figure = document.createElement('figure');
+    figure.className = 'api-apod';
+    const img = document.createElement('img');
+    img.src = apiState.apod.url;
+    img.alt = apiState.apod.title || 'NASA APOD';
+    const caption = document.createElement('figcaption');
+    caption.textContent = `${apiState.apod.title || 'APOD'} (${apiState.apod.date || ''})`;
+    figure.append(img, caption);
+    container.append(figure);
+  } else {
+    const placeholder = document.createElement('p');
+    placeholder.textContent = 'Load NASA APOD to preview space imagery.';
+    container.append(placeholder);
+  }
+  if (apiState.palette.length) {
+    const row = document.createElement('div');
+    row.className = 'api-palette';
+    apiState.palette.forEach((hex) => {
+      const swatch = document.createElement('span');
+      swatch.className = 'api-swatch';
+      swatch.style.background = hex;
+      swatch.title = hex;
+      row.append(swatch);
+    });
+    container.append(row);
+  }
 }
 
 function captureSnapshotToMosaic() {
@@ -1324,43 +1724,38 @@ function captureSnapshotToMosaic() {
 
 function createShapeLibrary() {
   const shapes = {};
-  const simpleShape = (draw) => {
+  let index = 0;
+  const register = (name, draw) => {
     const path = new Path2D();
     draw(path);
-    return { path };
+    shapes[name] = { path, index: index++ };
   };
-  shapes.Circle = simpleShape((p) => p.arc(0, 0, 1, 0, Math.PI * 2));
-  shapes.Square = simpleShape((p) => {
+
+  register('Circle', (p) => p.arc(0, 0, 1, 0, Math.PI * 2));
+  register('Square', (p) => {
     p.rect(-1, -1, 2, 2);
   });
-  shapes.Triangle = simpleShape((p) => {
+  register('Triangle', (p) => {
     p.moveTo(0, -1);
     p.lineTo(Math.cos((150 * Math.PI) / 180), Math.sin((150 * Math.PI) / 180));
     p.lineTo(Math.cos((30 * Math.PI) / 180), Math.sin((30 * Math.PI) / 180));
     p.closePath();
   });
-  shapes.Star = simpleShape((p) => {
+  register('Star', (p) => {
     const spikes = 5;
     const outer = 1;
-    const inner = 0.4;
+    const inner = 0.42;
     let rot = Math.PI / 2 * 3;
-    let x = 0;
-    let y = 0;
     p.moveTo(0, -outer);
     for (let i = 0; i < spikes; i++) {
-      x = Math.cos(rot) * outer;
-      y = Math.sin(rot) * outer;
-      p.lineTo(x, y);
+      p.lineTo(Math.cos(rot) * outer, Math.sin(rot) * outer);
       rot += Math.PI / spikes;
-      x = Math.cos(rot) * inner;
-      y = Math.sin(rot) * inner;
-      p.lineTo(x, y);
+      p.lineTo(Math.cos(rot) * inner, Math.sin(rot) * inner);
       rot += Math.PI / spikes;
     }
-    p.lineTo(0, -outer);
     p.closePath();
   });
-  shapes.Hexagon = simpleShape((p) => {
+  register('Hexagon', (p) => {
     for (let i = 0; i < 6; i++) {
       const angle = (Math.PI / 3) * i;
       const x = Math.cos(angle);
@@ -1370,21 +1765,241 @@ function createShapeLibrary() {
     }
     p.closePath();
   });
-  shapes.Cross = simpleShape((p) => {
-    p.moveTo(-1, -0.3);
-    p.lineTo(-0.3, -0.3);
-    p.lineTo(-0.3, -1);
-    p.lineTo(0.3, -1);
-    p.lineTo(0.3, -0.3);
-    p.lineTo(1, -0.3);
-    p.lineTo(1, 0.3);
-    p.lineTo(0.3, 0.3);
-    p.lineTo(0.3, 1);
-    p.lineTo(-0.3, 1);
-    p.lineTo(-0.3, 0.3);
-    p.lineTo(-1, 0.3);
+  register('Cross', (p) => {
+    p.moveTo(-1, -0.35);
+    p.lineTo(-0.35, -0.35);
+    p.lineTo(-0.35, -1);
+    p.lineTo(0.35, -1);
+    p.lineTo(0.35, -0.35);
+    p.lineTo(1, -0.35);
+    p.lineTo(1, 0.35);
+    p.lineTo(0.35, 0.35);
+    p.lineTo(0.35, 1);
+    p.lineTo(-0.35, 1);
+    p.lineTo(-0.35, 0.35);
+    p.lineTo(-1, 0.35);
+    p.closePath();
+  });
+  register('Diamond', (p) => {
+    p.moveTo(0, -1);
+    p.lineTo(1, 0);
+    p.lineTo(0, 1);
+    p.lineTo(-1, 0);
+    p.closePath();
+  });
+  register('Burst', (p) => {
+    const spikes = 8;
+    const outer = 1;
+    const inner = 0.55;
+    let angle = -Math.PI / 2;
+    p.moveTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+    for (let i = 0; i < spikes; i++) {
+      p.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+      angle += Math.PI / spikes;
+      p.lineTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+      angle += Math.PI / spikes;
+    }
+    p.closePath();
+  });
+  register('Blob', (p) => {
+    p.moveTo(0, -1);
+    p.bezierCurveTo(0.8, -0.9, 1.1, -0.2, 0.8, 0.4);
+    p.bezierCurveTo(0.6, 1, -0.2, 1.1, -0.7, 0.6);
+    p.bezierCurveTo(-1.2, 0.1, -0.9, -0.8, -0.2, -1);
     p.closePath();
   });
   return shapes;
+}
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error || new Error('File read failed'));
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Image load failed'));
+    img.src = src;
+  });
+}
+
+function transferImageToSample(img) {
+  stopCamera();
+  state.videoActive = false;
+  const width = img.naturalWidth || img.width;
+  const height = img.naturalHeight || img.height;
+  sampleCanvas.width = width;
+  sampleCanvas.height = height;
+  sampleCtx.drawImage(img, 0, 0, width, height);
+  lastSource = 'image';
+  state.lastStillFrame = performance.now();
+  queueRender();
+}
+
+function createParticleRenderer(shapeLibrary) {
+  const canvas = document.createElement('canvas');
+  const gl = canvas.getContext('webgl2', { alpha: true, antialias: true, premultipliedAlpha: true });
+  if (!gl) return null;
+  try {
+    const vertexSource = `#version 300 es\nlayout(location=0) in vec2 a_vertex;\nlayout(location=1) in vec2 a_offset;\nlayout(location=2) in float a_size;\nlayout(location=3) in vec4 a_color;\nlayout(location=4) in float a_shape;\nlayout(location=5) in float a_rotation;\nuniform vec2 u_resolution;\nout vec2 v_tex;\nout vec4 v_color;\nflat out float v_shape;\nout vec2 v_local;\nvoid main() {\n  vec2 unit = a_vertex;\n  vec2 local = unit * 2.0 - 1.0;\n  float c = cos(a_rotation);\n  float s = sin(a_rotation);\n  vec2 rotated = vec2(local.x * c - local.y * s, local.x * s + local.y * c);\n  vec2 position = a_offset + rotated * a_size;\n  vec2 zeroToOne = position / u_resolution;\n  vec2 clip = zeroToOne * 2.0 - 1.0;\n  gl_Position = vec4(clip * vec2(1.0, -1.0), 0.0, 1.0);\n  v_tex = unit;\n  v_color = a_color;\n  v_shape = a_shape;\n  v_local = rotated;\n}`;
+    const fragmentSource = `#version 300 es\nprecision highp float;\nuniform sampler2D u_shapeAtlas;\nuniform vec2 u_tileStep;\nuniform vec2 u_tileCount;\nuniform float u_outline;\nuniform float u_time;\nuniform float u_glimmer;\nin vec2 v_tex;\nin vec4 v_color;\nflat in float v_shape;\nin vec2 v_local;\nout vec4 outColor;\nvoid main() {\n  float cols = u_tileCount.x;\n  float rows = u_tileCount.y;\n  float index = v_shape;\n  float col = mod(index, cols);\n  float row = floor(index / cols);\n  vec2 base = vec2(col, row) * u_tileStep;\n  vec2 uv = base + v_tex * u_tileStep;\n  vec4 mask = texture(u_shapeAtlas, uv);\n  float fill = mask.r;\n  float outline = mask.g;\n  float alpha = fill;\n  if (alpha <= 0.001) { discard; }\n  vec3 color = v_color.rgb;\n  if (u_outline > 0.5) {\n    float edge = smoothstep(0.0, 1.0, outline);\n    color = mix(color, vec3(1.0), edge * 0.75);\n    alpha = max(alpha, outline);\n  }\n  if (u_glimmer > 0.0) {\n    float sparkle = sin(dot(v_local, vec2(12.9898, 78.233)) + u_time * 9.0 + index);\n    float glimmer = pow(max(sparkle * 0.5 + 0.5, 0.0), 8.0);\n    color += glimmer * 0.8;\n  }\n  color = clamp(color, 0.0, 1.0);\n  outColor = vec4(color, alpha * v_color.a);\n}`;
+
+    const compile = (type, source) => {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        const info = gl.getShaderInfoLog(shader);
+        gl.deleteShader(shader);
+        throw new Error(info || 'Shader compile failed');
+      }
+      return shader;
+    };
+
+    const program = gl.createProgram();
+    gl.attachShader(program, compile(gl.VERTEX_SHADER, vertexSource));
+    gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragmentSource));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(program) || 'Program link failed');
+    }
+
+    const names = Object.keys(shapeLibrary).sort((a, b) => shapeLibrary[a].index - shapeLibrary[b].index);
+    const tileSize = 128;
+    const cols = Math.max(1, Math.ceil(Math.sqrt(names.length)));
+    const rows = Math.max(1, Math.ceil(names.length / cols));
+    const atlasCanvas = document.createElement('canvas');
+    atlasCanvas.width = cols * tileSize;
+    atlasCanvas.height = rows * tileSize;
+    const atlasCtx = atlasCanvas.getContext('2d');
+    atlasCtx.clearRect(0, 0, atlasCanvas.width, atlasCanvas.height);
+    names.forEach((name, idx) => {
+      const shape = shapeLibrary[name];
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      atlasCtx.save();
+      atlasCtx.translate(col * tileSize + tileSize / 2, row * tileSize + tileSize / 2);
+      atlasCtx.scale((tileSize / 2) * 0.82, (tileSize / 2) * 0.82);
+      atlasCtx.fillStyle = 'rgba(255,0,0,1)';
+      atlasCtx.fill(shape.path);
+      atlasCtx.strokeStyle = 'rgba(0,255,0,1)';
+      atlasCtx.lineWidth = 0.3;
+      atlasCtx.stroke(shape.path);
+      atlasCtx.restore();
+    });
+
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlasCanvas);
+
+    const baseVertices = new Float32Array([
+      0, 0,
+      1, 0,
+      0, 1,
+      0, 1,
+      1, 0,
+      1, 1
+    ]);
+    const quadBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, baseVertices, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+    const floatsPerInstance = 9;
+    const stride = floatsPerInstance * 4;
+    const maxInstances = 25000;
+    const instanceData = new Float32Array(maxInstances * floatsPerInstance);
+    const instanceBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, stride * maxInstances, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, stride, 0);
+    gl.vertexAttribDivisor(1, 1);
+    gl.enableVertexAttribArray(2);
+    gl.vertexAttribPointer(2, 1, gl.FLOAT, false, stride, 8);
+    gl.vertexAttribDivisor(2, 1);
+    gl.enableVertexAttribArray(3);
+    gl.vertexAttribPointer(3, 4, gl.FLOAT, false, stride, 12);
+    gl.vertexAttribDivisor(3, 1);
+    gl.enableVertexAttribArray(4);
+    gl.vertexAttribPointer(4, 1, gl.FLOAT, false, stride, 28);
+    gl.vertexAttribDivisor(4, 1);
+    gl.enableVertexAttribArray(5);
+    gl.vertexAttribPointer(5, 1, gl.FLOAT, false, stride, 32);
+    gl.vertexAttribDivisor(5, 1);
+
+    gl.useProgram(program);
+    const uniforms = {
+      resolution: gl.getUniformLocation(program, 'u_resolution'),
+      outline: gl.getUniformLocation(program, 'u_outline'),
+      time: gl.getUniformLocation(program, 'u_time'),
+      glimmer: gl.getUniformLocation(program, 'u_glimmer'),
+      tileStep: gl.getUniformLocation(program, 'u_tileStep'),
+      tileCount: gl.getUniformLocation(program, 'u_tileCount'),
+      shapeAtlas: gl.getUniformLocation(program, 'u_shapeAtlas')
+    };
+    gl.uniform1i(uniforms.shapeAtlas, 0);
+    gl.uniform2f(uniforms.tileStep, tileSize / atlasCanvas.width, tileSize / atlasCanvas.height);
+    gl.uniform2f(uniforms.tileCount, cols, rows);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    return {
+      canvas,
+      draw(shapes, options) {
+        const width = Math.max(1, Math.floor(options.width));
+        const height = Math.max(1, Math.floor(options.height));
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        const count = Math.min(shapes.length, maxInstances);
+        if (!count) return;
+        for (let i = 0; i < count; i++) {
+          const shape = shapes[i];
+          const base = i * floatsPerInstance;
+          instanceData[base] = shape.x;
+          instanceData[base + 1] = shape.y;
+          instanceData[base + 2] = shape.radius;
+          const color = shape.color || { r: 255, g: 255, b: 255, a: 255 };
+          instanceData[base + 3] = (color.r ?? 255) / 255;
+          instanceData[base + 4] = (color.g ?? 255) / 255;
+          instanceData[base + 5] = (color.b ?? 255) / 255;
+          instanceData[base + 6] = (color.a ?? 255) / 255;
+          instanceData[base + 7] = shape.shapeId ?? 0;
+          instanceData[base + 8] = shape.rotation ?? 0;
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, instanceData.subarray(0, count * floatsPerInstance));
+        gl.useProgram(program);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+        gl.uniform1f(uniforms.outline, options.outline ? 1 : 0);
+        gl.uniform1f(uniforms.time, options.time || 0);
+        gl.uniform1f(uniforms.glimmer, options.glimmer ? 1 : 0);
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, count);
+      }
+    };
+  } catch (error) {
+    console.warn('Particle renderer init failed', error);
+    return null;
+  }
 }
 
