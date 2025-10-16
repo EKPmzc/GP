@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mosaic Studio Desktop</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <h1>Mosaic Studio Desktop</h1>
+        <nav class="mode-tabs" role="tablist" aria-label="Effect families">
+          <button class="tab active" data-tab="mosaic" role="tab" aria-selected="true">Mosaic Lab</button>
+          <button class="tab" data-tab="glitch" role="tab">Glitch Forge</button>
+          <button class="tab" data-tab="aurora" role="tab">Aurora Synth</button>
+        </nav>
+      </header>
+      <main>
+        <section class="canvas-stage">
+          <div class="aspect-wrapper">
+            <canvas id="displayCanvas" width="1280" height="720"></canvas>
+            <div class="stage-overlay">
+              <span id="statusText">Ready</span>
+              <span id="fpsText">0 fps</span>
+            </div>
+          </div>
+        </section>
+        <aside class="controls" id="controlPanel">
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Source <button class="info" data-info="source">i</button></h2>
+            <div class="control-row">
+              <button id="cameraToggle">Start Camera</button>
+              <label class="inline">
+                <input type="checkbox" id="mirrorToggle" checked /> Mirror
+              </label>
+            </div>
+            <div class="control-row">
+              <input type="file" id="fileInput" accept="image/*" />
+            </div>
+            <div class="control-row">
+              <label>Aspect Ratio
+                <select id="aspectSelect">
+                  <option value="source">Source</option>
+                  <option value="16:9">16 : 9</option>
+                  <option value="9:16">9 : 16</option>
+                  <option value="1:1">1 : 1</option>
+                  <option value="4:5">4 : 5</option>
+                  <option value="3:2">3 : 2</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label class="inline">Live Preview
+                <input type="checkbox" id="previewToggle" checked />
+              </label>
+              <button id="previewOnce">Render Once</button>
+            </div>
+            <div class="control-row">
+              <button id="startRecord">Record</button>
+              <button id="stopRecord" disabled>Stop</button>
+              <select id="recordMode">
+                <option value="canvas">Canvas Stream</option>
+                <option value="window">Window Capture</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Mode &amp; Resolution <button class="info" data-info="mode">i</button></h2>
+            <div class="control-row">
+              <label class="inline"><input type="radio" name="layoutMode" value="uniform" checked /> Uniform</label>
+              <label class="inline"><input type="radio" name="layoutMode" value="random" /> Random</label>
+              <label class="inline"><input type="radio" name="layoutMode" value="hybrid" /> Hybrid</label>
+            </div>
+            <div class="control-row">
+              <label for="resSlider">Resolution</label>
+              <input type="range" id="resSlider" min="1" max="240" value="40" step="1" />
+              <input type="number" id="resNumber" min="1" max="240" value="40" />
+              <span id="resLabel">40 × 40</span>
+            </div>
+            <div class="control-row" data-mode="random">
+              <label for="countSlider">Target Shapes</label>
+              <input type="range" id="countSlider" min="100" max="20000" value="1500" step="50" />
+              <input type="number" id="countNumber" min="100" max="20000" value="1500" />
+            </div>
+            <div class="control-row">
+              <label for="sizeSlider">Base Size</label>
+              <input type="range" id="sizeSlider" min="0.2" max="1.5" step="0.01" value="0.9" />
+              <input type="number" id="sizeNumber" min="0.2" max="1.5" step="0.01" value="0.9" />
+              <span id="sizeLabel">0.90× cell</span>
+            </div>
+            <div class="control-row">
+              <label for="shapeSelect">Shape</label>
+              <select id="shapeSelect"></select>
+            </div>
+            <div class="control-row">
+              <label class="inline"><input type="checkbox" id="outlineToggle" /> Outline</label>
+              <label class="inline"><input type="checkbox" id="lockGrid" checked /> Lock Grid Origin</label>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Color &amp; Palette <button class="info" data-info="color">i</button></h2>
+            <div class="control-row">
+              <label>Mode
+                <select id="colorMode">
+                  <option value="source">Source</option>
+                  <option value="grayscale">Grayscale</option>
+                  <option value="palette">Palette</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label for="gammaSlider">Gamma</label>
+              <input type="range" id="gammaSlider" min="0.5" max="2.5" step="0.05" value="1" />
+              <input type="number" id="gammaNumber" min="0.5" max="2.5" step="0.05" value="1" />
+            </div>
+            <div class="control-row">
+              <label>Preset
+                <select id="palettePreset"></select>
+              </label>
+              <button id="paletteApply">Apply</button>
+            </div>
+            <div class="control-row">
+              <label>Palette Range Center
+                <input type="color" id="paletteCenter" value="#ff8800" />
+              </label>
+              <label>Range
+                <input type="range" id="paletteRange" min="0" max="360" value="90" />
+              </label>
+            </div>
+            <div class="palette-editor" id="paletteEditor"></div>
+            <div class="control-row">
+              <button id="addColor">Add Color</button>
+              <button id="resetPalette">Reset</button>
+              <label class="inline"><input type="checkbox" id="paletteDither" checked /> Dither</label>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Jitter &amp; Motion <button class="info" data-info="jitter">i</button></h2>
+            <div class="control-row">
+              <label>Mode
+                <select id="jitterMode">
+                  <option value="none">None</option>
+                  <option value="brightness">Brightness</option>
+                  <option value="hue">Hue</option>
+                  <option value="saturation">Saturation</option>
+                  <option value="position">Position</option>
+                </select>
+              </label>
+            </div>
+            <div class="control-row">
+              <label for="jitterStrength">Strength</label>
+              <input type="range" id="jitterStrength" min="0" max="3" step="0.01" value="1" />
+              <input type="number" id="jitterNumber" min="0" max="3" step="0.01" value="1" />
+            </div>
+            <div class="control-row">
+              <label for="motionDepth">Static Motion Depth</label>
+              <input type="range" id="motionDepth" min="0" max="10" step="0.1" value="2" />
+              <input type="number" id="motionDepthNumber" min="0" max="10" step="0.1" value="2" />
+            </div>
+            <div class="control-row">
+              <label class="inline"><input type="checkbox" id="staticMotionToggle" /> Animate Still Source</label>
+            </div>
+            <div class="control-row">
+              <label>Chaos Mode
+                <select id="chaosMode"></select>
+              </label>
+              <button id="chaosBurst">Chaos 60 FPS</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Seed &amp; Preview <button class="info" data-info="seed">i</button></h2>
+            <div class="control-row">
+              <label>Seed <input type="text" id="seedInput" /></label>
+              <button id="randomizeSeed">Randomize</button>
+            </div>
+            <div class="control-row">
+              <button id="previewToggleBtn">Toggle Preview</button>
+              <span id="previewStatus">Preview ON</span>
+            </div>
+            <div class="control-row">
+              <span>Circles: <strong id="circleCount">0</strong></span>
+              <span>Sample: <strong id="sampleResolution">0×0</strong></span>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Editing <button class="info" data-info="edit">i</button></h2>
+            <div class="control-row">
+              <button id="editModeToggle">Enter Edit (E)</button>
+              <button id="editDuplicate" disabled>Duplicate</button>
+              <button id="editDelete" disabled>Delete</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="mosaic">
+            <h2>Utility <button class="info" data-info="utility">i</button></h2>
+            <div class="control-row">
+              <button id="savePNG">Save PNG</button>
+              <button id="resetAll">Reset All</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="glitch" hidden>
+            <h2>Glitch Engine <button class="info" data-info="glitch">i</button></h2>
+            <div class="control-row">
+              <label>Intensity
+                <input type="range" id="glitchIntensity" min="0" max="1" step="0.01" value="0.35" />
+              </label>
+            </div>
+            <div class="control-row">
+              <label>Scanlines <input type="checkbox" id="glitchScanline" checked /></label>
+            </div>
+            <div class="control-row">
+              <button id="glitchSnap">Snapshot to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="aurora" hidden>
+            <h2>Aurora Synth <button class="info" data-info="aurora">i</button></h2>
+            <div class="control-row">
+              <label>Bloom Strength <input type="range" id="auroraBloom" min="0" max="4" step="0.05" value="1.5" /></label>
+            </div>
+            <div class="control-row">
+              <label>Drift Speed <input type="range" id="auroraDrift" min="0" max="4" step="0.05" value="1.2" /></label>
+            </div>
+            <div class="control-row">
+              <button id="auroraSnap">Snapshot to Mosaic</button>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <video id="video" autoplay playsinline muted hidden></video>
+    <canvas id="sampleCanvas" width="640" height="360" hidden></canvas>
+
+    <div id="infoTooltip" role="tooltip"></div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
