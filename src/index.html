@@ -16,6 +16,7 @@
           <button class="tab" data-tab="glitch" role="tab">Glitch Forge</button>
           <button class="tab" data-tab="aurora" role="tab">Aurora Synth</button>
           <button class="tab" data-tab="particle" role="tab">Particle Studio</button>
+          <button class="tab" data-tab="audio" role="tab">Audio Reactor</button>
           <button class="tab" data-tab="api" role="tab">API Fusion</button>
         </nav>
       </header>
@@ -267,6 +268,95 @@
                 </select>
               </label>
               <button id="particleSnap">Send Frame to Mosaic</button>
+            </div>
+          </section>
+
+          <section class="control-group" data-tab-owner="audio" hidden>
+            <h2>Audio Reactor <button class="info" data-info="audio">i</button></h2>
+            <div class="control-row">
+              <input type="file" id="audioFile" accept="audio/*" />
+              <button id="audioPlay" disabled>Play</button>
+              <button id="audioStop" disabled>Stop</button>
+            </div>
+            <div class="control-row">
+              <label>Target Filter
+                <select id="audioTarget">
+                  <option value="mosaic">Mosaic Lab</option>
+                  <option value="aurora">Aurora Synth</option>
+                  <option value="glitch">Glitch Forge</option>
+                </select>
+              </label>
+              <label>Smoothing
+                <input type="range" id="audioSmoothing" min="0" max="0.95" step="0.01" value="0.75" />
+              </label>
+              <input type="number" id="audioSmoothingNumber" min="0" max="0.95" step="0.01" value="0.75" />
+              <span>Level: <strong id="audioLevel">0.00</strong></span>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="mosaic">
+              <div class="control-row">
+                <label>Size Impact
+                  <input type="range" id="audioMosaicSize" min="0" max="1.5" step="0.05" value="0.6" />
+                </label>
+                <input type="number" id="audioMosaicSizeNumber" min="0" max="1.5" step="0.05" value="0.6" />
+              </div>
+              <div class="control-row">
+                <label>Jitter Boost
+                  <input type="range" id="audioMosaicJitter" min="0" max="2.5" step="0.05" value="0.9" />
+                </label>
+                <input type="number" id="audioMosaicJitterNumber" min="0" max="2.5" step="0.05" value="0.9" />
+              </div>
+              <div class="control-row">
+                <label>Hue Sweep
+                  <input type="range" id="audioMosaicHue" min="0" max="180" step="1" value="45" />
+                </label>
+                <input type="number" id="audioMosaicHueNumber" min="0" max="180" step="1" value="45" />
+              </div>
+              <div class="control-row">
+                <label>Saturation Lift
+                  <input type="range" id="audioMosaicSaturation" min="0" max="1.5" step="0.05" value="0.4" />
+                </label>
+                <input type="number" id="audioMosaicSaturationNumber" min="0" max="1.5" step="0.05" value="0.4" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="aurora" hidden>
+              <div class="control-row">
+                <label>Ribbon Bloom
+                  <input type="range" id="audioAuroraBloom" min="0" max="3" step="0.05" value="1.2" />
+                </label>
+                <input type="number" id="audioAuroraBloomNumber" min="0" max="3" step="0.05" value="1.2" />
+              </div>
+              <div class="control-row">
+                <label>Drift Warp
+                  <input type="range" id="audioAuroraDrift" min="0" max="3" step="0.05" value="1.4" />
+                </label>
+                <input type="number" id="audioAuroraDriftNumber" min="0" max="3" step="0.05" value="1.4" />
+              </div>
+              <div class="control-row">
+                <label>Tint Orbit
+                  <input type="range" id="audioAuroraHue" min="0" max="240" step="1" value="90" />
+                </label>
+                <input type="number" id="audioAuroraHueNumber" min="0" max="240" step="1" value="90" />
+              </div>
+            </div>
+            <div class="audio-filter-group" data-audio-filter="glitch" hidden>
+              <div class="control-row">
+                <label>Intensity Pulse
+                  <input type="range" id="audioGlitchIntensity" min="0" max="2" step="0.05" value="0.8" />
+                </label>
+                <input type="number" id="audioGlitchIntensityNumber" min="0" max="2" step="0.05" value="0.8" />
+              </div>
+              <div class="control-row">
+                <label>Band Chaos
+                  <input type="range" id="audioGlitchBands" min="0" max="220" step="5" value="80" />
+                </label>
+                <input type="number" id="audioGlitchBandsNumber" min="0" max="220" step="5" value="80" />
+              </div>
+              <div class="control-row">
+                <label>Color Warp
+                  <input type="range" id="audioGlitchColor" min="0" max="1" step="0.01" value="0.35" />
+                </label>
+                <input type="number" id="audioGlitchColorNumber" min="0" max="1" step="0.01" value="0.35" />
+              </div>
             </div>
           </section>
 

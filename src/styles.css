@@ -295,6 +295,23 @@ select {
   padding: 0;
 }
 
+.audio-filter-group {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+}
+
+.audio-filter-group[hidden] {
+  display: none;
+}
+
+#audioLevel {
+  font-variant-numeric: tabular-nums;
+  min-width: 3.4ch;
+  display: inline-block;
+  text-align: right;
+}
+
 #infoTooltip {
   position: fixed;
   pointer-events: none;

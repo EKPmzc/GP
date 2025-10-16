@@ -6,7 +6,7 @@ const videoEl = document.getElementById('video');
 const downsampleCanvas = document.createElement('canvas');
 const downsampleCtx = downsampleCanvas.getContext('2d');
 
-const TAB_IDS = ['mosaic', 'glitch', 'aurora', 'particle', 'api'];
+const TAB_IDS = ['mosaic', 'glitch', 'aurora', 'particle', 'audio', 'api'];
 const tabButtons = document.querySelectorAll('.mode-tabs .tab');
 const controlGroups = document.querySelectorAll('.control-group');
 const statusText = document.getElementById('statusText');
@@ -97,6 +97,36 @@ const apiControls = {
   preview: document.getElementById('apiPreview')
 };
 
+const audioControls = {
+  file: document.getElementById('audioFile'),
+  play: document.getElementById('audioPlay'),
+  stop: document.getElementById('audioStop'),
+  target: document.getElementById('audioTarget'),
+  smoothing: document.getElementById('audioSmoothing'),
+  smoothingNumber: document.getElementById('audioSmoothingNumber'),
+  level: document.getElementById('audioLevel'),
+  mosaicSize: document.getElementById('audioMosaicSize'),
+  mosaicSizeNumber: document.getElementById('audioMosaicSizeNumber'),
+  mosaicJitter: document.getElementById('audioMosaicJitter'),
+  mosaicJitterNumber: document.getElementById('audioMosaicJitterNumber'),
+  mosaicHue: document.getElementById('audioMosaicHue'),
+  mosaicHueNumber: document.getElementById('audioMosaicHueNumber'),
+  mosaicSaturation: document.getElementById('audioMosaicSaturation'),
+  mosaicSaturationNumber: document.getElementById('audioMosaicSaturationNumber'),
+  auroraBloom: document.getElementById('audioAuroraBloom'),
+  auroraBloomNumber: document.getElementById('audioAuroraBloomNumber'),
+  auroraDrift: document.getElementById('audioAuroraDrift'),
+  auroraDriftNumber: document.getElementById('audioAuroraDriftNumber'),
+  auroraHue: document.getElementById('audioAuroraHue'),
+  auroraHueNumber: document.getElementById('audioAuroraHueNumber'),
+  glitchIntensity: document.getElementById('audioGlitchIntensity'),
+  glitchIntensityNumber: document.getElementById('audioGlitchIntensityNumber'),
+  glitchBands: document.getElementById('audioGlitchBands'),
+  glitchBandsNumber: document.getElementById('audioGlitchBandsNumber'),
+  glitchColor: document.getElementById('audioGlitchColor'),
+  glitchColorNumber: document.getElementById('audioGlitchColorNumber')
+};
+
 const palettePresets = {
   Warm: ['#8d2a0f', '#c6451c', '#f49b17', '#ffd45c', '#ffe6b1'],
   Cool: ['#0f1f45', '#174e87', '#1e8bd3', '#8ad2ff', '#e0f6ff'],
@@ -154,6 +184,26 @@ const apiState = {
   apod: null
 };
 
+const audioState = {
+  context: null,
+  analyser: null,
+  source: null,
+  buffer: null,
+  freqData: null,
+  waveData: null,
+  running: false,
+  level: 0,
+  bass: 0,
+  treble: 0,
+  target: 'mosaic',
+  smoothing: 0.75,
+  config: {
+    mosaic: { size: 0.6, jitter: 0.9, hue: 45, saturation: 0.4 },
+    aurora: { bloom: 1.2, drift: 1.4, hue: 90 },
+    glitch: { intensity: 0.8, bands: 80, color: 0.35 }
+  }
+};
+
 const state = {
   mode: 'uniform',
   seed: hashSeed(String(Date.now())),
@@ -187,6 +237,7 @@ function init() {
   initControls();
   initParticleControls();
   initApiControls();
+  initAudioControls();
   initInfo();
   initShapeOptions();
   initPalette();
@@ -222,6 +273,8 @@ function switchTab(tabId) {
     renderAurora();
   } else if (tabId === 'particle') {
     renderParticleScene(performance.now());
+  } else if (tabId === 'audio') {
+    renderAudioDriven(performance.now());
   } else if (tabId === 'api') {
     refreshApiPreview();
   }
@@ -464,6 +517,171 @@ function initApiControls() {
   refreshApiPreview();
 }
 
+function initAudioControls() {
+  if (!audioControls.file) return;
+  audioControls.file.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await loadAudioFile(file);
+  });
+  audioControls.play.addEventListener('click', startAudioPlayback);
+  audioControls.stop.addEventListener('click', stopAudioPlayback);
+  audioControls.target.addEventListener('change', () => {
+    audioState.target = audioControls.target.value;
+    updateAudioTargetGroups();
+    if (activeTab === 'audio') {
+      if (audioState.target === 'mosaic') {
+        queueRender(true);
+      } else if (audioState.target === 'aurora') {
+        renderAurora();
+      } else if (audioState.target === 'glitch') {
+        renderGlitch();
+      }
+    }
+  });
+
+  linkSliderNumber(audioControls.smoothing, audioControls.smoothingNumber, (value) => {
+    audioState.smoothing = clamp(parseFloat(value), 0, 0.95);
+    if (audioState.analyser) {
+      audioState.analyser.smoothingTimeConstant = audioState.smoothing;
+    }
+  });
+  linkSliderNumber(audioControls.mosaicSize, audioControls.mosaicSizeNumber, (value) => {
+    audioState.config.mosaic.size = parseFloat(value);
+    if (audioState.target === 'mosaic') queueRender(true);
+  });
+  linkSliderNumber(audioControls.mosaicJitter, audioControls.mosaicJitterNumber, (value) => {
+    audioState.config.mosaic.jitter = parseFloat(value);
+    if (audioState.target === 'mosaic') queueRender(true);
+  });
+  linkSliderNumber(audioControls.mosaicHue, audioControls.mosaicHueNumber, (value) => {
+    audioState.config.mosaic.hue = parseFloat(value);
+    if (audioState.target === 'mosaic') queueRender(true);
+  });
+  linkSliderNumber(audioControls.mosaicSaturation, audioControls.mosaicSaturationNumber, (value) => {
+    audioState.config.mosaic.saturation = parseFloat(value);
+    if (audioState.target === 'mosaic') queueRender(true);
+  });
+  linkSliderNumber(audioControls.auroraBloom, audioControls.auroraBloomNumber, (value) => {
+    audioState.config.aurora.bloom = parseFloat(value);
+    if (audioState.target === 'aurora') renderAurora();
+  });
+  linkSliderNumber(audioControls.auroraDrift, audioControls.auroraDriftNumber, (value) => {
+    audioState.config.aurora.drift = parseFloat(value);
+    if (audioState.target === 'aurora') renderAurora();
+  });
+  linkSliderNumber(audioControls.auroraHue, audioControls.auroraHueNumber, (value) => {
+    audioState.config.aurora.hue = parseFloat(value);
+    if (audioState.target === 'aurora') renderAurora();
+  });
+  linkSliderNumber(audioControls.glitchIntensity, audioControls.glitchIntensityNumber, (value) => {
+    audioState.config.glitch.intensity = parseFloat(value);
+    if (audioState.target === 'glitch') renderGlitch();
+  });
+  linkSliderNumber(audioControls.glitchBands, audioControls.glitchBandsNumber, (value) => {
+    audioState.config.glitch.bands = parseFloat(value);
+    if (audioState.target === 'glitch') renderGlitch();
+  });
+  linkSliderNumber(audioControls.glitchColor, audioControls.glitchColorNumber, (value) => {
+    audioState.config.glitch.color = parseFloat(value);
+    if (audioState.target === 'glitch') renderGlitch();
+  });
+
+  updateAudioTargetGroups();
+}
+
+async function loadAudioFile(file) {
+  try {
+    stopAudioPlayback();
+    if (!audioState.context) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioState.context = new AudioCtx();
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const audioBuffer = await audioState.context.decodeAudioData(arrayBuffer);
+    audioState.buffer = audioBuffer;
+    audioControls.play.disabled = false;
+    audioControls.stop.disabled = true;
+    setStatus(`Audio loaded: ${file.name}`);
+  } catch (error) {
+    setStatus(`Audio load failed: ${error.message}`);
+    audioControls.play.disabled = true;
+    audioControls.stop.disabled = true;
+  }
+}
+
+async function startAudioPlayback() {
+  if (!audioState.buffer) return;
+  try {
+    if (!audioState.context) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioState.context = new AudioCtx();
+    }
+    if (audioState.context.state === 'suspended') {
+      await audioState.context.resume();
+    }
+    stopAudioPlayback();
+    const source = audioState.context.createBufferSource();
+    source.buffer = audioState.buffer;
+    source.loop = true;
+    const analyser = audioState.analyser || audioState.context.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = audioState.smoothing;
+    const gain = audioState.context.createGain();
+    gain.gain.value = 1;
+    source.connect(analyser);
+    analyser.connect(gain);
+    gain.connect(audioState.context.destination);
+    source.start(0);
+    audioState.source = source;
+    audioState.analyser = analyser;
+    audioState.freqData = new Uint8Array(analyser.frequencyBinCount);
+    audioState.waveData = new Uint8Array(analyser.fftSize);
+    audioState.running = true;
+    audioControls.play.disabled = true;
+    audioControls.stop.disabled = false;
+    setStatus('Audio playback started');
+  } catch (error) {
+    setStatus(`Audio playback failed: ${error.message}`);
+    audioControls.play.disabled = !audioState.buffer;
+    audioControls.stop.disabled = true;
+  }
+}
+
+function stopAudioPlayback() {
+  const wasRunning = audioState.running;
+  if (audioState.source) {
+    try {
+      audioState.source.stop();
+    } catch (error) {
+      console.warn('Audio stop error', error);
+    }
+    audioState.source.disconnect();
+    audioState.source = null;
+  }
+  audioState.running = false;
+  audioState.level = 0;
+  audioState.bass = 0;
+  audioState.treble = 0;
+  if (audioControls.play) {
+    audioControls.play.disabled = !audioState.buffer;
+  }
+  if (audioControls.stop) {
+    audioControls.stop.disabled = true;
+  }
+  if (wasRunning) {
+    setStatus('Audio playback stopped');
+  }
+}
+
+function updateAudioTargetGroups() {
+  const target = audioState.target;
+  document.querySelectorAll('.audio-filter-group').forEach((group) => {
+    const filter = group.getAttribute('data-audio-filter');
+    group.toggleAttribute('hidden', filter !== target);
+  });
+}
+
 function initInfo() {
   const infoCopy = {
     source: 'Choose your live camera, upload an image, configure aspect ratio, and enable 60 fps preview/recording options.',
@@ -476,7 +694,8 @@ function initInfo() {
     glitch: 'Glitch Forge slices frames into displaced bands, with optional scanlines, ready to snap back into the Mosaic lab.',
     aurora: 'Aurora Synth paints bloom-heavy ribbons and drift, useful for ambient backgrounds that can feed the Mosaic renderer.',
     particle: 'Particle Lab uses GPU instancing to animate thousands of shapes as living particles—tune count, drift, palette, and capture keyframes.',
-    api: 'API Fusion loads NASA imagery and remote palettes so you can remix live data directly inside the mosaic workflow.'
+    api: 'API Fusion loads NASA imagery and remote palettes so you can remix live data directly inside the mosaic workflow.',
+    audio: 'Audio Reactor syncs beats to your visuals—upload a track and drive mosaic, aurora, or glitch parameters with per-effect controls.'
   };
   document.querySelectorAll('button.info').forEach((btn) => {
     const key = btn.dataset.info;
@@ -696,11 +915,57 @@ function determineAspectRatio() {
   return w / h;
 }
 
-function queueRender() {
-  renderMosaic();
+function updateAudioAnalysis() {
+  if (!audioState.analyser || !audioState.running) {
+    audioState.level = 0;
+    audioState.bass = 0;
+    audioState.treble = 0;
+    if (audioControls.level) {
+      audioControls.level.textContent = '0.00';
+    }
+    return;
+  }
+  const analyser = audioState.analyser;
+  if (!audioState.freqData || audioState.freqData.length !== analyser.frequencyBinCount) {
+    audioState.freqData = new Uint8Array(analyser.frequencyBinCount);
+  }
+  if (!audioState.waveData || audioState.waveData.length !== analyser.fftSize) {
+    audioState.waveData = new Uint8Array(analyser.fftSize);
+  }
+  analyser.smoothingTimeConstant = audioState.smoothing;
+  analyser.getByteFrequencyData(audioState.freqData);
+  analyser.getByteTimeDomainData(audioState.waveData);
+  const len = audioState.freqData.length;
+  let sum = 0;
+  let low = 0;
+  let high = 0;
+  const lowCount = Math.max(1, Math.floor(len * 0.2));
+  const highStart = Math.floor(len * 0.65);
+  for (let i = 0; i < len; i++) {
+    const value = audioState.freqData[i] / 255;
+    sum += value;
+    if (i < lowCount) {
+      low += value;
+    }
+    if (i >= highStart) {
+      high += value;
+    }
+  }
+  audioState.level = clamp(sum / Math.max(1, len), 0, 1);
+  audioState.bass = clamp(low / lowCount, 0, 1);
+  audioState.treble = clamp(high / Math.max(1, len - highStart), 0, 1);
+  if (audioControls.level) {
+    audioControls.level.textContent = audioState.level.toFixed(2);
+  }
+}
+
+function queueRender(force = false) {
+  const shouldForce = force || (activeTab === 'audio' && audioState.target === 'mosaic');
+  renderMosaic(shouldForce);
 }
 
 function tick(ts) {
+  updateAudioAnalysis();
   if (activeTab === 'mosaic') {
     if (previewActive) {
       if (ts - lastFrameTime > 1000 / 60) {
@@ -708,6 +973,8 @@ function tick(ts) {
         lastFrameTime = ts;
       }
     }
+  } else if (activeTab === 'audio') {
+    renderAudioDriven(ts);
   } else if (activeTab === 'particle') {
     renderParticleScene(ts);
   } else if (activeTab === 'aurora') {
@@ -715,6 +982,28 @@ function tick(ts) {
   }
   updateFPS(ts);
   requestAnimationFrame(tick);
+}
+
+function renderAudioDriven(ts) {
+  const target = audioState.target;
+  if (target === 'mosaic') {
+    if (!previewActive) return;
+    if (ts - lastFrameTime > 1000 / 60) {
+      renderMosaic(true);
+      lastFrameTime = ts;
+    }
+    return;
+  }
+  if (target === 'aurora') {
+    renderAurora(ts);
+    return;
+  }
+  if (target === 'glitch') {
+    if (ts - lastFrameTime > 1000 / 60) {
+      renderGlitch();
+      lastFrameTime = ts;
+    }
+  }
 }
 
 function updateFPS(ts) {
@@ -729,8 +1018,8 @@ function updateFPS(ts) {
   }
 }
 
-function renderMosaic() {
-  if (activeTab !== 'mosaic') return;
+function renderMosaic(force = false) {
+  if (!force && activeTab !== 'mosaic') return;
   const sourceAvailable = ensureSourceReady();
   if (!sourceAvailable) return;
   const sample = downsampleSource();
@@ -816,9 +1105,9 @@ function collectParams() {
   const mode = state.mode;
   const resolution = parseInt(mosaicControls.resSlider.value, 10);
   const targetCount = parseInt(mosaicControls.countSlider.value, 10);
-  const baseSize = parseFloat(mosaicControls.sizeSlider.value);
-  const gamma = parseFloat(mosaicControls.gammaSlider.value);
-  const jitterStrength = parseFloat(mosaicControls.jitterStrength.value);
+  let baseSize = parseFloat(mosaicControls.sizeSlider.value);
+  let gamma = parseFloat(mosaicControls.gammaSlider.value);
+  let jitterStrength = parseFloat(mosaicControls.jitterStrength.value);
   const palette = state.palette.map((hex) => hexToRgb(hex));
   const shape = shapeLibrary[state.shapeName];
   const outline = mosaicControls.outlineToggle.checked;
@@ -826,6 +1115,10 @@ function collectParams() {
   const dither = mosaicControls.paletteDither.checked;
   const jitterMode = mosaicControls.jitterMode.value;
   const motionDepth = parseFloat(mosaicControls.motionDepth.value);
+  const audioAdjusted = applyAudioToMosaicParams({ mode, baseSize, jitterStrength, gamma });
+  baseSize = audioAdjusted.baseSize;
+  gamma = audioAdjusted.gamma;
+  jitterStrength = audioAdjusted.jitterStrength;
   return {
     mode,
     resolution,
@@ -844,7 +1137,10 @@ function collectParams() {
     rng,
     canvasW: canvas.width,
     canvasH: canvas.height,
-    motionDepth
+    motionDepth,
+    audioHueShift: audioAdjusted.audioHueShift,
+    audioSaturationBoost: audioAdjusted.audioSaturationBoost,
+    audioValueBoost: audioAdjusted.audioValueBoost
   };
 }
 
@@ -882,15 +1178,51 @@ function renderUniformGrid(context, params, sampleFn, skipDraw = false) {
   return shapes;
 }
 
+function applyAudioToMosaicParams(params) {
+  const result = {
+    baseSize: params.baseSize,
+    jitterStrength: params.jitterStrength,
+    gamma: params.gamma,
+    audioHueShift: 0,
+    audioSaturationBoost: 0,
+    audioValueBoost: 0
+  };
+  if (!audioState.running || audioState.target !== 'mosaic') {
+    return result;
+  }
+  const level = audioState.level;
+  const bass = audioState.bass;
+  const treble = audioState.treble;
+  if (audioState.config.mosaic.size > 0) {
+    const factor = 1 + level * audioState.config.mosaic.size;
+    if (params.mode === 'uniform') {
+      result.baseSize = clamp(params.baseSize * factor, 0.2, 0.9);
+    } else {
+      result.baseSize = clamp(params.baseSize * factor, 2, 60);
+    }
+  }
+  if (audioState.config.mosaic.jitter > 0) {
+    result.jitterStrength = clamp(params.jitterStrength + bass * audioState.config.mosaic.jitter, 0, 3.5);
+  }
+  if (audioState.config.mosaic.hue > 0) {
+    result.audioHueShift = ((treble - 0.5) * audioState.config.mosaic.hue) / 360;
+  }
+  if (audioState.config.mosaic.saturation > 0) {
+    result.audioSaturationBoost = level * audioState.config.mosaic.saturation;
+  }
+  result.audioValueBoost = Math.max(0, bass * 0.25);
+  return result;
+}
+
 function renderRandomPoisson(context, params, sampleFn, skipDraw = false) {
   const shapes = [];
   const { targetCount, canvasW, canvasH, baseSize, jitterMode, jitterStrength, gamma } = params;
-  const minRadius = baseSize * 0.35;
-  const maxRadius = baseSize * 1.6;
-  const cellSize = (minRadius * 2) / Math.SQRT2;
+  const minRadius = Math.max(1.2, baseSize * 0.35);
+  const maxRadius = Math.max(minRadius * 1.2, baseSize * 1.6);
+  const cellSize = Math.max(4, maxRadius * 2);
   const gridW = Math.ceil(canvasW / cellSize);
   const gridH = Math.ceil(canvasH / cellSize);
-  const grid = new Array(gridW * gridH).fill(null);
+  const grid = Array.from({ length: gridW * gridH }, () => []);
   const active = [];
   const rng = params.rng;
   const fx = canvasW * rng();
@@ -909,7 +1241,7 @@ function renderRandomPoisson(context, params, sampleFn, skipDraw = false) {
   };
   active.push(firstPoint);
   shapes.push(firstPoint);
-  placeInGrid(firstPoint, grid, cellSize, gridW);
+  placeInGrid(firstPoint, grid, cellSize, gridW, gridH);
 
   while (active.length && shapes.length < targetCount) {
     const index = Math.floor(rng() * active.length);
@@ -917,16 +1249,17 @@ function renderRandomPoisson(context, params, sampleFn, skipDraw = false) {
     let found = false;
     for (let i = 0; i < 20; i++) {
       const angle = rng() * Math.PI * 2;
-      const radius = point.radius + minRadius + rng() * (maxRadius - minRadius);
-      const distance = radius * 2.2;
+      const baseDistance = point.radius + minRadius;
+      const distance = baseDistance + rng() * (maxRadius + baseSize * 0.5);
       const nx = point.x + Math.cos(angle) * distance;
       const ny = point.y + Math.sin(angle) * distance;
-      if (nx < 0 || ny < 0 || nx > canvasW || ny > canvasH) continue;
+      if (nx < minRadius || ny < minRadius || nx > canvasW - minRadius || ny > canvasH - minRadius) continue;
       const color = sampleFn(nx / canvasW, ny / canvasH);
       const gammaColor = applyGamma(color, gamma);
       const finalColor = colorize(gammaColor, params, shapes.length);
       const jitterFactor = computeJitter(jitterMode, jitterStrength, color, nx, ny, params);
       const localRadius = clamp(baseSize * jitterFactor, minRadius, maxRadius);
+      if (distance < localRadius + point.radius + 2) continue;
       const candidate = {
         x: nx,
         y: ny,
@@ -935,10 +1268,10 @@ function renderRandomPoisson(context, params, sampleFn, skipDraw = false) {
         shapeId: params.shapeIndex,
         rotation: rng() * Math.PI * 2
       };
-      if (fits(candidate, grid, cellSize, gridW)) {
+      if (fits(candidate, grid, cellSize, gridW, gridH)) {
         shapes.push(candidate);
         active.push(candidate);
-        placeInGrid(candidate, grid, cellSize, gridW);
+        placeInGrid(candidate, grid, cellSize, gridW, gridH);
         found = true;
         break;
       }
@@ -1144,12 +1477,11 @@ function renderParticleScene(timestamp = performance.now()) {
 
 function colorize(rgb, params, idx) {
   const { colorMode, palette, dither, rng } = params;
-  if (colorMode === 'source') return rgb;
+  let result = { ...rgb };
   if (colorMode === 'grayscale') {
     const gray = toGrayscale(rgb);
-    return { r: gray, g: gray, b: gray, a: rgb.a };
-  }
-  if (colorMode === 'palette') {
+    result = { r: gray, g: gray, b: gray, a: rgb.a };
+  } else if (colorMode === 'palette') {
     if (dither) {
       const noise = (rng() - 0.5) * 10;
       const noisy = {
@@ -1157,11 +1489,24 @@ function colorize(rgb, params, idx) {
         g: clamp(rgb.g + noise, 0, 255),
         b: clamp(rgb.b + noise, 0, 255)
       };
-      return nearestPaletteColor(noisy, palette);
+      result = nearestPaletteColor(noisy, palette);
+    } else {
+      result = nearestPaletteColor(rgb, palette);
     }
-    return nearestPaletteColor(rgb, palette);
   }
-  return rgb;
+  const hueShift = params.audioHueShift || 0;
+  const satBoost = params.audioSaturationBoost || 0;
+  const valueBoost = params.audioValueBoost || 0;
+  if (hueShift !== 0 || satBoost !== 0 || valueBoost !== 0) {
+    const hsv = rgbToHsv(result);
+    hsv.h = (hsv.h + hueShift) % 1;
+    if (hsv.h < 0) hsv.h += 1;
+    hsv.s = clamp(hsv.s * (1 + satBoost), 0, 1);
+    hsv.v = clamp(hsv.v * (1 + valueBoost), 0, 1);
+    const tinted = hsvToRgb(hsv);
+    result = { r: tinted.r, g: tinted.g, b: tinted.b, a: result.a ?? rgb.a };
+  }
+  return result;
 }
 
 function drawImageToCanvas(image, width, height) {
@@ -1170,25 +1515,34 @@ function drawImageToCanvas(image, width, height) {
   ctx.drawImage(image, 0, 0, width, height);
 }
 
-function placeInGrid(point, grid, cellSize, gridW) {
-  const gx = Math.floor(point.x / cellSize);
-  const gy = Math.floor(point.y / cellSize);
-  if (gx < 0 || gy < 0 || gy * gridW + gx >= grid.length) return;
-  grid[gy * gridW + gx] = point;
+function placeInGrid(point, grid, cellSize, gridW, gridH) {
+  const minX = Math.max(0, Math.floor((point.x - point.radius) / cellSize));
+  const maxX = Math.min(gridW - 1, Math.floor((point.x + point.radius) / cellSize));
+  const minY = Math.max(0, Math.floor((point.y - point.radius) / cellSize));
+  const maxY = Math.min(gridH - 1, Math.floor((point.y + point.radius) / cellSize));
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      grid[y * gridW + x].push(point);
+    }
+  }
 }
 
-function fits(candidate, grid, cellSize, gridW) {
-  const gx = Math.floor(candidate.x / cellSize);
-  const gy = Math.floor(candidate.y / cellSize);
-  const gridH = grid.length / gridW;
-  for (let y = Math.max(0, gy - 2); y <= Math.min(gridH - 1, gy + 2); y++) {
-    for (let x = Math.max(0, gx - 2); x <= Math.min(gridW - 1, gx + 2); x++) {
-      const neighbor = grid[y * gridW + x];
-      if (!neighbor) continue;
-      const dx = neighbor.x - candidate.x;
-      const dy = neighbor.y - candidate.y;
-      if (dx * dx + dy * dy < Math.pow(neighbor.radius + candidate.radius, 2)) {
-        return false;
+function fits(candidate, grid, cellSize, gridW, gridH) {
+  const minX = Math.max(0, Math.floor((candidate.x - candidate.radius) / cellSize) - 1);
+  const maxX = Math.min(gridW - 1, Math.floor((candidate.x + candidate.radius) / cellSize) + 1);
+  const minY = Math.max(0, Math.floor((candidate.y - candidate.radius) / cellSize) - 1);
+  const maxY = Math.min(gridH - 1, Math.floor((candidate.y + candidate.radius) / cellSize) + 1);
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      const cell = grid[y * gridW + x];
+      if (!cell || !cell.length) continue;
+      for (const neighbor of cell) {
+        const dx = neighbor.x - candidate.x;
+        const dy = neighbor.y - candidate.y;
+        const limit = neighbor.radius + candidate.radius + 0.8;
+        if (dx * dx + dy * dy < limit * limit) {
+          return false;
+        }
       }
     }
   }
@@ -1394,7 +1748,8 @@ function startChaosBurst() {
   let count = 0;
   const interval = setInterval(() => {
     frameSeedOffset = Math.floor(Math.random() * 100000);
-    renderMosaic();
+    const force = activeTab === 'audio' && audioState.target === 'mosaic';
+    renderMosaic(force);
     if (++count > 120) {
       clearInterval(interval);
       frameSeedOffset = 0;
@@ -1531,18 +1886,20 @@ function renderGlitch() {
   ctx.save();
   ctx.fillStyle = '#05070c';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const intensity = parseFloat(glitchControls.intensity.value);
+  let intensity = parseFloat(glitchControls.intensity.value);
   const scanline = glitchControls.scanline.checked;
   const sample = ensureSourceReady() ? downsampleSource() : null;
   if (!sample) {
     ctx.restore();
     return;
   }
+  const audioInfluence = applyAudioToGlitch(intensity);
+  intensity = audioInfluence.intensity;
   const bands = Math.max(6, Math.floor(intensity * 40));
   const bandHeight = canvas.height / bands;
-  const rng = mulberry32(state.seed);
+  const rng = mulberry32(state.seed + Math.floor(audioState.level * 1000));
   for (let i = 0; i < bands; i++) {
-    const offset = (rng() - 0.5) * intensity * 200;
+    const offset = (rng() - 0.5) * intensity * 200 + (i / bands - 0.5) * audioInfluence.bandChaos;
     ctx.drawImage(
       sampleCanvas,
       0,
@@ -1564,12 +1921,21 @@ function renderGlitch() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
+  if (audioInfluence.colorBoost > 0) {
+    ctx.globalCompositeOperation = 'screen';
+    const strength = clamp(audioInfluence.colorBoost, 0, 1);
+    ctx.fillStyle = `rgba(255,160,220,${strength * 0.4})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
   ctx.restore();
 }
 
 function renderAurora(timestamp = performance.now()) {
-  const bloom = parseFloat(auroraControls.bloom.value);
-  const drift = parseFloat(auroraControls.drift.value);
+  let bloom = parseFloat(auroraControls.bloom.value);
+  let drift = parseFloat(auroraControls.drift.value);
+  const audioInfluence = applyAudioToAurora({ bloom, drift });
+  bloom = audioInfluence.bloom;
+  drift = audioInfluence.drift;
   const t = timestamp * 0.001;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const background = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -1595,8 +1961,8 @@ function renderAurora(timestamp = performance.now()) {
     path.lineTo(canvas.width, canvas.height);
     path.lineTo(0, canvas.height);
     path.closePath();
-    const hue = (rng() * 180 + 120) % 360;
-    const alpha = 0.08 + i * 0.05;
+    const hue = (rng() * 180 + 120 + audioInfluence.hueShift) % 360;
+    const alpha = (0.08 + i * 0.05) * (1 + audioInfluence.alphaBoost * 0.6);
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
     gradient.addColorStop(0, `hsla(${hue}, 80%, ${40 + i * 4}%, ${alpha})`);
     gradient.addColorStop(1, `hsla(${(hue + 60) % 360}, 70%, ${60 + i * 5}%, ${alpha * 0.6})`);
@@ -1605,12 +1971,53 @@ function renderAurora(timestamp = performance.now()) {
   }
 
   ctx.globalCompositeOperation = 'screen';
-  ctx.fillStyle = `rgba(255,255,255,${0.08 + bloom * 0.05})`;
+  ctx.fillStyle = `rgba(255,255,255,${0.08 + bloom * 0.05 + audioInfluence.alphaBoost * 0.3})`;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.globalCompositeOperation = 'source-over';
-  if (activeTab === 'aurora') {
+  if (activeTab === 'aurora' || (activeTab === 'audio' && audioState.target === 'aurora')) {
     renderGlimmer({ canvasW: canvas.width, canvasH: canvas.height, jitterStrength: bloom });
   }
+}
+
+function applyAudioToAurora(settings) {
+  const result = { ...settings, hueShift: 0, alphaBoost: 0 };
+  if (!audioState.running || audioState.target !== 'aurora') {
+    return { ...result };
+  }
+  const level = audioState.level;
+  const bass = audioState.bass;
+  const treble = audioState.treble;
+  if (audioState.config.aurora.bloom > 0) {
+    result.bloom = clamp(settings.bloom * (1 + level * audioState.config.aurora.bloom), 0, 6);
+  }
+  if (audioState.config.aurora.drift > 0) {
+    result.drift = clamp(settings.drift + bass * audioState.config.aurora.drift, 0, 8);
+  }
+  if (audioState.config.aurora.hue > 0) {
+    result.hueShift = (treble - 0.5) * audioState.config.aurora.hue;
+  }
+  result.alphaBoost = Math.max(0, level * 0.8);
+  return result;
+}
+
+function applyAudioToGlitch(intensity) {
+  const result = { intensity, bandChaos: 0, colorBoost: 0 };
+  if (!audioState.running || audioState.target !== 'glitch') {
+    return result;
+  }
+  const level = audioState.level;
+  const bass = audioState.bass;
+  const treble = audioState.treble;
+  if (audioState.config.glitch.intensity > 0) {
+    result.intensity = clamp(intensity + level * audioState.config.glitch.intensity, 0, 2.5);
+  }
+  if (audioState.config.glitch.bands > 0) {
+    result.bandChaos = bass * audioState.config.glitch.bands;
+  }
+  if (audioState.config.glitch.color > 0) {
+    result.colorBoost = treble * audioState.config.glitch.color;
+  }
+  return result;
 }
 
 async function fetchApodImage() {
